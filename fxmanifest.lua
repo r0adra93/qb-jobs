@@ -1,8 +1,8 @@
 fx_version 'cerulean'
 game 'gta5'
 
-description 'QB-PoliceJob'
-version '1.0.0'
+description 'QB-Jobs'
+version '0.0.1'
 
 shared_scripts {
     'config.lua',
@@ -28,10 +28,7 @@ ui_page 'html/index.html'
 
 files {
 	'html/index.html',
-	'html/vue.min.js',
 	'html/script.js',
-	'html/tablet-frame.png',
-	'html/fingerprint.png',
 	'html/main.css',
 	'html/vcr-ocd.ttf'
 }
