@@ -2,7 +2,9 @@ fx_version 'cerulean'
 game 'gta5'
 
 description 'QB-Jobs'
-version '0.0.1'
+version '0.0.2'
+
+ui_page 'html/index.html'
 
 shared_scripts {
     'config.lua',
@@ -24,13 +26,11 @@ server_scripts {
 	'server/main.lua'
 }
 
-ui_page 'html/index.html'
 
 files {
-	'html/index.html',
-	'html/script.js',
-	'html/main.css',
-	'html/vcr-ocd.ttf'
+	'html/*.html',
+	'html/*.js',
+	'html/*.css'
 }
 
 lua54 'yes'

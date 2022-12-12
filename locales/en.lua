@@ -1,6 +1,14 @@
 local Translations = {
-    error = {},
-    success = {},
+    error = {
+        notEnough = "Not Enough Money ($%{value})"
+    },
+    success = {
+        parkingFeesPaid = "Parking Fees Paid ($%{value})",
+        rentalFeesPaid = "Rental Fees Paid ($%{value})",
+        depositFeesPaid = "Deposit Fees Paid ($%{value})",
+        depositReturned = "Deposit Fees Refunded ($%{value})",
+        purchasedVehicle = "Vehicle has been purchased!"
+    },
     info = {
         onoff_duty = '[E] - Set Duty Status',
         stash = 'Stash %{value}',
@@ -15,6 +23,8 @@ local Translations = {
         trash = 'Trash',
         trash_enter = '[E] Trash Bin',
         stash_enter = '[E] Enter Locker',
+        keysReturned = "Keys have been returned!",
+        vehicleLimitReached = "Vehicle Limit Reached"
     },
     menu = {
         garage_title = ' Vehicles',
@@ -29,10 +39,21 @@ local Translations = {
         armory = '_Armory',
         outfit = '_Outfit',
         management = '_Management',
-        garages = ' Vehicle Selector'
+        garages = ' Vehicle Manager'
     },
     commands = {
         duty = 'Set Duty On or Off',
+    },
+    denied = {
+        noVehicle = "Vehicle Spawn is Missing",
+        noGarageSelected = "No Garage Selected",
+        invalidGarage = "Invalid Garage"
+    },
+    nui = {
+        buttonOwnGarage = "My Garage",
+        buttonMotorpool = "Motorpool",
+        buttonJobStore = "Vehicle Shop",
+        buttonreturnVehicle = "Return Vehicles"
     }
 }
 Lang = Lang or Locale:new({

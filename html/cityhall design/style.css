@@ -1,0 +1,149 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+body {
+    overflow: hidden;
+}
+#container {
+    /*display:none;*/
+    height: 100vh;
+}
+#qb-jobs-main-container{
+    position: relative;
+    background-position: center center;
+    backface-visibility: hidden;
+    width: 100vh;
+    height: 70vh;
+    margin: 0 auto;
+    top: 15vh;
+    background-size: cover;
+    background-color: rgba(23, 23, 23, 80%);
+    border-radius: 4vh;
+    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.226);
+}
+header {
+    position: relative;
+    border-radius: 2vh;
+    height: 10vh;
+    width: 97vh;
+    top: 2vh;
+    left: 1.5vh;
+    background: #dc143c;
+}
+h1{
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 3vh;
+    color: #ededed;
+    line-height: 10vh;
+}
+nav {
+    float:right;
+    height:1vh;
+}
+nav ul li{
+    position: relative;
+    top: 0;
+    right: 0;
+    margin: 1vh;
+    padding:1vh;
+    width: auto;
+    height: 1vh;
+    background: #dc143c;
+    color: #ededed;
+    border-radius: 1vh;
+    transition: all 0.1s linear;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    text-transform: uppercase;
+    font-size: 2vh;
+    font-weight: 400;
+    letter-spacing: 0.05vh;
+    border-bottom: 1.5vh solid rgba(255, 255, 255, 0);
+}
+nav ul li:hover{
+    border-bottom: 1.5vh solid rgba(255, 255, 255, 0);
+    background-color:#efefef;
+    color:#dc143c;
+}
+nav ul li > p {
+    padding-top:1vh;
+}
+div.qb-jobs-vehicleMenu {
+    position:relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+    height: 40vh;
+    width: 90vh;
+    margin: 0 auto;
+    top: 13vh;
+    border-radius: 1vh;
+    text-align: center;
+}
+div.qb-jobs-vehicleMenu::-webkit-scrollbar {
+    width: 2vh;               /* width of the entire scrollbar */
+}
+div.qb-jobs-vehicleMenu::-webkit-scrollbar-track {
+    background: #171717;        /* color of the tracking area */
+    border-radius: 20px;       /* roundness of the scroll thumb */
+    border: 3px solid #171717;  /* creates padding around scroll thumb */
+}
+div.qb-jobs-vehicleMenu::-webkit-scrollbar-thumb {
+    background-color: #dc143c;    /* color of the scroll thumb */
+    border-radius: 20px;       /* roundness of the scroll thumb */
+    border: 3px solid #171717;  /* creates padding around scroll thumb */
+}
+ul {
+    list-style-type: none;
+}
+li {
+    display: inline-block;
+    position: relative;
+    width: 20vh;
+    height: 20vh;
+    display: inline-block;
+    margin-right: 2vh;
+    margin-bottom: 2vh;
+    left: 1vh;
+    top: 1vh;
+    text-align: center;
+    background-color:#ededed;
+    border-bottom: 1vh solid rgba(255, 255, 255, 0);
+    transition: all 0.2s linear;
+    border-radius: 1vh;
+    color: #171717;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 0.1vh;
+    font-size: 2.0vh;
+}
+li:hover {
+    border-bottom: 1vh solid #dc143c;
+    opacity: 0.9;
+}
+li.fa-solid {
+    font-size: 5vh;
+    line-height: 9vh;
+    color: #dc143c;
+}
+li > h2 {
+    color: #171717;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 0.1vh;
+    font-size: 2vh;
+}
+li > p {
+    color: #171717;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-family: 'Poppins', sans-serif;
+    letter-spacing: 0.1vh;
+    font-size: 1.5vh;
+    line-height:2vh;
+}
+#qb-jobs-assigned-vehicles,#qb-jobs-ofs,#qb-jobs-vehicle-types,#qb-jobs-vehicles {display:none;}
