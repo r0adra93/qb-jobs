@@ -7,9 +7,8 @@ local vehiclesAssigned = {}
 local pedList = {}
 local PublicBlips = {}
 local onDuty = false
-local vehCount = {}
 -- Functions
-local function CurrentJob()
+local function setCurrentJob()
     local function jobPop()
         player = QBCore.Functions.GetPlayerData()
         PlayerJob = player.job
@@ -24,26 +23,21 @@ local function CurrentJob()
     end
 end
 exports('CurrentJob',CurrentJob)
-local function vehDelProc(plate)
+local function deleteVehicleProcess(plate)
     local data = {};
     data.plate = plate
     data.vehicle = vehiclesAssigned[plate].vehicle
     data.netid = vehiclesAssigned[plate].netid
     data.veh = vehiclesAssigned[plate].veh
-    if not data.noRefund and Config.Jobs[PlayerJob.name].VehicleConfig.depositFees and Config.Jobs[PlayerJob.name].Vehicles[data.vehicle].depositPrice then
-        TriggerServerEvent('qb-jobs:server:vehicleProcDelete', data)
-    end
+    TriggerServerEvent('qb-jobs:server:deleteVehicleProcess', data)
     DeleteVehicle(data.netid)
     vehiclesAssigned[data.plate] = nil
-    QBCore.Functions.TriggerCallback('qb-jobs:server:subtractVehCount',function(result)
-        vehCount = result
-        QBCore.Functions.Notify(Lang:t("info.keysReturned"))
-    end,data)
+    QBCore.Functions.Notify(Lang:t("info.keysReturned"))
 end
 local function receiveGaragedVehicles(data)
     QBCore.Functions.TriggerCallback('qb-jobs:server:sendGaragedVehicles',function(result)
         if Config.Jobs[PlayerJob.name].VehicleConfig.assignVehicles and next(vehiclesAssigned) then
-            vehDelProc()
+            deleteVehicleProcess()
         end
         result.returnVehicle = vehiclesAssigned;
         result.uiColors = Config.Jobs[PlayerJob.name].uiColors
@@ -54,121 +48,141 @@ local function receiveGaragedVehicles(data)
         SetNuiFocus(true,true)
     end, data.id)
 end
+local function openOutfits()
+    exports['qb-clothing']:getOutfits(PlayerJob.grade.level, Config.Jobs[PlayerJob.name].Outfits)
+end
+local function TakeOutVehicle(result)
+    if not Config.Jobs[PlayerJob.name].Vehicles[result[2]] then
+        QBCore.Functions.Notify(Lang:t("denied.noVehicle"))
+        return false
+    end
+    QBCore.Functions.TriggerCallback("qb-jobs:server:verifyMaxVehicles", function(vehCheck)
+        if not vehCheck then return false end
+        local function vehicleExtras(veh,extras)
+            for i = 0,13 do
+                if DoesExtraExist(veh,i) then
+                    if extras[i] then SetVehicleExtra(veh, i, extras[i])
+                    else SetVehicleExtra(veh, i, 1) end
+                end
+            end
+        end
+        local coords
+        local data = {
+            ["garage"] = result[1],
+            ["vehicle"] = result[2],
+            ["selGar"] = result[3]
+        }
+        local cbData = { ["selGar"] = data.selGar }
+        if result[4] then cbData["plate"] = result[4] end
+        for _,v in pairs(Config.Jobs[PlayerJob.name].Locations.garages[data.garage].spawnPoint) do
+            if v.type == Config.Jobs[PlayerJob.name].Vehicles[result[2]].type and not IsAnyVehicleNearPoint(vector3(v.coords.x,v.coords.y,v.coords.z), 2.5) then
+                coords = v.coords
+                break
+            end
+        end
+        QBCore.Functions.TriggerCallback("qb-jobs:server:vehiclePlateCheck",function(plate)
+            if not plate then return false end
+            data.plate = plate
+            if coords and data.plate then
+                QBCore.Functions.TriggerCallback('QBCore:Server:SpawnVehicle', function(veh)
+                    data.veh = veh
+                    data.netid = NetToVeh(veh)
+                    SetVehicleEngineOn(data.netid, false, true)
+                    SetVehicleNumberPlateText(data.netid, data.plate)
+                    data.plate = QBCore.Functions.GetPlate(data.netid)
+                    SetEntityHeading(data.netid, coords.w)
+                    exports[Config.qbjobs.fuel]:SetFuel(data.netid, 100.0)
+                    SetVehicleFixed(data.netid)
+                    SetEntityAsMissionEntity(data.netid, true, true)
+                    SetVehicleDoorsLocked(data.netid, 2)
+                    if not Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle] then
+                        if not Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle].extras then
+                            vehicleExtras(data.netid, Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle].extras)
+                            --QBCore.Shared.SetDefaultVehicleExtras(data.netid, Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle].extras)
+                        end
+                        if Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle].livery ~= nil then
+                            SetVehicleLivery(data.netid, Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle].livery)
+                        end
+                    end
+                    TriggerServerEvent("qb-vehiclekeys:server:AcquireVehicleKeys", data.plate)
+                    if Config.Jobs[PlayerJob.name].Items and (Config.Jobs[PlayerJob.name].Items.trunk or Config.Jobs[PlayerJob.name].Items.glovebox) then
+                        local tseData = {}
+                        tseData.vehicle = data.vehicle
+                        tseData.plate = data.plate
+                        TriggerServerEvent('qb-jobs:server:addVehItems',tseData)
+                    end
+                    vehiclesAssigned[data.plate] = {
+                        ["netid"] = data.netid,
+                        ["vehicle"] = data.vehicle,
+                        ["veh"] = data.veh,
+                        ["selGar"] = data.selGar
+                    }
+                    if not (data.selGar) then
+                        data.noRefund = true
+                        deleteVehicleProcess(data)
+                        QBCore.Functions.Notify(Lang:t("denied.noGarageSelected"))
+                        return
+                    end
+                    QBCore.Functions.TriggerCallback("qb-jobs:server:spawnVehicleProcessor", function(res)
+                        if not res then
+                            data.noRefund = true
+                            deleteVehicleProcess(data)
+                            return
+                        end
+                    end,data)
+                end, data.vehicle, coords, false)
+                TriggerServerEvent('qb-jobs:server:addVehicle')
+            end
+        end,cbData)
+    end)
+end
+local function toggleDuty()
+    onDuty = not onDuty
+    TriggerServerEvent("QBCore:ToggleDuty")
+    TriggerServerEvent("qb-jobs:server:updateBlips")
+    if PlayerJob.type == "leo" then
+        TriggerServerEvent("police:server:UpdateCurrentCops")
+    elseif PlayerJob.type == "ambulance" then
+        TriggerServerEvent("hospital:server:UpdateCurrentDoctors")
+    end
+end
 -- Control Listener
 local function Listen4Control(data)
     ControlListen = true
     CreateThread(function()
         while ControlListen do
             if IsControlJustReleased(0, 38) then
-                if data.event == "receiveGaragedVehicles" then
+                if data.event == "toggleDuty" then
+                    toggleDuty()
+                elseif data.event == "openBossMenu" then
+                    TriggerEvent("qb-bossmenu:client:OpenMenu")
+                elseif data.event == "receiveGaragedVehicles" then
                     receiveGaragedVehicles(data)
+                elseif data.event == "openStash" then
+                    TriggerServerEvent("qb-jobs:server:openStash")
+                elseif data.event == "openArmory" then
+                    TriggerServerEvent("qb-jobs:server:openArmory")
+                elseif data.event == "openTrash" then
+                    TriggerServerEvent("qb-jobs:server:openTrash")
+                elseif data.event == "openOutfits" then
+                    openOutfits()
                 end
             end
             Wait(1)
         end
     end)
 end
-local function TakeOutVehicle(result)
-    QBCore.Debug(result)
-    if not Config.Jobs[PlayerJob.name].Vehicles[result[2]] then
-        QBCore.Functions.Notify(Lang:t("denied.noVehicle"))
-        return
-    end
-    if Config.Jobs[PlayerJob.name].VehicleConfig.maxVehicles > 0 and Config.Jobs[PlayerJob.name].VehicleConfig.maxVehicles <= vehCount[PlayerJob.name] then
-        QBCore.Functions.Notify(Lang:t("info.vehicleLimitReached"))
-        return false
-    end
-    local coords
-    local data = {
-        ["garage"] = result[1],
-        ["vehicle"] = result[2],
-        ["selGar"] = result[3]
-    }
-    local cbData = {
-        ["selGar"] = data.selGar,
-    }
-    if result[4] then cbData["plate"] = result[4] end
-    local function vehicleExtras(veh,extras)
-        for i = 0,13 do
-            if DoesExtraExist(veh,i) then
-                if extras[i] then SetVehicleExtra(veh, i, extras[i])
-                else SetVehicleExtra(veh, i, 1) end
-            end
-        end
-    end
-    for _,v in pairs(Config.Jobs[PlayerJob.name].Locations.garages[data.garage].spawnPoint) do
-        if v.type == Config.Jobs[PlayerJob.name].Vehicles[result[2]].type and not IsAnyVehicleNearPoint(vector3(v.coords.x,v.coords.y,v.coords.z), 2.5) then
-            coords = v.coords
-            break
-        end
-    end
-    QBCore.Functions.TriggerCallback("qb-jobs:server:vehiclePlateCheck",function(plate)
-        data.plate = plate
-        if coords and data.plate then
-            QBCore.Functions.TriggerCallback('QBCore:Server:SpawnVehicle', function(veh)
-                data.veh = veh
-                data.netid = NetToVeh(veh)
-                SetVehicleEngineOn(data.netid, false, true)
-                SetVehicleNumberPlateText(data.netid, data.plate)
-                data.plate = QBCore.Functions.GetPlate(data.netid)
-                SetEntityHeading(data.netid, coords.w)
-                exports[Config.qbjobs.fuel]:SetFuel(data.netid, 100.0)
-                SetVehicleFixed(data.netid)
-                SetEntityAsMissionEntity(data.netid, true, true)
-                SetVehicleDoorsLocked(data.netid, 2)
-                if not Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle] then
-                    if not Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle].extras then
-                        vehicleExtras(data.netid, Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle].extras)
-                        --QBCore.Shared.SetDefaultVehicleExtras(data.netid, Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle].extras)
-                    end
-                    if Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle].livery ~= nil then
-                        SetVehicleLivery(data.netid, Config.Jobs[PlayerJob.name].VehicleSettings[data.vehicle].livery)
-                    end
-                end
-                TriggerServerEvent("qb-vehiclekeys:server:AcquireVehicleKeys", data.plate)
-                if Config.Jobs[PlayerJob.name].Items and (Config.Jobs[PlayerJob.name].Items.trunk or Config.Jobs[PlayerJob.name].Items.glovebox) then
-                    local tseData = {}
-                    tseData.vehicle = data.vehicle
-                    tseData.plate = data.plate
-                    TriggerServerEvent('qb-jobs:server:addVehItems',tseData)
-                end
-                vehiclesAssigned[data.plate] = {
-                    ["netid"] = data.netid,
-                    ["vehicle"] = data.vehicle,
-                    ["veh"] = data.veh
-                }
-                if (data.selGar) then
-                    QBCore.Functions.TriggerCallback("qb-jobs:server:vehicleProc", function(result)
-                        if not result then
-                            data.noRefund = true
-                            vehDelProc(data)
-                            return
-                        end
-                    end,data)
-                else
-                    data.noRefund = true
-                    vehDelProc(data)
-                    QBCore.Functions.Notify(Lang:t("denied.noGarageSelected"))
-                    return
-                end
-            end, data.vehicle, coords, false)
-            QBCore.Functions.TriggerCallback('qb-jobs:server:addVehCount',function(result)
-                vehCount = result
-            end)
-        end
-    end,cbData)
-end
 local function spawnPeds()
-   while not PlayerJob do CurrentJob() Wait(5000) end
+   while not PlayerJob do setCurrentJob() Wait(5000) end
    local index = 1
     for k,v in pairs(Config.Jobs[PlayerJob.name].Locations) do
         local pedSet = {}
         if k == "duty" then
-            pedSet.event = "qb-jobs:client:ToggleDuty"
+            pedSet.event = "toggleDuty"
             pedSet.label = Lang:t('info.onoff_duty')
             pedSet.dataPass = false
         elseif k == "management" and PlayerJob.isboss then
-            pedSet.event = "qb-bossmenu:client:OpenMenu"
+            pedSet.event = "openBossMenu"
             pedSet.label = Lang:t('info.enter_management')
             pedSet.dataPass = false
             pedSet.clntSvr = client
@@ -179,22 +193,22 @@ local function spawnPeds()
             pedSet.dataPass = true
             pedSet.clntSvr = client
         elseif k == "stashes" then
-            pedSet.event = "qb-jobs:server:openStash"
+            pedSet.event = "openStash"
             pedSet.label = Lang:t('info.stash_enter')
             pedSet.dataPass = false
             pedSet.clntSvr = server
         elseif k == "armories" then
-            pedSet.event = "qb-jobs:server:openArmory"
+            pedSet.event = "openArmory"
             pedSet.label = Lang:t('info.enter_armory')
             pedSet.dataPass = false
             pedSet.clntSvr = server
         elseif k == "trash" then
-            pedSet.event = "qb-jobs:server:openTrash"
+            pedSet.event = "openTrash"
             pedSet.label = Lang:t('info.trash_enter')
             pedSet.dataPass = false
             pedSet.clntSvr = server
         elseif k == "outfits" then
-            pedSet.event = "qb-jobs:client:openOutfits"
+            pedSet.event = "openOutfits"
             pedSet.label = Lang:t('info.enter_outfit')
             pedSet.dataPass = false
             pedSet.clntSvr = client
@@ -206,7 +220,7 @@ local function spawnPeds()
                 if v1.ped then
                     local current = v1.ped
                     current.id = k1;
-                    current.model = type(current.model) == 'string' and GetHashKey(current.model) or current.model
+                    current.model = type(current.model) == 'string' and joaat(current.model) or current.model
                     RequestModel(current.model)
                     while not HasModelLoaded(current.model) do
                         Wait(0)
@@ -270,7 +284,7 @@ local function killPeds()
         DeleteEntity(v)
     end
 end
-local function SetBlip(conf)
+local function setBlip(conf)
     local blip = AddBlipForCoord(conf.coords.x, conf.coords.y, conf.coords.z)
     SetBlipSprite(blip, conf.blipNumber)
     SetBlipAsShortRange(blip, conf.blipNumber)
@@ -281,7 +295,7 @@ local function SetBlip(conf)
     AddTextComponentString(conf.blipName)
     EndTextCommandSetBlipName(blip)
 end
-local function CreateDutyBlips(playerId, playerLabel, playerJob, playerLocation)
+local function createDutyBlips(playerId, playerLabel, playerJob, playerLocation)
     if not Config.Jobs[playerJob].DutyBlips.enable then return end
     local ped = GetPlayerPed(playerId)
     local blip = GetBlipFromEntity(ped)
@@ -307,7 +321,7 @@ local function CreateDutyBlips(playerId, playerLabel, playerJob, playerLocation)
         RemoveBlip(blip) -- removes player's blip from their map
     end
 end
-local function BlipsRemover()
+local function removeBlips()
     if PlayerJob then
         if DutyBlips then
             for _, v in pairs(DutyBlips) do
@@ -325,92 +339,78 @@ local function BlipsRemover()
         PublicBlips = {}
     end
 end
-local function AddJobs()
-    return Config.Jobs
-end
-exports('AddJobs',AddJobs)
 local function setLocations()
     for k,v in pairs(Config.Jobs) do
         if v.Locations and v.Locations.stations then
             for _,v1 in pairs(v.Locations.stations) do
-                if k == PlayerJob.name or v.type == PlayerJob.type or v1.public then SetBlip(v1) end
+                if k == PlayerJob.name or v.type == PlayerJob.type or v1.public then setBlip(v1) end
             end
         end
     end
 end
 local function kickOff()
     CreateThread(function()
-        QBCore.Functions.TriggerCallback("qb-jobs:server:vehCount", function(data)
-            vehCount = data
-        end)
-        CurrentJob()
-        Config.Jobs = AddJobs()
+        TriggerServerEvent("qb-jobs:server:populateJobs")
+        TriggerServerEvent("qb-jobs:server:countVehicle")
+        setCurrentJob()
         spawnPeds()
         setLocations()
-        TriggerServerEvent('qb-jobs:server:vehTrackInitilization')
+        onDuty = PlayerJob.onduty
+        TriggerServerEvent('qb-jobs:server:initilizeVehicleTracker')
     end)
 end
 -- Events
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
     if JobInfo.onduty then
-        TriggerEvent("qb-jobs:client:ToggleDuty")
+        toggleDuty()
         onDuty = false
+    else
+        toggleDuty()
+        onDuty = true
     end
     killPeds()
-    BlipsRemover()
+    removeBlips()
     PlayerJob = JobInfo
-    TriggerEvent("qb-jobs:client:ToggleDuty")
-    onDuty = true
     spawnPeds()
-    TriggerServerEvent("qb-jobs:server:UpdateBlips")
+    TriggerServerEvent("qb-jobs:server:updateBlips")
 end)
 RegisterNetEvent('QBCore:Client:UpdateObject', function()
 	QBCore = exports['qb-core']:GetCoreObject()
 end)
 AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
     QBCore = exports['qb-core']:GetCoreObject()
-    BlipsRemover()
-    TriggerServerEvent("qb-jobs:server:UpdateBlips")
-    onDuty = PlayerJob.onduty
+    removeBlips()
+    TriggerServerEvent("qb-jobs:server:updateBlips")
+    kickOff()
 end)
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
-    TriggerServerEvent('qb-jobs:server:UpdateBlips')
+    TriggerServerEvent('qb-jobs:server:updateBlips')
     onDuty = false
     killPeds()
     ClearPedTasks(PlayerPedId())
     DetachEntity(PlayerPedId(), true, false)
-    BlipsRemover()
+    removeBlips()
 end)
-RegisterNetEvent('qb-jobs:client:ToggleDuty', function()
-    onDuty = not onDuty
-    TriggerServerEvent("QBCore:ToggleDuty")
-    TriggerServerEvent("qb-jobs:server:UpdateBlips")
-    if PlayerJob.type == "leo" then
-        TriggerServerEvent("police:server:UpdateCurrentCops")
-    elseif PlayerJob.type == "ambulance" then
-        TriggerServerEvent("hospital:server:UpdateCurrentDoctors")
-    end
+RegisterNetEvent('qb-jobs:client:toggleDuty', function()
+    toggleDuty()
 end)
-RegisterNetEvent('qb-jobs:client:UpdateBlips', function(dutyPlayers, publicPlayers)
-    BlipsRemover()
+RegisterNetEvent('qb-jobs:client:updateBlips', function(dutyPlayers, publicPlayers)
+    removeBlips()
     for _,v in pairs(Config.Jobs) do
         if v.DutyBlips and v.DutyBlips.enable then
             if v.DutyBlips.type == "service" and onDuty and dutyPlayers then
                 for _, data in pairs(dutyPlayers) do
                     local id = GetPlayerFromServerId(data.source)
-                    CreateDutyBlips(id, data.label, data.job, data.location)
+                    createDutyBlips(id, data.label, data.job, data.location)
                 end
             elseif v.DutyBlips.type == "public" and publicPlayers then
                 for _, data in pairs(publicPlayers) do
                     local id = GetPlayerFromServerId(data.source)
-                    CreateDutyBlips(id, data.label, data.job, data.location)
+                    createDutyBlips(id, data.label, data.job, data.location)
                 end
             end
         end
     end
-end)
-RegisterNetEvent('qb-jobs:client:openOutfits', function()
-    exports['qb-clothing']:getOutfits(PlayerJob.grade.level, Config.Jobs[PlayerJob.name].Outfits)
 end)
 -- NUI Callbacks
 RegisterNUICallback('qbJobsCloseMenu', function()
@@ -421,7 +421,7 @@ RegisterNUICallback('qbJobsSelectedVehicle', function(data,cb)
     cb("ok")
 end)
 RegisterNUICallback('qbJobsDelVeh', function(result,cb)
-    vehDelProc(result)
+    deleteVehicleProcess(result)
     cb(vehiclesAssigned)
 end)
 kickOff()

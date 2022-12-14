@@ -73,14 +73,18 @@ h2 {
 /* LAYOUT */
 body {
     overflow: hidden;
-    cursor:pointer;
 }
 #container {
     display:none;
     height: 100vh;
 }
-#qb-jobs-main-menu-container{
+#qb-jobs-menu-container{
     float:left;
+    width: 30vh;
+    height: 75vh;
+    cursor:pointer;
+}
+#qb-jobs-main-menu-container{
     position: relative;
     background-position: center center;
     backface-visibility: hidden;

@@ -29,6 +29,9 @@ Close = () => {
     })
     $.post('https://qb-jobs/qbJobsCloseMenu')
 }
+retractSubMenu = () => {
+    $("#qb-jobs-sub-menu-container").animate({left:"30vh"}).hide();
+}
 Buttons = () => {
     let builder = "";
     if (vehList.ownedVehicles) {
@@ -51,7 +54,7 @@ Buttons = () => {
         builder += "</ul></li>";
     }
     if(!jQuery.isEmptyObject(vehList.returnVehicle)){
-        builder += `<li><button id="returnVehicle" class="qb-jobs-vehicle-type navButton" data-vehtype="returnVehicle" data-selgar="returnVehicle"><i class="${vehList.icons.returnVehicle}"></i>Return Vehicles</button></li>`;
+        builder += `<li id="btnReturnVehicle"><button id="returnVehicle" class="qb-jobs-vehicle-type navButton" data-vehtype="returnVehicle" data-selgar="returnVehicle"><i class="${vehList.icons.returnVehicle}"></i>Return Vehicles</button></li>`;
     }
     $("#buttons-list").append(builder);
     $("#close").append(`<button id="close-button" class="close"><i class="${vehList.icons.close}"></i>Close</button>`)
@@ -115,9 +118,13 @@ VehiclesList = (data) => {
     }
     for (const [key,value] of Object.entries(vehicles[data.vehType])) {
         if (data.selGar == "returnVehicle") {
-            builder += `<li><button id="${key}" class="qb-jobs-vehicle-return pageButton" data-plate="${key}"><i class="${vehList.icons.returnVehicle}"></i>${value.vehicle}`;
+            builder += `<li><button id="${key}" class="qb-jobs-vehicle-return pageButton" data-plate="${key}"><i class="${vehList.icons.returnVehicle}"></i>${value.vehicle}<br />${key}`;
         } else if (data.selGar == "ownGarage") {
-            builder += `<li><button id="${value.plate}" class="qb-jobs-vehicle pageButton" data-plate="${value.plate}" data-selgar="${data.selGar}" data-vehicle="${value.spawn}"><i class="${value.icon}"></i>${value.label}`;
+            let btnhide = "";
+            if(vehList.returnVehicle[value.plate]){
+                btnhide = `style="display:none;"`;
+            }
+            builder += `<li id="btn${value.plate}" ${btnhide}><button id="${value.plate}" class="qb-jobs-vehicle pageButton" data-plate="${value.plate}" data-selgar="${data.selGar}" data-vehicle="${value.spawn}"><i class="${value.icon}"></i>${value.label}`;
         } else {
             builder += `<li><button id="${key}" class="qb-jobs-vehicle pageButton" data-selgar="${data.selGar}" data-vehicle="${value.spawn}"><i class="${value.icon}"></i>${value.label}`;
         }
@@ -149,6 +156,7 @@ $(document).ready(function(){
         Open();
     })
     $("#qb-jobs-header").append(vehList.header);
+    $(".draggable").draggable();
 /* Development Testing Code */
 /*    $("#qb-jobs-header").append(vehList.header);
     Open(); */
@@ -157,12 +165,18 @@ $(document).ready(function(){
 $(document).on('click', '.qb-jobs-vehicle-return', function(e){
     e.preventDefault();
     let plate = $(this).data('plate');
+    if(vehList.returnVehicle[plate].selGar == "ownGarage") {
+        $(`.btn${plate}`).show();
+    }
     $.post('https://qb-jobs/qbJobsDelVeh', JSON.stringify(plate), function(result) {
         delete vehList.returnVehicle;
         vehList.returnVehicle = result;
-        $("#"+plate).remove();
+        $(`#${plate}`).remove();
+        if ($.isEmptyObject(vehList.returnVehicle)){
+            retractSubMenu();
+            $("#btnReturnVehicle").remove();
+        }
     }, "json");
-    if ($.isEmptyObject(vehList.returnVehicle)) {}
 });
 $(document).on('click', '.qb-jobs-vehicle-type', function(e){
     e.preventDefault();
@@ -198,9 +212,12 @@ $(document).on('click', '#jobStore', function(e){
 });
 $(document).on('click', '#retract', function(e){
     e.preventDefault();
-    $("#qb-jobs-sub-menu-container").animate({left:"30vh"}).hide();
+    retractSubMenu()
 });
 $(document).on('click', '#close', function(e){
     e.preventDefault();
     Close();
 });
+$(document).on('keyup', function(e) {
+    if (e.key == "Escape") $("#close").click();
+  });

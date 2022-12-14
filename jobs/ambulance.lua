@@ -602,7 +602,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         }
     },
     ["Items"] = {
-        ["label"] = "Medical Supply Cabinet", -- name of armory
+        ["armoryLabel"] = "Medical Supply Cabinet", -- name of armory
         ["slots"] = 30, -- how many slots for armory
         ["items"] = {
             {
