@@ -1,0 +1,270 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+/* COLOR SETTINGS */
+h1 {
+    background: #DC143C;
+    color: #EFEFEF;
+}
+h2 {
+    background: #DC143C;
+    color: #EFEFEF;
+}
+.navButton {
+    background-color:#EFEFEF;
+    color:#DC143C;
+}
+.navButton:hover {
+    background: #DC143C;
+    color: #EFEFEF;
+}
+.navSubButton {
+    background-color:#CFCFCF;
+    color:#940C28;
+}
+.navSubButton:hover {
+    background: #940C28;
+    color: #CFCFCF;
+}
+.pageButton {
+    background: #EFEFEF;
+    color: #DC143C;
+}
+.pageButton:hover {
+    background: #EFEFEF;
+    color: #DC143C;
+}
+.pageSubButton {
+    background-color:#CFCFCF;
+    color:#940C28;
+}
+.pageSubButton:hover {
+    background: #940C28;
+    color: #CFCFCF;
+}
+.close{
+    background-color:#DC143C;
+    color:#EFEFEF;
+}
+.close:hover {
+    background-color:#EFEFEF;
+    color:#DC143C;
+}
+.retract{
+    background-color:#DC143C;
+    color:#EFEFEF;
+}
+.retract:hover {
+    background-color:#EFEFEF;
+    color:#DC143C;
+}
+#qb-jobs-main-menu-container{
+    background-color: #3D3D3D;
+}
+#qb-jobs-sub-menu-container{
+    background-color: #3D3D3D;
+}
+#qb-jobs-page-container::-webkit-scrollbar-track {
+    background: #171717;        /* color of the tracking area */
+}
+#qb-jobs-page-container::-webkit-scrollbar-thumb {
+    background-color: #DC143C;    /* color of the scroll thumb */
+}
+/* LAYOUT */
+body {
+    overflow: hidden;
+}
+#container {
+    display:none;
+    height: 100vh;
+}
+#qb-jobs-menu-container{
+    float:left;
+    width: 30vh;
+    height: 75vh;
+    cursor:pointer;
+}
+#qb-jobs-main-menu-container{
+    position: relative;
+    background-position: center center;
+    backface-visibility: hidden;
+    width: 30vh;
+    height: 75vh;
+    margin: 0 auto;
+    top: 5vh;
+    background-size: cover;
+    border-radius: 4vh;
+    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.226);
+    z-index: 4;
+}
+h1{
+    position: relative;
+    margin:0;
+    border-top-left-radius: 4vh;
+    border-top-right-radius: 4vh;
+    padding:1vh;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 3vh;
+}
+h2{
+    position: relative;
+    margin:0;
+    border-top-right-radius: 4vh;
+    padding:1vh;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 2vh;
+}
+nav {
+    padding:0;
+}
+button {
+    padding-left:0;
+    margin-left:0;
+    position: relative;
+    width:100%;
+    transition: all 0.1s linear;
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+    text-transform: uppercase;
+    font-size: 2vh;
+    font-weight: 400;
+    letter-spacing: 0.05vh;
+    margin-top: 0.5vh;
+    padding: 0.5vh;
+    cursor:pointer;
+}
+button:hover{
+    cursor:pointer;
+}
+#buttons ul {
+    list-style-type: none;
+    padding-left:0;
+    margin-left:0;
+}
+#buttons ul li {
+    padding-left:0;
+    margin-left:0;
+    position: relative;
+}
+#buttons ul li ul li {
+    padding-left:0;
+    margin-left:0;
+    position: relative;
+    transition: all 0.1s linear;
+}
+.pageSubButton {
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+    text-transform: uppercase;
+    font-size: 2vh;
+    font-weight: 400;
+    letter-spacing: 0.05vh;
+    margin-top: 0.5vh;
+    padding: 0.5vh;
+}
+#qb-jobs-sub-menu-container{
+    position: absolute;
+    background-position: center center;
+    backface-visibility: hidden;
+    width: 30vh;
+    height: 60vh;
+    margin: 0 auto;
+    top: 12.5vh;
+    margin-left:1vh;
+    background-size: cover;
+    border-top-right-radius: 4vh;
+    border-bottom-right-radius: 4vh;
+    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.226);
+    z-index: 3;
+}
+#qb-jobs-page-container {
+    position: relative;
+    width: 30vh;
+    height: 50vh;
+    overflow-y:auto;
+}
+#qb-jobs-page-container::-webkit-scrollbar {
+    width: 2vh;
+}
+#qb-jobs-page-container::-webkit-scrollbar-track {
+    border-radius: 20px;
+    border: 3px solid #171717;
+}
+#qb-jobs-page-container::-webkit-scrollbar-thumb {
+    border-radius: 20px;
+    border: 3px solid #171717;
+}
+#qb-jobs-page ul {
+    list-style-type: none;
+    padding-left:0;
+    margin-left:0;
+}
+#qb-jobs-page ul li {
+    padding-left:0;
+    margin-left:0;
+    position: relative;
+}
+#qb-jobs-page ul li ul li {
+    padding-left:0;
+    margin-left:0;
+    position: relative;
+    transition: all 0.1s linear;
+}
+.pageButton {
+    text-align:center;
+}
+.pageSubButton {
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+    text-transform: uppercase;
+    font-size: 2vh;
+    font-weight: 400;
+    letter-spacing: 0.05vh;
+    margin-top: 0.5vh;
+    padding: 0.5vh;
+}
+button i {
+    padding-right:2vh;
+}
+#close-button {
+    display:block;
+    position:absolute;
+    bottom:0;
+    border-bottom-left-radius: 4vh;
+    border-bottom-right-radius: 4vh;
+    text-align:center;
+}
+#retract-button {
+    display:block;
+    position:absolute;
+    bottom:0;
+    border-bottom-right-radius: 4vh;
+}
+.close {
+    display:block;
+    position:absolute;
+    bottom:0;
+}
+.retract{
+    display:block;
+    position:absolute;
+    bottom:0;
+}
+#bgimage{
+    position:relative;
+    display:block;
+    width:20vh;
+    height:20vh;
+    margin:0 auto;
+}
+.logo {
+    background-image:url("./qb.png");
+    background-size:20vh 20vh;
+    background-repeat:no-repeat;
+    background-position-y:bottom;
+    background-position-x:center;
+}
