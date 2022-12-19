@@ -193,7 +193,7 @@ local function Listen4Control(data)
                 if data.event == "toggleDuty" then
                     toggleDuty()
                 elseif data.event == "openBossMenu" then
-                    receiveManagementData()
+                    receiveManagementData(data)
                 elseif data.event == "openOldBossMenu" then
                     TriggerEvent("qb-bossmenu:client:OpenMenu")
                 elseif data.event == "receiveGaragedVehicles" then
