@@ -11,11 +11,11 @@ local Translations = {
         store_veh = '~b~[~r~E~b~]~w~ Fahrzeug speichern',
         armory = 'Waffenkammer',
         enter_armory = '[~g~E~s~] Waffenkammer',
-        keysReturned = "Keys have been returned!", --English Change
-        vehicleLimitReached = "Vehicle Limit Reached", --English Change
-        enter_outfit = '[E] Outfitter', --English Change
+        enter_motorworks = '[E] Motorworks', -- English Change
+        vehicleLimitReached = "Vehicle Limit Reached", -- English Change
+        enter_outfit = '[E] Outfitter', -- English Change
         enter_management = '[E] Manager System', -- English Change
-        enter_garage = '[E] Sign Out Vehicle', --English Change
+        enter_garage = '[E] Sign Out Vehicle', -- English Change
         trash = 'Müll',
         trash_enter = '~b~[~r~E~b~]~w~ Mülleimer',
         stash_enter = '~b~[~r~E~b~]~w~ Stash öffnen'
@@ -23,20 +23,20 @@ local Translations = {
     menu = {
         garage_title = 'Polizeiwagen',
         close = '⬅ VERLASSEN',
-        jobs_garage = ' Garage', --English Change
-        jobs_armory = ' Armory', --English Change
-        jobs_duty_station = "Set Duty Status" --English Change
+        jobs_garage = ' Garage', -- English Change
+        jobs_armory = ' Armory', -- English Change
+        jobs_duty_station = "Set Duty Status" -- English Change
     },
     headings = {
-        stash = '_Stash', --English Change
-        trash = '_Trash', --English Change
-        armory = '_Armory', --English Change
-        outfit = '_Outfit', --English Change
-        management = '_Management', --English Change
-        garages = ' Vehicle Selector' --English Change
+        stash = '_Stash', -- English Change
+        trash = '_Trash', -- English Change
+        armory = '_Armory', -- English Change
+        outfit = '_Outfit', -- English Change
+        management = '_Management', -- English Change
+        garages = ' Vehicle Selector' -- English Change
     },
     commands = {
-        duty = 'Set Duty On or Off', --English Change
+        duty = 'Set Duty On or Off', -- English Change
     }
 }
 if GetConvar('qb_locale', 'en') == 'de' then

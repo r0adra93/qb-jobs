@@ -70,12 +70,20 @@ local function verifySociety()
         end
     end
 end
+local function sendToCustoms()
+    local data = {}
+    for k,v in pairs(Config.Jobs) do
+        data[k] = v.MotorworksConfig
+    end
+    exports["qb-customs"]:buildLocations(data)
+end
 local function kickOff()
     CreateThread(function()
         countVehPop()
         populateJobs()
         sendToCityHall()
         verifySociety()
+        sendToCustoms()
     end)
     CreateThread(function()
         while true do
@@ -316,37 +324,41 @@ QBCore.Functions.CreateCallback("qb-jobs:server:spawnVehicleProcessor", function
     cb(true)
 end)
 --- Creates plates and ensures they are not in-use
-QBCore.Functions.CreateCallback("qb-jobs:server:vehiclePlateCheck", function(source,cb,result)
+QBCore.Functions.CreateCallback("qb-jobs:server:vehiclePlateCheck", function(source,cb,res)
     local player = QBCore.Functions.GetPlayer(source)
     if not player then return false end
     local PlayerJob = player.PlayerData.job
-    local plate
+    local plate, vehProps
     local ppl = string.len(Config.Jobs[PlayerJob.name].VehicleConfig.plate)
     if ppl > 4 then
         print(color.bg.red .. color.fg.white .. "Your plate prefix is " .. ppl .. " must be less than 4 chracters at: qb-jobs > config.lua > Jobs > " .. PlayerJob.name .. " > VehicleConfig > Plate")
         cb(false)
     end
     if ppl == 4 then
-        result.min = 1000
-        result.max = 9999
+        res.min = 1000
+        res.max = 9999
     elseif ppl == 3 then
-        result.min = 10000
-        result.max = 99999
+        res.min = 10000
+        res.max = 99999
     elseif ppl == 2 then
-        result.min = 100000
-        result.max = 999999
+        res.min = 100000
+        res.max = 999999
     elseif ppl == 1 then
-        result.min = 1000000
-        result.max = 9999999
+        res.min = 1000000
+        res.max = 9999999
     else
         plate = exports["qb-vehicleshop"]:GeneratePlate()
     end
     if not plate then
-        result.platePrefix = Config.Jobs[PlayerJob.name].VehicleConfig.plate
-        result.vehTrack = vehTrack[player.PlayerData.citizenid]
-        plate = exports["qb-vehicleshop"]:JobsPlateGen(result)
+        res.platePrefix = Config.Jobs[PlayerJob.name].VehicleConfig.plate
+        res.vehTrack = vehTrack[player.PlayerData.citizenid]
+        plate = exports["qb-vehicleshop"]:JobsPlateGen(res)
     end
-    cb(plate)
+    if res.selGar == "ownGarage" then
+        local result = MySQL.query.await('SELECT mods FROM player_vehicles WHERE plate = ?', {plate})
+        if result[1] then vehProps = json.decode(result[1].mods) end
+    end
+    cb(plate, vehProps)
 end)
 --- Generates list to populate the vehicle selector menu
 QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(source,cb,data)
@@ -431,32 +443,38 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(s
             index[vehShort.type] += 1
         end
     end
-
-    -- create database query selecting vehicles owned by player if table populated replace below if statement
---[[    if true == true then
-        vehList.ownedVehicles = {}
-        vehList.ownedVehicles.vehicle = {
-            [0] = {
-                ["plate"] = "EMS12345",
-                ["spawn"] = "ambulance",
-                ["label"] = "Ambulance",
-                ["icon"] = Config.Jobs[PlayerJob.name].VehicleConfig.icons.vehicle,
-                ["parkingPrice"] = 125,
-                ["purchasePrice"] = 1000
-            }
-        }
-        vehList.ownedVehicles.helicopter = {
-            [0] = {
-                ["plate"] = "EMS54321",
-                ["spawn"] = "polmav",
-                ["label"] = "Maverick",
-                ["icon"] = Config.Jobs[PlayerJob.name].VehicleConfig.icons.helicopter,
-                ["parkingPrice"] = 125,
-                ["purchasePrice"] = 1000
-            }
-        }
-    end ]]--
     cb(vehList)
+end)
+--- Generates list to populate the Management menu
+QBCore.Functions.CreateCallback('qb-jobs:server:sendManagementData', function(source,cb,data)
+    local src = source
+    local player = QBCore.Functions.GetPlayer(src)
+    if not player then return false end
+    local PlayerJob = player.PlayerData.job
+    local btnList = {}
+    local jobsList = {}
+    local queryResult = MySQL.query.await('SELECT citizenid AS citid, job FROM players', function(result)
+        if next(result) then
+            cb(result)
+        else
+            cb(nil)
+        end
+    end)
+    if queryResult then
+        for _,v in pairs(queryResult) do
+            for _,v1 in pairs(JSON.decode(v.job)) do
+                if v1.name then
+                    if v1.name == PlayerJob.name then jobsList[v.citid] = v.job end
+                else
+                    for _,v2 in pairs(v1) do
+                        if v2.name == PlayerJob.name then jobsList[v.citid] = v.job end
+                    end
+                end
+            end
+        end
+        QBCore.Debug(jobsList)
+    end
+    cb(btnList)
 end)
 -- Commands
 QBCore.Commands.Add("duty", Lang:t("commands.duty"), {}, false, function()

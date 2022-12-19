@@ -17,6 +17,7 @@ local Translations = {
         store_veh = '[E] - Store Vehicle',
         armory = 'Armory',
         enter_armory = '[E] Armory',
+        enter_motorworks = '[E] Motorworks',
         enter_outfit = '[E] Outfitter',
         enter_management = '[E] Manager System',
         enter_garage = '[E] Sign Out Vehicle',

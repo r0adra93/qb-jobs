@@ -7,27 +7,28 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
     ["offDutyPay"] = false, -- true get paid even off duty
     ["inCityHall"] = false, -- true lists job inside city hall
     ["grades"] = {
-        ['0'] = { -- job grade starts at 0
+        [0] = {["name"] = "No Grades", ["payment"] = 30}, -- Reserved Do Not Touch
+        [1] = { -- job grade starts at 1 (0 is Reserved)
             ["name"] = 'Recruit', -- job title
             ["payment"] = 180 -- starting salary at this grade
         },
-        ['1'] = {
+        [2] = {
             ["name"] = 'Paramedic',
             ["payment"] = 240
         },
-        ['2'] = {
+        [3] = {
             ["name"] = 'Nurse',
             ["payment"] = 273
         },
-        ['3'] = {
+        [4] = {
             ["name"] = 'Doctor',
             ["payment"] = 684
         },
-        ['4'] = {
+        [5] = {
             ["name"] = 'Surgeon',
             ["payment"] = 2191
         },
-        ['5'] = {
+        [6] = {
             ["name"] = 'Chief of Staff',
             ["payment"] = 2739,
             ["isboss"] = true
@@ -47,7 +48,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
                     ["coords"] = vector4(326.72, -583.02, 43.32, 345.98),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "4",
@@ -68,7 +69,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
                     ["coords"] = vector4(324.33, -582.2, 43.32, 345.98),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-bars-progress", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "4",
@@ -83,13 +84,34 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
             }
         },
+        ["oldManagement"] = { -- location of boss' management station
+            {
+                ["Label"] = "Old Management",
+                ["ped"] = {
+                    ["model"] = "a_f_o_salton_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(320.17, -580.71, 43.32, 334.6),
+                    ["targetIcon"] = "fa-solid fa-bars-progress", -- Font Awesome Icon https://fontawesome.com/icons
+                    ["drawDistance"] = 2.0,
+                    ["zoneOptions"] = {
+                        ["length"] = "4",
+                        ["width"] = "2"
+                    }
+                },
+                ["blipName"] = "Old Management",
+                ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
+                ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
+                ["blipDisplay"] = 5, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
+                ["blipScale"] = 0.4, -- set the size of the blip on the full size map
+                ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
+            }
+        },
         ["garages"] = {
             {
                 ["label"] = "Hospital Garage - Pillbox",
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
                     ["coords"] = vector4(305.0, -598.41, 43.29, 77),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "4",
@@ -142,7 +164,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
                     ["coords"] = vector4(-251.38, 6338.43, 32.49, 37.65),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "2",
@@ -191,7 +213,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
                     ["coords"] = vector4(-1232.29, -2809.43, 13.95, 222.26),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "2",
@@ -248,7 +270,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
                     ["coords"] = vector4(2120.9, 4784.06, 40.97, 297.55),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "2",
@@ -281,7 +303,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
                     ["coords"] = vector4(1720.09, 3287.05, 41.53, 185.75),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "2",
@@ -318,7 +340,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
                     ["coords"] = vector4(1302.96, 4226.23, 33.91, 353.23),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "2",
@@ -351,7 +373,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
                     ["coords"] = vector4(-784.0, -1356.02, 5.15, 236.42),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "2",
@@ -388,7 +410,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
                     ["coords"] = vector4(-1598.24, 5188.34, 4.31, 306.23),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "2",
@@ -423,7 +445,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
                     ["coords"] = vector4(316.97, -583.32, 43.28, 251.62),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-boxes-stacked", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "2",
@@ -444,7 +466,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
                     ["coords"] = vector4(309.76, -603.13, 43.29, 77),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-shop", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "2",
@@ -465,7 +487,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
                     ["coords"] = vector4(301.44, -580.94, 43.29, 188.55),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-regular fa-trash-can", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "2",
@@ -500,7 +522,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
                     ["coords"] = vector4(342.72, -586.45, 43.32, 346.32),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/v4/icons/
+                    ["targetIcon"] = "fa-solid fa-shirt", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
                         ["length"] = "2",
@@ -517,7 +539,53 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipScale"] = 0.4,
                 ["blipShortRange"] = true
             }
-        }
+        },
+        ["motorworks"] = { -- location of the motorworks job garage
+            {
+                ["jobType"] = "ems",
+                ["isGang"] = false,
+                ["ped"] = {
+                    ["model"] = "s_f_y_sweatshop_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(345.33, -564.94, 28.74, 70.42),
+                    ["targetIcon"] = "fa-solid fa-shirt", -- Font Awesome Icon https://fontawesome.com/icons
+                    ["drawDistance"] = 2.0,
+                    ["zoneOptions"] = {
+                        ["length"] = "2",
+                        ["width"] = "2"
+                    }
+                },
+                ["Label"] = "EMS Motorworks",
+                ["blipName"] = "EMS Motorworks",
+                ["coords"] = vector3(328.87, -557.93, 28.51),
+                ["blipNumber"] = 72, -- https://docs.fivem.net/docs/game-references/blips/#blips
+                ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
+                ["blipDisplay"] = 5, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
+                ["blipScale"] = 0.4, -- set the size of the blip on the full size map
+                ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
+            },
+            {
+                ["jobType"] = "ems",
+                ["isGang"] = false,
+                ["ped"] = {
+                    ["model"] = "s_f_y_sweatshop_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(322.16, -555.66, 28.74, 254.31),
+                    ["targetIcon"] = "fa-solid fa-shirt", -- Font Awesome Icon https://fontawesome.com/icons
+                    ["drawDistance"] = 2.0,
+                    ["zoneOptions"] = {
+                        ["length"] = "2",
+                        ["width"] = "2"
+                    }
+                },
+                ["Label"] = "EMS Motorworks",
+                ["blipName"] = "EMS Motorworks",
+                ["coords"] = vector3(338.61, -561.37, 28.51),
+                ["blipNumber"] = 72, -- https://docs.fivem.net/docs/game-references/blips/#blips
+                ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
+                ["blipDisplay"] = 5, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
+                ["blipScale"] = 0.4, -- set the size of the blip on the full size map
+                ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
+            }
+        },
     },
     ["VehicleConfig"] = {
         ["plate"] = "EMS", -- 4 Chars Max -- License Plate Prefix
@@ -566,7 +634,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
     ["VehicleSettings"] = {
         ["ambulance"] = { -- Spawn name
             ["extras"] = {
-                [1] = 0, -- 0 = On | 1 = Off
+                [1] = 1, -- 0 = On | 1 = Off
                 [2] = 0,
                 [3] = 0,
                 [4] = 0,
@@ -580,7 +648,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 [12] = 0,
                 [13] = 0
             },
-            ["livery"] = 0 -- First Livery Starts At 0
+            ["livery"] = 2 -- First Livery Starts At 0
         },
         ["polmav"] = {
             ["extras"] = {
@@ -599,6 +667,47 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 [13] = 0
             },
             ["livery"] = 1
+        }
+    },
+    ["MotorworksConfig"] = {
+        ["settings"] = {
+            ["label"] = 'EMS Motorworks',
+            ["welcomeLabel"] = "Welcome to EMS Motorworks!",
+            ["enabled"] = true,
+        },
+        ["categories"] = {
+            ["repair"] = true,
+            ["respray"] = true,
+            ["liveries"] = true,
+            ["tint"] = true,
+            ["extras"] = true,
+            ["plate"] = true,
+            ["cosmetics"] = true,
+        },
+        ["drawtextui"] = {
+            ["text"] = "EMS Motorworks",
+        },
+        ["restrictions"] = {
+            ["job"] = { 'ambulance' },
+            ["allowedClasses"] = { 18 },
+        },
+        ["zones"] = {
+            {
+                    ["coords"] = vector3(338.61, -561.37, 28.51),
+                    ["length"] = 9.0,
+                    ["width"] = 4.0,
+                    ["heading"] = 90.0,
+                    ["minZ"] = 24.5,
+                    ["maxZ"] = 28.5
+            },
+            {
+                    ["coords"] = vector3(328.87, -557.93, 28.51),
+                    ["length"] = 9.0,
+                    ["width"] = 4.0,
+                    ["heading"] = 90.0,
+                    ["minZ"] = 24.5,
+                    ["maxZ"] = 28.5
+            }
         }
     },
     ["Items"] = {
