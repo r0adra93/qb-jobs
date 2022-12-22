@@ -1,4 +1,5 @@
-# qb-jobs
+# QB-JOBS IS UNDER DEVELOPMENT
+## DO NOT USE!!!!!!!!!!!!!!!!
 Universal job resource
 
 # Notice
