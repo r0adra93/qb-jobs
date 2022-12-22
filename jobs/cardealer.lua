@@ -4,7 +4,11 @@ Config.Jobs.cardealer = {
     ["label"] = "Vehicle Dealer",
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
-    ["inCityHall"] = false, -- true lists job inside city hall
+    ["inCityHall"] = {
+        ["listInCityHall"] = true, -- true he job is sent to city hall | false the job is not in city hall
+        ["isManaged"] = true -- true the job is sent to the boss of the job | false the job is automatically assigned
+    },
+
     ["plate"] = "DRV2", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
         ['0'] = {

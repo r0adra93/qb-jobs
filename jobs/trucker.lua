@@ -5,7 +5,11 @@ Config.Jobs.trucker = {
     ["label"] = "Truck Driver",
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
-    ["inCityHall"] = true, -- true lists job inside city hall
+    ["inCityHall"] = {
+        ["listInCityHall"] = true, -- true he job is sent to city hall | false the job is not in city hall
+        ["isManaged"] = true -- true the job is sent to the boss of the job | false the job is automatically assigned
+    },
+
     ["plate"] = "CMRC", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
         ['0'] = {

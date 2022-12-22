@@ -5,7 +5,11 @@ Config.Jobs.police = { -- name the job
     ["type"] = "leo", -- job type
     ["defaultDuty"] = true, -- duty status when logged on
     ["offDutyPay"] = false, -- true get paid even off duty
-    ["inCityHall"] = false, -- true lists job inside city hall
+    ["inCityHall"] = {
+        ["listInCityHall"] = true, -- true he job is sent to city hall | false the job is not in city hall
+        ["isManaged"] = true -- true the job is sent to the boss of the job | false the job is automatically assigned
+    },
+
     ["plate"] = "POPO", -- 4 Chars Max -- License Plate Prefix
     ["DutyBlips"] = {
         ["enable"] = true, -- Enables the Duty Blip

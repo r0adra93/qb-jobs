@@ -1,13 +1,21 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
+    ["jobAdmins"] = { -- Citizen IDs of the Bosses of this Job
+        {
+            ["citid"] = "SPC88576"
+        }
+    },
     ["label"] = "Medical Services", -- label that display when typing in /job
     ["type"] = "ems", -- job type -- leave set to ems as it's part of the ambulancejob
     ["defaultDuty"] = true, -- duty status when logged on
     ["offDutyPay"] = false, -- true get paid even off duty
-    ["inCityHall"] = false, -- true lists job inside city hall
+    ["inCityHall"] = {
+        ["listInCityHall"] = true, -- true he job is sent to city hall | false the job is not in city hall
+        ["isManaged"] = true -- true the job is sent to the boss of the job | false the job is automatically assigned
+    },
     ["grades"] = {
-        [0] = {["name"] = "No Grades", ["payment"] = 30}, -- Reserved Do Not Touch
+--        [0] = {["name"] = "No Grades", ["payment"] = 30}, -- Reserved Do Not Touch
         [1] = { -- job grade starts at 1 (0 is Reserved)
             ["name"] = 'Recruit', -- job title
             ["payment"] = 180 -- starting salary at this grade
@@ -619,7 +627,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["parkingPrice"] = 125, -- price to check out owned vehicle
             ["purchasePrice"] = 150000, -- price to own vehicle
             ["icon"] = "fa-solid fa-truck-medical", -- https://fontawesome.com/icons
-            ["authGrades"] = {0,1,2,3,4,5} -- Authorized Grades for Vehicle
+            ["authGrades"] = {1,2,3,4,5,6} -- Authorized Grades for Vehicle
         },
         ["polmav"] = {
             ["label"] = "Air Ambulance",
@@ -628,7 +636,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["parkingPrice"] = 125,
             ["purchasePrice"] = 3000000,
             ["icon"] = "fa-solid fa-helicopter",
-            ["authGrades"] = {0,1,2,3,4,5}
+            ["authGrades"] = {1,2,3,4,5,6}
         }
     },
     ["VehicleSettings"] = {
@@ -722,7 +730,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "item", -- item or weapon reference items.lua
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"}, -- vehicle, boat, plane, and/or helicopter
                 ["locations"] = {'armory','glovebox'}, -- armory, glovebox and/or trunk
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "bandage",
@@ -732,7 +740,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "painkillers",
@@ -742,7 +750,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "firstaid",
@@ -752,7 +760,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "weapon_flashlight",
@@ -762,7 +770,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "weapon",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','glovebox'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "weapon_fireextinguisher",
@@ -772,7 +780,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "weapon",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "heavyarmor",
@@ -782,7 +790,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             }
         }
     },
@@ -790,7 +798,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         ['male'] = { -- Gender
             {
                 ["outfitLabel"] = 'T-Shirt', -- Label of Outfit
-                ["authGrades"] = {0,1,2,3,4,5}, -- Authorized Grades
+                ["authGrades"] = {1,2,3,4,5,6}, -- Authorized Grades
                 ["outfitData"] = {
                     ['arms'] = {item = 85, texture = 0}, -- Arms
                     ['t-shirt'] = {item = 129, texture = 0}, -- T-Shirt
@@ -809,7 +817,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             },
             {
                 ["outfitLabel"] = 'Polo',
-                ["authGrades"] = {2,3,4,5},
+                ["authGrades"] = {3,4,5,6},
                 ["outfitData"] = {
                     ['arms'] = {item = 90, texture = 0},
                     ['t-shirt'] = {item = 15, texture = 0},
@@ -828,7 +836,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             },
             {
                 ["outfitLabel"] = 'Doctor',
-                ["authGrades"] = {3,4,5},
+                ["authGrades"] = {4,5,6},
                 ["outfitData"] = {
                     ['arms'] = {item = 93, texture = 0},
                     ['t-shirt'] = {item = 32, texture = 3},
@@ -849,7 +857,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         ['female'] = { -- Gender
             {
                 ["outfitLabel"] = 'T-Shirt', -- Label of Outfit
-                ["authGrades"] = {0,1,2,3,4,5}, -- Authorized Grades
+                ["authGrades"] = {1,2,3,4,5,6}, -- Authorized Grades
                 ["outfitData"] = {
                     ['arms'] = {item = 109, texture = 0}, -- Arms
                     ['t-shirt'] = {item = 159, texture = 0}, -- T-Shirt
@@ -868,7 +876,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             },
             {
                 outfitLabel = 'Polo',
-                ["authGrades"] = {2,3,4,5},
+                ["authGrades"] = {3,4,5,6},
                 outfitData = {
                     ['arms'] = {item = 105, texture = 0}, -- Arms
                     ['t-shirt'] = {item = 13, texture = 0}, -- T-Shirt
@@ -887,7 +895,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             },
             {
                 outfitLabel = 'Doctor',
-                ["authGrades"] = {3,4,5},
+                ["authGrades"] = {4,5,6},
                 outfitData = {
                     ['arms'] = {item = 105, texture = 0}, -- Arms
                     ['t-shirt'] = {item = 39, texture = 3}, -- T-Shirt
@@ -905,6 +913,53 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 }
             }
         }
+    },
+    ["Awards"] = {
+        {
+            ["title"] = "Award of Excellence",
+            ["description"] = "Awarded for going above and beyond service to patients.",
+        },
+        {
+            ["title"] = "Honorable Action",
+            ["description"] = "Awarded for saving a life with risk to life and limb. While on duty or off duty."
+        },
+        {
+            ["title"] = "Meritous Action",
+            ["description"] = "Awarded for saving a life while off duty. Not looking away when others could be of service."
+        },
+        {
+            ["title"] = "Medical Heart Award",
+            ["description"] = "Awarded for being wounded on the mean streets of San Andreas."
+        }
+    },
+    ["WriteUps"] = {
+        {
+            ["title"] = "Malpractice",
+            ["description"] = "Making a mistake while treating a patient"
+        },
+        {
+            ["title"] = "Insubordination",
+            ["description"] = "Failure to follow directions."
+        },
+        {
+            ["title"] = "Unsafe Behavior",
+            ["description"] = "Failure to follow safety guidelines."
+        },
+        {
+            ["title"] = "No Call / No Show",
+            ["description"] = "Fails to call out & fails to show up."
+        },
+        {
+            ["title"] = "Other",
+            ["description"] = "Any reason that necessitates a write up."
+        }
+    },
+    ["jobHistoryStatus"] = {
+        "hired",
+        "fired",
+        "pending",
+        "quit",
+        "blackListed"
     },
     ["uiColors"] = { -- set colors for the menu system
     -- Main Menu Header --
