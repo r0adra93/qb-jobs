@@ -215,8 +215,8 @@ local function Listen4Control(data)
     end)
 end
 local function spawnPeds()
-   while not PlayerJob do setCurrentJob() Wait(5000) end
-   local index = 1
+    while not PlayerJob do setCurrentJob() Wait(5000) end
+    local index = 1
     for k,v in pairs(Config.Jobs[PlayerJob.name].Locations) do
         local pedSet = {}
         if k == "duty" then
@@ -416,6 +416,7 @@ local function setCustomsLocations()
 end
 local function kickOff()
     CreateThread(function()
+        TriggerServerEvent("qb-jobs:server:metaDataPrePop")
         TriggerServerEvent("qb-jobs:server:populateJobs")
         TriggerServerEvent("qb-jobs:server:countVehicle")
         setCurrentJob()
@@ -508,4 +509,3 @@ RegisterNUICallback('qbJobsDelVeh', function(result,cb)
     deleteVehicleProcess(result)
     cb(vehiclesAssigned)
 end)
-kickOff()

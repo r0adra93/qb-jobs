@@ -5,6 +5,31 @@ local vehCount = {}
 local vehTrack = {}
 exports['qb-core']:AddJobs(Config.Jobs)
 -- Functions
+local function metaDataPrePop(src)
+    local player = QBCore.Functions.GetPlayer(src)
+    if not player then return false end
+    local metadata = player.PlayerData.metadata
+    local jobHistory = {}
+    for k in pairs(Config.Jobs) do
+        if not metadata.jobhistory[k] then
+            jobHistory[k] = {
+                ["status"] = nil,
+                ["rehireable"] = true,
+                ["writeups"] = {},
+                ["awards"] = {},
+                ["details"] = {},
+                ["gradechangecount"] = 0,
+                ["firedcount"] = 0,
+                ["hiredcount"] = 0,
+                ["quitcount"] = 0,
+                ["denycount"] = 0,
+                ["applycount"] = 0,
+            }
+            player.Functions.SetMetaData("jobhistory", jobHistory)
+        end
+    end
+end
+exports("metaDataPrePop",metaDataPrePop)
 local function countVehPop()
     for k in pairs(Config.Jobs) do
         vehCount[k] = 0
@@ -53,10 +78,92 @@ local function populateJobs()
     end
 end
 exports('populateJobs',populateJobs)
+
+local function sendEmail(mail)
+    local mailData = {}
+    SetTimeout(math.random(2500, 4000), function()
+        mailData.sender = mail.sender
+        mailData.subject = mail.subject
+        mailData.message = mail.message
+        mailData.button = {}
+        exports["qb-phone"]:sendNewMailToOffline(mail.citid, mailData)
+    end)
+end
+local function submitApplication(res)
+    local function processJobHistory(jhData)
+        local player = QBCore.Functions.GetPlayer(res.src)
+        if not player then return false end
+        local metadata = player.PlayerData.metadata
+        local jobHistory = {}
+        if Config.Jobs[res.job] then
+            if not metadata.jobhistory[res.job] then
+                metaDataPrePop(res.src)
+                processJobHistory()
+            end
+            if metadata.jobhistory[res.job] then
+                jobHistory[res.job] = {}
+                jobHistory[res.job].status = jhData.status
+                jobHistory[res.job].applycount = metadata.jobhistory[res.job].applycount + 1
+            else
+                return false
+            end
+            player.Functions.SetMetaData("jobhistory", jobHistory)
+            return true
+        end
+    end
+    local player = QBCore.Functions.GetPlayer(res.src)
+    if not player then return false end
+    local JobInfo = Config.Jobs[res.job]
+    local citid = player.PlayerData.citizenid
+    local charInfo = player.PlayerData.charinfo
+    local data = {}
+    local gender = Lang:t('email.mr')
+    if charInfo.gender == 1 then
+        gender = Lang:t('email.mrs')
+    end
+    local msg
+    data.citid = citid
+    data.sender = Lang:t('email.jobAppSender', {firstname = charInfo.firstname, lastname = charInfo.lastname})
+    data.subject = Lang:t('email.jobAppSub', {lastname = charInfo.lastname, job = res.job})
+    data.message = Lang:t('email.jobAppMsg', {gender = gender, lastname = charInfo.lastname, job = res.job, firstname = charInfo.firstname, phone = charInfo.phone})
+    if Config.Jobs[res.job].jobAdmins then
+        for _,v in pairs(Config.Jobs[res.job].jobAdmins) do
+            data.cid = v.citid
+            sendEmail(data)
+        end
+        jhData.status = "pending"
+        msg = Lang:t('info.new_job_app', {job = JobInfo.label})
+    else
+        player.Functions.SetJob(res.job, 0)
+        jhData.status = "active"
+        msg = Lang:t('info.new_job', {job = JobInfo.label})
+    end
+    processJobHistory()
+    TriggerClientEvent('QBCore:Notify', res.src, msg)
+    return true
+end
+exports("submitApplication",submitApplication)
+local function processStaff(res)
+    local src =  QBCore.Functions.GetSource(res.citid)
+    local player = QBCore.Functions.GetPlayer(src)
+    if player then
+        for k,v in pairs(res.metadata) do
+            v = json.encode(v)
+            player.Functions.SetMetaData(k, v)
+        end
+        player.Functions.UpdatePlayerData()
+    else
+        player = QBCore.Player.GetOfflinePlayer(res.citid)
+    end
+end
 local function sendToCityHall()
     for k,v in pairs(Config.Jobs) do
-        if v.inCityHall then
-            exports['qb-cityhall']:AddCityJob(k,v.label)
+        if v.inCityHall.listInCityHall then
+            local toCH = {
+                ["label"] = v.label,
+                ["isManaged"] = v.inCityHall.isManaged
+            }
+            exports['qb-cityhall']:AddCityJob(k,toCH)
         end
     end
 end
@@ -222,6 +329,11 @@ RegisterServerEvent('qb-jobs:server:openTrash', function()
     }
     exports['qb-inventory']:OpenInventory("stash", PlayerJob.name..Lang:t('headings.trash')..player.PlayerData.citizenid, options, source)
     TriggerClientEvent("inventory:client:SetCurrentStash", PlayerJob.name..Lang:t('headings.trash')..player.PlayerData.citizenid)
+end)
+-- Initializes job meta data for players (especially useful when new jobs are added)
+RegisterServerEvent('qb-jobs:server:metaDataPrePop', function()
+    local src = source
+    metaDataPrePop(src)
 end)
 -- Initilizes the Vehicle Tracker for the client.
 RegisterServerEvent('qb-jobs:server:initilizeVehicleTracker', function()
@@ -451,9 +563,10 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendManagementData', function(so
     local player = QBCore.Functions.GetPlayer(src)
     if not player then return false end
     local PlayerJob = player.PlayerData.job
+    local metaJobs = {}
     local btnList = {}
     local jobsList = {}
-    local queryResult = MySQL.query.await('SELECT citizenid AS citid, job FROM players', function(result)
+    local queryResult = MySQL.query.await('SELECT citizenid AS citid, metadata FROM players', function(result)
         if next(result) then
             cb(result)
         else
@@ -462,16 +575,20 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendManagementData', function(so
     end)
     if queryResult then
         for _,v in pairs(queryResult) do
-            for _,v1 in pairs(JSON.decode(v.job)) do
-                if v1.name then
-                    if v1.name == PlayerJob.name then jobsList[v.citid] = v.job end
-                else
-                    for _,v2 in pairs(v1) do
-                        if v2.name == PlayerJob.name then jobsList[v.citid] = v.job end
+            metaJobs = json.decode(v.metadata.jobs)
+            if metaJobs then
+                for _,v1 in pairs(v.job) do
+                    if v1.name then
+                        if v1.name == PlayerJob.name then jobsList[v.citid] = v.job end
+                    else
+                        for _,v2 in pairs(v1) do
+                            if v2.name == PlayerJob.name then jobsList[v.citid] = v.job end
+                        end
                     end
                 end
             end
         end
+        QBCore.Debug("JobsList")
         QBCore.Debug(jobsList)
     end
     cb(btnList)

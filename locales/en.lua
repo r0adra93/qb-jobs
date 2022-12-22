@@ -10,6 +10,8 @@ local Translations = {
         purchasedVehicle = "Vehicle has been purchased!"
     },
     info = {
+        new_job_app = "Your application has been submitted for %{job}",
+        new_job = 'Congratulations with your new job! (%{job})',
         onoff_duty = '[E] - Set Duty Status',
         stash = 'Stash %{value}',
         store_heli = '[E] Store Helicopter',
@@ -41,6 +43,13 @@ local Translations = {
         outfit = '_Outfit',
         management = '_Management',
         garages = ' Vehicle Manager'
+    },
+    email = {
+        jobAppSender = "%{firstname} %{lastname}",
+        jobAppSub = "%{job} Application",
+        jobAppMsg = "Hello %{gender} %{lastname}<br /><br />An application is pending for %{job}.<br /><br />Please review the application with your Personal Assistant at your earliest convienance.<br /><br />Follwing Info Submitted:<br /><br />Full Name: %{firstname} %{lastname}<br />Phone: %{phone}<br />",
+        mr = 'Mr',
+        mrs = 'Mrs',
     },
     commands = {
         duty = 'Set Duty On or Off',
