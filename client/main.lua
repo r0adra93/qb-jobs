@@ -358,14 +358,25 @@ local function createDutyBlips(playerId, playerLabel, playerJob, playerLocation)
     if not Config.Jobs[playerJob].DutyBlips.enable then return end
     local ped = GetPlayerPed(playerId)
     local blip = GetBlipFromEntity(ped)
+    local pedinvehicle = IsPedInAnyVehicle(ped)
     if not DoesBlipExist(blip) and Config.Jobs[playerJob].DutyBlips then
         if NetworkIsPlayerActive(playerId) then
             blip = AddBlipForEntity(ped)
         else
             blip = AddBlipForCoord(playerLocation.x, playerLocation.y, playerLocation.z)
         end
-        SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSprite)
-        ShowHeadingIndicatorOnBlip(blip, true)
+        if Config.Jobs[playerJob].DutyBlips.dynamic then
+            if pedinvehicle then
+                SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteDynamic)
+                ShowHeadingIndicatorOnBlip(blip, false)
+            else
+                SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSprite)
+                ShowHeadingIndicatorOnBlip(blip, true)
+            end
+        else
+            SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSprite)
+            ShowHeadingIndicatorOnBlip(blip, true)
+        end
         SetBlipRotation(blip, math.ceil(playerLocation.w))
         SetBlipScale(blip, Config.Jobs[playerJob].DutyBlips.blipScale)
         SetBlipColour(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteColor)
