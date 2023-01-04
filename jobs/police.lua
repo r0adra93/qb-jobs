@@ -13,8 +13,10 @@ Config.Jobs.police = { -- name the job
     ["plate"] = "POPO", -- 4 Chars Max -- License Plate Prefix
     ["DutyBlips"] = {
         ["enable"] = true, -- Enables the Duty Blip
+        ["dynamic"] = true, -- Enables the Dynamic Blips
         ["type"] = "public", -- Service = Only for service members to view or Public for all people to view
         ["blipSprite"] = 1, -- https://docs.fivem.net/docs/game-references/blips/#blips
+        ["blipSpriteDynamic"] = 812, -- https://docs.fivem.net/docs/game-references/blips/#blips    -- Dynamic Blipe Sprite
         ["blipSpriteColor"] = 38, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
         ["blipScale"] = 1, -- Size of the Blip on the minimap
     },
