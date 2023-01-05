@@ -40,6 +40,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
     },
     ["DutyBlips"] = { -- Blips used to show player's location on map
         ["enable"] = true, -- Enables the Duty Blip
+        ["dynamic"] = true, -- Enables the Dynamic Blips
         ["type"] = "public", -- Service = Only for service members to view or Public for all people to view
         ["blipSpriteOnFoot"] = 1, -- blip sprite while in player is outside vehicle | https://docs.fivem.net/docs/game-references/blips/#blips
         ["blipSpriteInVehicle"] = 812, -- blip sprite while in player is in vehicle | https://docs.fivem.net/docs/game-references/blips/#blips
