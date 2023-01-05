@@ -358,7 +358,6 @@ local function createDutyBlips(playerId, playerLabel, playerJob, playerLocation)
     if not Config.Jobs[playerJob].DutyBlips.enable then return end
     local ped = GetPlayerPed(playerId)
     local blip = GetBlipFromEntity(ped)
-    local isPedInVehicle = IsPedInAnyVehicle(ped)
     if not DoesBlipExist(blip) and Config.Jobs[playerJob].DutyBlips then
         if NetworkIsPlayerActive(playerId) then
             blip = AddBlipForEntity(ped)
@@ -370,7 +369,7 @@ local function createDutyBlips(playerId, playerLabel, playerJob, playerLocation)
             ShowHeadingIndicatorOnBlip(blip, true)
             if isPedInVehicle then
                 SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteInVehicle)
-                ShowHeadingIndicatorOnBlip(blip, false)
+               ShowHeadingIndicatorOnBlip(blip, false)
             end
         else
             SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteOnFoot)
@@ -384,7 +383,7 @@ local function createDutyBlips(playerId, playerLabel, playerJob, playerLocation)
         AddTextComponentString(playerLabel)
         EndTextCommandSetBlipName(blip)
         if Config.Jobs[playerJob].DutyBlips.type == "service" then DutyBlips[#DutyBlips+1] = blip
-        elseif Config.Jobs[playerJob].DutyBlips.type == "public" then PublicBlips[#PublicBlips+1] = blip end
+        elseif Config.Jobs[playerJob].DutyBlips.type == "public" then publicBlips[#publicBlips+1] = blip end
     end
     if GetBlipFromEntity(PlayerPedId()) == blip then
         RemoveBlip(blip) -- removes player's blip from their map
