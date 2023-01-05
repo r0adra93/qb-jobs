@@ -358,7 +358,7 @@ local function createDutyBlips(playerId, playerLabel, playerJob, playerLocation)
     if not Config.Jobs[playerJob].DutyBlips.enable then return end
     local ped = GetPlayerPed(playerId)
     local blip = GetBlipFromEntity(ped)
-    local pedinvehicle = IsPedInAnyVehicle(ped)
+    local isPedInVehicle = IsPedInAnyVehicle(ped)
     if not DoesBlipExist(blip) and Config.Jobs[playerJob].DutyBlips then
         if NetworkIsPlayerActive(playerId) then
             blip = AddBlipForEntity(ped)
@@ -366,12 +366,11 @@ local function createDutyBlips(playerId, playerLabel, playerJob, playerLocation)
             blip = AddBlipForCoord(playerLocation.x, playerLocation.y, playerLocation.z)
         end
         if Config.Jobs[playerJob].DutyBlips.dynamic then
-            if pedinvehicle then
+            SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteOnFoot)
+            ShowHeadingIndicatorOnBlip(blip, true)
+            if isPedInVehicle then
                 SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteInVehicle)
                 ShowHeadingIndicatorOnBlip(blip, false)
-            else
-                SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteOnFoot)
-                ShowHeadingIndicatorOnBlip(blip, true)
             end
         else
             SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteOnFoot)
