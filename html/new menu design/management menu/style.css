@@ -2,26 +2,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
 /* COLOR SETTINGS */
-#mainMenuContainer header {
+h1 {
     background: #DC143C;
     color: #EFEFEF;
 }
-
-#subMenuContainer header {
+h2 {
     background: #DC143C;
     color: #EFEFEF;
 }
-
 .navButton {
     background-color:#EFEFEF;
     color: #DC143C;
 }
-
 .navButton:hover {
     background: #DC143C;
     color: #EFEFEF;
 }
-
 .navSubButton {
     background-color:#CFCFCF;
     color:#940C28;
@@ -30,112 +26,91 @@
     background: #940C28;
     color: #CFCFCF;
 }
-
-.subMenuButton {
-    background: #EFEFEF;
-    color: #171717;
-}
-
-.subMenuButton:hover {
+.pageButton {
     background: #EFEFEF;
     color: #DC143C;
 }
-
-.subMenuSubButton {
+.pageButton:hover {
+    background: #EFEFEF;
+    color: #DC143C;
+}
+.pageSubButton {
     background-color:#CFCFCF;
     color:#940C28;
 }
-
-.subMenuSubButton:hover {
+.pageSubButton:hover {
     background: #940C28;
     color: #CFCFCF;
 }
-
 .actionButton {
     background-color:#EFEFEF;
     color: #DC143C;
 }
-
 .actionButton:hover {
     background: #DC143C;
     color: #EFEFEF;
 }
-
-#closeButton{
+.close{
     background-color:#DC143C;
     color:#EFEFEF;
 }
-
-#closeButton:hover {
-    color:#171717;
+.close:hover {
+    background-color:#EFEFEF;
+    color:#DC143C;
 }
-
-#retractButton{
+.retract{
     background-color:#DC143C;
     color:#EFEFEF;
 }
-
-#retractButton:hover {
-    color:#171717;
+.retract:hover {
+    background-color:#EFEFEF;
+    color:#DC143C;
 }
-
 .subMenuCard{
     background-color:#EFEFEF;
     color:#DC143C
 }
-
 .hireable {
     background-color:#008800;
     color:#FFFFFF;
 }
-
 .blackListed {
     background-color:#000000;
     color:#EFEFEF;
 }
-
 #mainMenuContainer{
     background-color: #3D3D3D;
 }
-
 #mainMenuContent::-webkit-scrollbar-track {
     background: #171717;        /* color of the tracking area */
 }
-
 #mainMenuContent::-webkit-scrollbar-thumb {
     background-color: #DC143C;    /* color of the scroll thumb */
 }
-
 #subMenuContainer{
     background-color: #3D3D3D;
 }
-
 #subMenuContent::-webkit-scrollbar-track {
     background: #171717;        /* color of the tracking area */
 }
-
 #subMenuContent::-webkit-scrollbar-thumb {
     background-color: #DC143C;    /* color of the scroll thumb */
 }
-
 /* LAYOUT */
 body {
     overflow: hidden;
-    cursor: default;
 }
-
 #container {
 /*    display: none; */
     height: 100vh;
 }
-
 #menuContainer{
     float: left;
     width: 30vh;
     height: 100vh;
     left: 5vw;
+    cursor: pointer;
 }
-
 #mainMenuContainer{
     position: relative;
     background-position: center center;
@@ -149,58 +124,46 @@ body {
     box-shadow: 18px 0px 30px -12px rgb(0 0 0);
     z-index: 9999;
 }
-
-#mainMenuContainer header{
-    border-top-left-radius: 2vh;
-    border-top-right-radius: 2vh;
-}
-
 #mainMenuContent{
     position: relative;
-    padding-top: 1v;
+    width: 89%;
     padding-left: 1vw;
     padding-right: 1vw;
-    height: 40vh;
+    height: 33vh;
     overflow-y: auto;
 }
-
 #mainMenuContent::-webkit-scrollbar {
     width: 2vh;
 }
-
 #mainMenuContent::-webkit-scrollbar-track {
     border-radius: 20px;
     border: 3px solid #171717;
 }
-
 #mainMenuContent::-webkit-scrollbar-thumb {
     border-radius: 20px;
     border: 3px solid #171717;
 }
-
 h1{
     position: relative;
     margin:0;
+    border-top-left-radius: 2vh;
+    border-top-right-radius: 2vh;
     padding:1vh;
     text-align: center;
     font-family: 'Poppins', sans-serif;
     font-weight: 400;
-    font-size: 1.75vh;
-    border-top-left-radius: 2vh;
-    border-top-right-radius: 2vh;
+    font-size: 3vh;
 }
-
 h2{
     position: relative;
     margin: 0;
+    border-top-right-radius: 2vh;
     padding: 1vh;
     text-align: center;
     font-family: 'Poppins', sans-serif;
     font-weight: 400;
-    font-size: 1.75vh;
-    border-top-right-radius: 2vh;
+    font-size: 2vh;
 }
-
 h3{
     position: relative;
     margin: 0;
@@ -210,56 +173,55 @@ h3{
     font-weight: 400;
     font-size: 1.8vh;
 }
-
 nav {
     padding:0;
 }
-
 button {
+    /* position: relative; */
+    width: 100%;
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+    text-transform: uppercase;
+    font-size: 2vh;
+    font-weight: 400;
+    padding: 0.5vh;
     cursor: pointer;
+    border-radius: 0.5vw;
+    border-style: none;
 }
-
 button:hover{
     cursor: pointer;
 }
-
 button i {
     padding-right: 2vh;
 }
-
 #mainMenuButtons ul {
     list-style-type: none;
     padding-left:0;
     margin-left: 0.5vw;
+    /* margin-right: 0.5vw; */
     display: grid;
     gap: 0.5vh;
 }
-
-#mainMenuButtons > ul > li {
+#mainMenuButtons ul li {
     padding-left: 0;
     margin-left: 0;
     position: relative;
     display: grid;
     gap: 0.5vh;
 }
-#mainMenuButtons > ul > li > ul > li {
+#mainMenuButtons ul li ul li {
     padding-left: 0;
     margin-left: 1vh;
     position: relative;
+    transition: all 0.1s linear;
 }
-
-#subMenu {
-    margin: 1vh;
-    display: grid;
-    gap: 0.5vh;
-}
-
 #subMenuContainer{
     position: absolute;
-    height: 44vh;
     background-position: center center;
     backface-visibility: hidden;
-    width: 32vh;
+    width: 37vh;
+    height: 44vh;
     margin: 0 auto;
     top: 8.5vh;
     margin-left: -1vw;
@@ -268,84 +230,69 @@ button i {
     border-bottom-right-radius: 2vh;
     box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.226);
     z-index: 3;
-    transform: translateX(0vh);
-    transition: transform 300ms linear;
-    left: 2vh;
 }
-
-#subMenuContainer.Open{
-    transform: translateX(33vh);
-    transform: width(50vh);
-}
-
-#subMenuContainer header{
-    position: relative;
-    border-top-right-radius: 2vh;
-}
-
 #subMenuContent {
     position: relative;
     display: grid;
-    height: 37.5vh;
+    height: 34vh;
     overflow-y: auto;
     margin-left: 2v;
 }
-
 #subMenuContent::-webkit-scrollbar {
     width: 2vh;
 }
-
 #subMenuContent::-webkit-scrollbar-track {
     border-radius: 20px;
     border: 3px solid #171717;
 }
-
 #subMenuContent::-webkit-scrollbar-thumb {
     border-radius: 20px;
     border: 3px solid #171717;
 }
-
-.subMenuActionButtonContainer{
-    padding-bottom: 1vh !important;
-    border-bottom: solid 0.25vh black;
-    margin-bottom: 0.5vh !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-}
-
 #subMenu ul {
     list-style-type: none;
     padding-left: 0;
-    margin: 0;
     display: grid;
     gap: 0.5vh;
+    margin-right: 1vh;
+    margin-left: 1vh;
 }
-
 #subMenu ul li {
     border-radius: 1vh;
 }
-
 #subMenu ul li ul li {
+    transition: all 0.1s linear;
     display: grid;
     gap: 0.5vh;
 }
-
+.pageButton {
+    text-align:center;
+}
+.pageSubButton {
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+    text-transform: uppercase;
+    font-size: 2vh;
+    font-weight: 400;
+    letter-spacing: 0.05vh;
+    margin-top: 0.5vh;
+    padding: 0.5vh;
+}
 .subMenuCard {
     padding: 1vw !important;
     position: relative;
     border-radius: 1vh;
+    transition: all 0.1s linear;
     text-align: left;
     font-family: 'Poppins', sans-serif;
     text-transform: uppercase;
     font-size: 1.5vh;
     font-weight: 400;
-    margin-left: 1vh !important;
+    padding: 0.5vh;
 }
-
 .subMenuCard i {
     padding-right:2vh;
 }
-
 .subMenuCard table tr th {
     margin: 0 auto;
     padding: 1vh;
@@ -355,7 +302,6 @@ button i {
     border-top-left-radius: 1vh;
     border-top-right-radius: 1vh;
 }
-
 .subMenuCard table tr td {
     padding: .05vh;
     border: .05vh solid #636363;
@@ -363,137 +309,59 @@ button i {
     border-bottom-left-radius: 1vh;
     border-bottom-right-radius: 1vh;
 }
-
 .subMenuCardInLine {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 0.5vh;
+    grid-template-columns: 50% 50%;
+    gap: 0.5vh;
 }
-
 .subMenuCardInLine li{
     margin-left: 0;
     display:
     inline;
 }
-
-.navButton {
-    position: relative;
-    width: 100%;
-    margin:0 auto;
-    padding: 0.5vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 2vh;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-align:left;
-    border-style: none;
-    border-radius: 0.5vw;
-}
-
-.navSubButton {
-    position: relative;
-    width: 100%;
-    margin:0 auto;
-    padding: 0.5vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 2vh;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-align:left;
-    border-style: none;
-    border-radius: 0.5vw;
-}
-
-.subMenuButton {
-    position: relative;
-    width: 100%;
-    margin:0 auto;
-    padding: 0.5vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 2vh;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-align:
-    left;
-    letter-spacing: 0.05vh;
-    border-style: none;
-    border-radius: 0.5vw;
-}
-
-.subMenuSubButton {
-    position: relative;
-    width: auto;
-    padding: 0.5vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 2vh;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-align: left;
-    letter-spacing: 0.05vh;
-    border-style: none;
-    border-radius: 0.5vw;
-}
-
 .actionButton {
-    position: relative;
-    width: 100%;
-    margin: 0 auto;
-    padding: 0.5vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    text-transform: uppercase;
     text-align: left;
-    border-style: none;
+    font-family: 'Poppins', sans-serif;
+    text-transform: uppercase;
+    font-size: 1.5vh;
+    font-weight: 400;
+    cursor: pointer;
     border-radius: 0.5vw;
-}
-
-#retractButton {
-    position: relative;
-    float: right;
-    width: auto;
-    margin: 0 auto;
-    padding: 0.2vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 2vh;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-align: center;
     border-style: none;
-    border-radius: 1vh;
 }
-
-#retractButton i{
-    padding: 7px;
-    background-color: rgba(0, 0, 0, 0.25);
-    border-radius: 0.5vh;
-    width: 2vh;
-    height: 2vh;
-}
-
-#closeButton {
-    position: relative;
-    float: right;
-    width: auto;
-    margin: 0 auto;
-    padding: 0.2vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 2vh;
-    font-weight: 400;
-    text-transform: uppercase;
+.blackListed h3{
     text-align: center;
-    border-style: none;
-    border-radius: 1vh;
 }
-
-#closeButton i{
-    padding: 7px;
-    background-color: rgba(0, 0, 0, 0.25);
-    border-radius: 0.5vh;
-    width: 2vh;
-    height: 2vh;
+#close-button {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    border-bottom-left-radius: 1.25vh;
+    border-bottom-right-radius: 1.25vh;
+    text-align: center;
 }
-
+#retract-button {
+    display: block;
+    position: absolute;
+    bottom: 1vh;
+    border-bottom-right-radius: 1.25vh;
+    width: 95%;
+    left: 2.5%;
+}
+.close {
+    display: block;
+    position: absolute;
+    bottom: 0;
+    margin-left: 1vh;
+    margin-right: 1vh;
+    margin-bottom: 1vh;
+    width: 94%;
+}
+.retract{
+    display: block;
+    position: absolute;
+    bottom: 0;
+}
 #bgimage{
     position: relative;
     display: block;
@@ -501,11 +369,6 @@ button i {
     height: 20vh;
     margin: 0 auto;
 }
-
-.blackListed h3{
-    text-align: center;
-}
-
 .logo {
     background-image: url("./qb.png");
     background-size: 20vh 20vh;
@@ -515,6 +378,6 @@ button i {
 }
 
 table{
-    table-layout:fixed;
-    width: 100%;
+table-layout:fixed;
+width:100%;
 }
