@@ -405,16 +405,11 @@ local function createDutyBlips(playerId, playerLabel, playerJob, playerLocation)
         else
             blip = AddBlipForCoord(playerLocation.x, playerLocation.y, playerLocation.z)
         end
-        if Config.Jobs[playerJob].DutyBlips.dynamic then
-            SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteOnFoot)
-            ShowHeadingIndicatorOnBlip(blip, true)
-            if isPedInVehicle then
-                SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteInVehicle)
-               ShowHeadingIndicatorOnBlip(blip, false)
-            end
-        else
-            SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteOnFoot)
-            ShowHeadingIndicatorOnBlip(blip, true)
+        SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteOnFoot)
+        ShowHeadingIndicatorOnBlip(blip, true)
+        if isPedInVehicle then
+            SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteInVehicle)
+            ShowHeadingIndicatorOnBlip(blip, false)
         end
         SetBlipRotation(blip, math.ceil(playerLocation.w))
         SetBlipScale(blip, Config.Jobs[playerJob].DutyBlips.blipScale)
