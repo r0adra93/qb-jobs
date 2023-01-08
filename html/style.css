@@ -1,143 +1,307 @@
-@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
-/* COLOR SETTINGS */
-#mainMenuContainer header {
+/*
+┏━━━┓┏━━━┓┏┓━━━┏━━━┓┏━━━┓┏━━━┓
+┃┏━┓┃┃┏━┓┃┃┃━━━┃┏━┓┃┃┏━┓┃┃┏━┓┃
+┃┃━┗┛┃┃━┃┃┃┃━━━┃┃━┃┃┃┗━┛┃┃┗━━┓
+┃┃━┏┓┃┃━┃┃┃┃━┏┓┃┃━┃┃┃┏┓┏┛┗━━┓┃
+┃┗━┛┃┃┗━┛┃┃┗━┛┃┃┗━┛┃┃┃┃┗┓┃┗━┛┃
+┗━━━┛┗━━━┛┗━━━┛┗━━━┛┗┛┗━┛┗━━━┛
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
+body {
+    white-space: normal;
+}
+#container {
+    white-space: normal;
+}
+#menuContainer {
+    white-space: normal;
+}
+#mainMenuContainer {
+    background-color: #3D3D3DFF;
+}
+#mainMenuHeader {
     background: #DC143C;
     color: #EFEFEF;
 }
-
-#subMenuContainer header {
-    background: #DC143C;
-    color: #EFEFEF;
+#mainMenuHeaderH1Container {
+    white-space: normal;
 }
-
-.navButton {
-    background-color:#EFEFEF;
-    color: #DC143C;
+#mainMenuHeaderH1 {
+    white-space: normal;
 }
-
-.navButton:hover {
-    background: #DC143C;
-    color: #EFEFEF;
+#mainMenuCloseContainer {
+    background-color: #17171760;
 }
-
-.navSubButton {
-    background-color:#CFCFCF;
-    color:#940C28;
-}
-.navSubButton:hover {
-    background: #940C28;
-    color: #CFCFCF;
-}
-
-.subMenuButton {
-    background: #EFEFEF;
-    color: #171717;
-}
-
-.subMenuButton:hover {
-    background: #EFEFEF;
-    color: #DC143C;
-}
-
-.subMenuSubButton {
-    background-color:#CFCFCF;
-    color:#940C28;
-}
-
-.subMenuSubButton:hover {
-    background: #940C28;
-    color: #CFCFCF;
-}
-
-.actionButton {
-    background-color:#EFEFEF;
-    color: #DC143C;
-}
-
-.actionButton:hover {
-    background: #DC143C;
-    color: #EFEFEF;
-}
-
-#closeButton{
+#closeButton {
     background-color:#DC143C;
     color:#EFEFEF;
 }
-
 #closeButton:hover {
     color:#171717;
 }
-
-#retractButton{
+#mainMenuActionButtons {
+    white-space: normal;
+}
+.mainMenuActionButtonItem {
+    white-space: normal;
+}
+.mainMenuActionButton {
+    background-color:#EFEFEF;
+    color: #DC143C;
+}
+.mainMenuActionButton:hover {
+    background: #DC143C;
+    color: #EFEFEF;
+}
+#mainMenuContent {
+    white-space: normal;
+}
+#mainMenuContent::-webkit-scrollbar {
+    white-space: normal;
+}
+#mainMenuContent::-webkit-scrollbar-track {
+    background: #171717;        /* color of the tracking area */
+}
+#mainMenuContent::-webkit-scrollbar-thumb {
+    background-color: #DC143C;    /* color of the scroll thumb */
+}
+.mainMenuNavButtons {
+    white-space: normal;
+}
+.mainMenuNavButtonItem {
+    white-space: normal;
+}
+.mainMenuNavButton {
+    background-color:#EFEFEF;
+    color: #DC143C;
+}
+.mainMenuNavButton:hover {
+    background: #DC143C;
+    color: #EFEFEF;
+}
+.mainMenuNavSubButtons {
+    white-space: normal;
+}
+.mainMenuNavSubButtonItem {
+    white-space: normal;
+}
+.mainMenuSubNavButton {
+    background-color:#CFCFCF;
+    color:#940C28;
+}
+.mainMenuNavSubButton:hover {
+    background: #940C28;
+    color: #CFCFCF;
+}
+#mainMenuContent footer {
+    white-space: normal;
+}
+#subMenuContainer {
+    background-color: #3D3D3D3D;
+}
+#subMenuContainer.open {
+    white-space: normal;
+}
+#subMenuContainer.open header  {
+    background: #DC143C;
+    color: #EFEFEF;
+}
+#subMenuHeader {
+    white-space: normal;
+}
+#subMenuHeaderH1Container {
+    white-space: normal;
+}
+#subMenuHeaderH1 {
+    white-space: normal;
+}
+#subMenuRetractContainer {
+    background-color: #17171760;
+}
+.subMenuRetractButton {
     background-color:#DC143C;
     color:#EFEFEF;
 }
-
-#retractButton:hover {
+.subMenuRetractButton:hover {
     color:#171717;
 }
-
-.subMenuCard{
+#subMenuActionButtons {
+    white-space: normal;
+}
+.subMenuActionButtonItem {
+    white-space: normal;
+}
+.subMenuActionButton {
+    background-color:#EFEFEF;
+    color: #DC143C;
+}
+.subMenuActionButton:hover {
+    background: #DC143C;
+    color: #EFEFEF;
+}
+#subMenuContent {
+    white-space: normal;
+}
+#subMenuContent::-webkit-scrollbar {
+    white-space: normal;
+}
+#subMenuContent::-webkit-scrollbar-track {
+    background: #171717;        /* color of the tracking area */
+}
+#subMenuContent::-webkit-scrollbar-thumb {
+    background-color: #DC143C;    /* color of the scroll thumb */
+}
+.subMenuNavButtons {
+    white-space: normal;
+}
+.subMenuNavButtonItem {
+    white-space: normal;
+}
+.subMenuNavButton {
+    background: #EFEFEF;
+    color: #171717;
+}
+.subMenuNavButton:hover {
+    background: #EFEFEF;
+    color: #DC143C;
+}
+.subMenuNavSubButton {
+    background-color:#bebebe;
+    color:#940C28;
+}
+.subMenuNavSubButton:hover {
+    background: #940C28;
+    color: #CFCFCF;
+}
+#subMenuFooter {
+    white-space: normal;
+}
+#contentContainer {
+    background-color: #3d3d3d3d;
+}
+#contentContainer.open header {
+    background: #DC143C;
+    color: #EFEFEF;
+}
+#contentHeader {
+    white-space: normal;
+}
+#contentHeaderH1Container {
+    white-space: normal;
+}
+#contentHeaderH1 {
+    white-space: normal;
+}
+#contentRetractContainer {
+    background-color:#17171760;
+}
+.contentRetractButtonContainer{
+    white-space: normal;
+}
+.contentRetractButton {
+    background-color:#DC143C;
+    color:#EFEFEF;
+}
+.contentRetractButton:hover {
+    color:#171717;
+}
+#content {
+    white-space: normal;
+}
+.contentBody {
+    white-space: normal;
+}
+.contentList {
     background-color:#EFEFEF;
     color:#DC143C
 }
-
+.contentListItem {
+    white-space: normal;
+}
+.contentList i {
+    white-space: normal;
+}
+.contentCard {
+    background-color:#EFEFEF;
+    color:#DC143C
+}
+.contentCard i {
+    white-space: normal;
+}
+#content table {
+    white-space: normal;
+}
+#content table tr th {
+    white-space: normal;
+}
+#content table tr td {
+    white-space: normal;
+}
+#contentContainer footer {
+    white-space: normal;
+}
+.subMenuCardItem {
+    white-space: normal;
+}
 .hireable {
     background-color:#008800;
     color:#FFFFFF;
 }
-
 .blackListed {
     background-color:#000000;
     color:#EFEFEF;
 }
-
-#mainMenuContainer{
-    background-color: #3D3D3D;
+.blackListed h3 {
+    white-space: normal;
 }
-
-#mainMenuContent::-webkit-scrollbar-track {
-    background: #171717;        /* color of the tracking area */
+.logo {
+    white-space: normal;
 }
-
-#mainMenuContent::-webkit-scrollbar-thumb {
-    background-color: #DC143C;    /* color of the scroll thumb */
+h2 {
+    white-space: normal;
 }
-
-#subMenuContainer{
-    background-color: #3D3D3D;
+h3 {
+    white-space: normal;
 }
-
-#subMenuContent::-webkit-scrollbar-track {
-    background: #171717;        /* color of the tracking area */
+nav {
+    white-space: normal;
 }
-
-#subMenuContent::-webkit-scrollbar-thumb {
-    background-color: #DC143C;    /* color of the scroll thumb */
+button {
+    white-space: normal;
 }
-
-/* LAYOUT */
+button:hover {
+    white-space: normal;
+}
+button i {
+    white-space: normal;
+}
+/*
+┏┓━━━┏━━━┓┏┓━━┏┓┏━━━┓┏┓━┏┓┏━━━━┓
+┃┃━━━┃┏━┓┃┃┗┓┏┛┃┃┏━┓┃┃┃━┃┃┃┏┓┏┓┃
+┃┃━━━┃┃━┃┃┗┓┗┛┏┛┃┃━┃┃┃┃━┃┃┗┛┃┃┗┛
+┃┃━┏┓┃┗━┛┃━┗┓┏┛━┃┃━┃┃┃┃━┃┃━━┃┃━━
+┃┗━┛┃┃┏━┓┃━━┃┃━━┃┗━┛┃┃┗━┛┃━┏┛┗┓━
+┗━━━┛┗┛━┗┛━━┗┛━━┗━━━┛┗━━━┛━┗━━┛━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*/
 body {
     overflow: hidden;
     cursor: default;
 }
-
 #container {
-/*    display: none; */
+    display: none;
     height: 100vh;
 }
-
-#menuContainer{
-    float: left;
-    width: 30vh;
-    height: 100vh;
-    left: 5vw;
+#menuContainer {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
 }
-
-#mainMenuContainer{
-    position: relative;
+#mainMenuContainer {
+    position: absolute;
     background-position: center center;
     backface-visibility: hidden;
     width: 33.3vh;
@@ -146,331 +310,33 @@ body {
     background-size: cover;
     border-radius: 2vh;
     padding: 0vh;
-    box-shadow: 18px 0px 30px -12px rgb(0 0 0);
+    box-shadow: 18px 0px 30px -12px #000000;
     z-index: 9999;
 }
-
-#mainMenuContainer header{
-    border-top-left-radius: 2vh;
-    border-top-right-radius: 2vh;
-}
-
-#mainMenuContent{
+#mainMenuHeader {
+    display: flex;
+    align-items: center;
     position: relative;
-    padding-top: 1v;
-    padding-left: 1vw;
-    padding-right: 1vw;
-    height: 40vh;
-    overflow-y: auto;
+    border-radius: 2vh 2vh 0 0;
 }
-
-#mainMenuContent::-webkit-scrollbar {
-    width: 2vh;
-}
-
-#mainMenuContent::-webkit-scrollbar-track {
-    border-radius: 20px;
-    border: 3px solid #171717;
-}
-
-#mainMenuContent::-webkit-scrollbar-thumb {
-    border-radius: 20px;
-    border: 3px solid #171717;
-}
-
-h1{
+#mainMenuHeaderH1Container {
     position: relative;
-    margin:0;
-    padding:1vh;
+    flex: 1;
+    margin: 0;
+    padding: 1vh;
+}
+#mainMenuHeaderH1 {
     text-align: center;
     font-family: 'Poppins', sans-serif;
     font-weight: 400;
     font-size: 1.75vh;
-    border-top-left-radius: 2vh;
-    border-top-right-radius: 2vh;
 }
-
-h2{
-    position: relative;
-    margin: 0;
-    padding: 1vh;
-    text-align: center;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 400;
-    font-size: 1.75vh;
-    border-top-right-radius: 2vh;
-}
-
-h3{
-    position: relative;
-    margin: 0;
-    padding:1vh;
-    text-align: left;
-    font-family: 'Poppins', sans-serif;
-    font-weight: 400;
-    font-size: 1.8vh;
-}
-
-nav {
-    padding:0;
-}
-
-button {
-    cursor: pointer;
-}
-
-button:hover{
-    cursor: pointer;
-}
-
-button i {
-    padding-right: 2vh;
-}
-
-#mainMenuButtons ul {
-    list-style-type: none;
-    padding-left:0;
-    margin-left: 0.5vw;
-    display: grid;
-    gap: 0.5vh;
-}
-
-#mainMenuButtons > ul > li {
-    padding-left: 0;
-    margin-left: 0;
-    position: relative;
-    display: grid;
-    gap: 0.5vh;
-}
-#mainMenuButtons > ul > li > ul > li {
-    padding-left: 0;
-    margin-left: 1vh;
+#mainMenuCloseContainer {
+    border-radius: 0 2vh 0 0;
+    width: 4vh;
+    margin: 0 1vh;
     position: relative;
 }
-
-#subMenu {
-    margin: 1vh;
-    display: grid;
-    gap: 0.5vh;
-}
-
-#subMenuContainer{
-    position: absolute;
-    height: 44vh;
-    background-position: center center;
-    backface-visibility: hidden;
-    width: 32vh;
-    margin: 0 auto;
-    top: 8.5vh;
-    margin-left: -1vw;
-    background-size: cover;
-    border-top-right-radius: 2vh;
-    border-bottom-right-radius: 2vh;
-    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.226);
-    z-index: 3;
-    transform: translateX(0vh);
-    transition: transform 300ms linear;
-    left: 2vh;
-}
-
-#subMenuContainer.Open{
-    transform: translateX(33vh);
-    transform: width(50vh);
-}
-
-#subMenuContainer header{
-    position: relative;
-    border-top-right-radius: 2vh;
-}
-
-#subMenuContent {
-    position: relative;
-    display: grid;
-    height: 37.5vh;
-    overflow-y: auto;
-    margin-left: 2v;
-}
-
-#subMenuContent::-webkit-scrollbar {
-    width: 2vh;
-}
-
-#subMenuContent::-webkit-scrollbar-track {
-    border-radius: 20px;
-    border: 3px solid #171717;
-}
-
-#subMenuContent::-webkit-scrollbar-thumb {
-    border-radius: 20px;
-    border: 3px solid #171717;
-}
-
-.subMenuActionButtonContainer{
-    padding-bottom: 1vh !important;
-    border-bottom: solid 0.25vh black;
-    margin-bottom: 0.5vh !important;
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-}
-
-#subMenu ul {
-    list-style-type: none;
-    padding-left: 0;
-    margin: 0;
-    display: grid;
-    gap: 0.5vh;
-}
-
-#subMenu ul li {
-    border-radius: 1vh;
-}
-
-#subMenu ul li ul li {
-    display: grid;
-    gap: 0.5vh;
-}
-
-.subMenuCard {
-    padding: 1vw !important;
-    position: relative;
-    border-radius: 1vh;
-    text-align: left;
-    font-family: 'Poppins', sans-serif;
-    text-transform: uppercase;
-    font-size: 1.5vh;
-    font-weight: 400;
-    margin-left: 1vh !important;
-}
-
-.subMenuCard i {
-    padding-right:2vh;
-}
-
-.subMenuCard table tr th {
-    margin: 0 auto;
-    padding: 1vh;
-    border: .05vh solid #636363;
-    text-align: center;
-    background-color: #D8D8D8;
-    border-top-left-radius: 1vh;
-    border-top-right-radius: 1vh;
-}
-
-.subMenuCard table tr td {
-    padding: .05vh;
-    border: .05vh solid #636363;
-    text-align: center;
-    border-bottom-left-radius: 1vh;
-    border-bottom-right-radius: 1vh;
-}
-
-.subMenuCardInLine {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 0.5vh;
-}
-
-.subMenuCardInLine li{
-    margin-left: 0;
-    display:
-    inline;
-}
-
-.navButton {
-    position: relative;
-    width: 100%;
-    margin:0 auto;
-    padding: 0.5vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 2vh;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-align:left;
-    border-style: none;
-    border-radius: 0.5vw;
-}
-
-.navSubButton {
-    position: relative;
-    width: 100%;
-    margin:0 auto;
-    padding: 0.5vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 2vh;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-align:left;
-    border-style: none;
-    border-radius: 0.5vw;
-}
-
-.subMenuButton {
-    position: relative;
-    width: 100%;
-    margin:0 auto;
-    padding: 0.5vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 2vh;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-align:
-    left;
-    letter-spacing: 0.05vh;
-    border-style: none;
-    border-radius: 0.5vw;
-}
-
-.subMenuSubButton {
-    position: relative;
-    width: auto;
-    padding: 0.5vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 2vh;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-align: left;
-    letter-spacing: 0.05vh;
-    border-style: none;
-    border-radius: 0.5vw;
-}
-
-.actionButton {
-    position: relative;
-    width: 100%;
-    margin: 0 auto;
-    padding: 0.5vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    text-align: left;
-    border-style: none;
-    border-radius: 0.5vw;
-}
-
-#retractButton {
-    position: relative;
-    float: right;
-    width: auto;
-    margin: 0 auto;
-    padding: 0.2vh;
-    font-family: 'Poppins', sans-serif;
-    font-size: 2vh;
-    font-weight: 400;
-    text-transform: uppercase;
-    text-align: center;
-    border-style: none;
-    border-radius: 1vh;
-}
-
-#retractButton i{
-    padding: 7px;
-    background-color: rgba(0, 0, 0, 0.25);
-    border-radius: 0.5vh;
-    width: 2vh;
-    height: 2vh;
-}
-
 #closeButton {
     position: relative;
     float: right;
@@ -485,27 +351,428 @@ button i {
     border-style: none;
     border-radius: 1vh;
 }
-
-#closeButton i{
+#closeButton i {
     padding: 7px;
     background-color: rgba(0, 0, 0, 0.25);
     border-radius: 0.5vh;
     width: 2vh;
     height: 2vh;
 }
-
-#bgimage{
-    position: relative;
-    display: block;
-    width: 20vh;
-    height: 20vh;
-    margin: 0 auto;
+#mainMenuActionButtons {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap: 0.5vh;
+    margin-top:0.5vh;
+    margin-left:3vh;
 }
-
-.blackListed h3{
+.mainMenuActionButtonItem {
+    white-space: normal;
+}
+.mainMenuActionButton {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0.5vh;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-align: left;
+    border-style: none;
+    border-radius: 0.5vw;
+}
+#mainMenuContent {
+    position: relative;
+    padding-top: 1vh;
+    padding-left: 1vw;
+    padding-right: 1vw;
+    height: 42.5vh;
+    overflow-y: auto;
+}
+#mainMenuContent::-webkit-scrollbar {
+    width: 1vh;
+}
+#mainMenuContent::-webkit-scrollbar-track {
+    border-radius: 20px;
+    border: 3px solid #171717;
+}
+#mainMenuContent::-webkit-scrollbar-thumb {
+    border-radius: 20px;
+    border: 3px solid #171717;
+}
+.mainMenuNavButtons {
+    position: relative;
+    width: 100%;
+    max-height: 41.5vh;
+    display: grid;
+    gap: 0.5vh;
+}
+.mainMenuNavButtonItem {
+    white-space: normal;
+}
+.mainMenuNavButton {
+    position: relative;
+    width: 100%;
+    margin:0 auto;
+    padding: 0.5vh;
+    font-family: 'Poppins', sans-serif;
+    font-size: 2vh;
+    font-weight: 400;
+    text-transform: uppercase;
+    text-align:left;
+    border-style: none;
+    border-radius: 0.5vw;
+}
+.mainMenuNavSubButtons {
+    display: none;
+    margin-top:0.5vh;
+    margin-left:3vh;
+    gap: 0.5vh
+}
+.mainMenuNavSubButtonItem {
+    white-space: normal;
+}
+.mainMenuNavSubButton {
+    position: relative;
+    width: 100%;
+    margin:0 auto;
+    padding: 0.5vh;
+    font-family: 'Poppins', sans-serif;
+    font-size: 2vh;
+    font-weight: 400;
+    text-transform: uppercase;
+    text-align:left;
+    border-style: none;
+    border-radius: 0.5vw;
+}
+#mainMenuContent footer {
+    white-space: normal;
+}
+#subMenuContainer {
+    position: absolute;
+    border-radius: 0vh 2vh 2vh 0vh;
+    transition: transform 300ms linear;
+    height: 44vh;
+    background-position: center center;
+    backface-visibility: hidden;
+    width: 32vh;
+    margin: 0 auto;
+    top: 6.5vh;
+    background-size: cover;
+    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.226);
+    z-index: 3;
+    transform: translateX(0vh);
+    transition: transform 300ms linear;
+    left: 2vh;
+}
+#subMenuContainer.open {
+    transform: translateX(33vh);
+}
+#subMenuHeader {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    position: relative;
+    border-radius: 0 2vh 0 0;
+}
+#subMenuHeaderH1Container {
+    position: relative;
+    flex: 1;
+    margin: 0;
+    padding: 1vh;
+}
+#subMenuHeaderH1 {
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 1.75vh;
+}
+#subMenuRetractContainer {
+    border-radius: 0 2vh 0 0;
+    height: 100%;
+    width: 4vh;
+    margin: 0 1vh;
+    position: relative;
+}
+.subMenuRetractButton {
+    position: relative;
+    float: right;
+    width: auto;
+    margin: 0 auto;
+    padding: 0.2vh;
+    font-family: 'Poppins', sans-serif;
+    font-size: 2vh;
+    font-weight: 400;
+    text-transform: uppercase;
+    text-align: center;
+    border-style: none;
+    border-radius: 1vh;
+}
+.subMenuRetractButton i {
+    padding: 7px;
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 0.5vh;
+    width: 2vh;
+    height: 2vh;
+}
+#subMenuActionButtons {
+    position: relative;
+    margin-top:0.5vh;
+    margin-left:3vh;
+    margin: 0.5vh 0vh 0vh 3vh;
+    display: grid;
+    grid-template-columns:1fr 1fr;
+    gap: 0.5vh
+}
+.subMenuActionButtonItem {
+    white-space: normal;
+}
+.subMenuActionButton {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0.5vh;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-align: left;
+    border-style: none;
+    border-radius: 0.5vw;
+}
+#subMenuContent {
+    position: relative;
+    display: grid;
+    height: 28.5vh;
+    margin: 0.5vh;
+    overflow-y: auto;
+}
+#subMenuContent::-webkit-scrollbar {
+    width: 1vh;
+}
+#subMenuContent::-webkit-scrollbar-track {
+    border-radius: 20px;
+    border: 3px solid #171717;
+}
+#subMenuContent::-webkit-scrollbar-thumb {
+    border-radius: 20px;
+    border: 3px solid #171717;
+}
+.subMenuNavButtons {
+    position: relative;
+    width: 100%;
+}
+.subMenuNavButtonItem {
+    white-space: normal;
+}
+.subMenuNavButton {
+    position: relative;
+    width: 100%;
+    margin:0 auto;
+    padding: 0.5vh;
+    font-family: 'Poppins', sans-serif;
+    font-size: 2vh;
+    font-weight: 400;
+    text-transform: uppercase;
+    text-align:left;
+    border-style: none;
+    border-radius: 0.5vw;
+}
+.subMenuNavSubButtons {
+    display: none;
+    margin-top:0.5vh;
+    margin-left:3vh;
+    gap: 0.5vh
+}
+.subMenuNavSubButtonItem {
+    white-space: normal;
+}
+.subMenuNavSubButton {
+    position: relative;
+    width: 100%;
+    margin:0 auto;
+    padding: 0.5vh;
+    font-family: 'Poppins', sans-serif;
+    font-size: 2vh;
+    font-weight: 400;
+    text-transform: uppercase;
+    text-align:left;
+    border-style: none;
+    border-radius: 0.5vw;
+}
+#subMenuFooter {
+    white-space: normal;
+}
+#contentContainer {
+    position: absolute;
+    border-radius: 0vh 2vh 2vh 0vh;
+    transition: transform 300ms linear;
+    margin-top: 8vh;
+    height: 44vh;
+    background-position: center center;
+    backface-visibility: hidden;
+    width: 32vh;
+    margin: 0 auto;
+    top: 6.5vh;
+    background-size: cover;
+    box-shadow: 0px 0px 2px 2px rgba(0, 0, 0, 0.226);
+    z-index: 2;
+    transform: translateX(0vh);
+    transition: transform 300ms linear;
+    left: 2vh;
+}
+#contentContainer.open {
+    transform: translateX(66vh);
+}
+#contentHeader {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    position: relative;
+    border-radius: 0 2vh 0 0;
+}
+#contentHeaderH1Container {
+    position: relative;
+    flex: 1;
+    margin: 0;
+    padding: 1vh;
+}
+#contentHeaderH1 {
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 1.75vh;
+}
+#contentRetractContainer {
+    border-radius: 0 2vh 0 0;
+    height: 100%;
+    width: 4vh;
+    margin: 0 1vh;
+    position: relative;
+}
+.contentRetractButtonContainer {
+    position: relative;
+    width: auto;
+    margin: 0 auto;
+    height: 100%;
+}
+.contentRetractButton {
+    padding: 0.2vh;
+    font-family: 'Poppins', sans-serif;
+    font-size: 2vh;
+    font-weight: 400;
+    text-transform: uppercase;
+    text-align: center;
+    border-style: none;
+    border-radius: 1vh;
+}
+.contentRetractButton i {
+    padding: 7px;
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 0.5vh;
+    width: 2vh;
+    height: 2vh;
+}
+#contentActionButtons {
+    position: relative;
+    margin-top:0.5vh;
+    margin-left:3vh;
+    display: grid;
+    grid-template-columns:1fr 1fr;
+    gap: 0.5vh
+}
+.contentActionButtonItem {
+    height: 0vh
+}
+.contentActionButton {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0.5vh;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    text-align: left;
+    border-style: none;
+    border-radius: 0.5vw;
+}
+#content {
+    position: relative;
+    display: grid;
+    height: 28.5vh;
+    margin: 0.5vh;
+    overflow-y: auto;
+}
+#content::-webkit-scrollbar {
+    width: 1vh;
+}
+#content::-webkit-scrollbar-track {
+    border-radius: 20px;
+    border: 3px solid #171717;
+}
+#content::-webkit-scrollbar-thumb {
+    border-radius: 20px;
+    border: 3px solid #171717;
+}
+.contentNavButtons {
+    display:grid;
+    gap: 0.5vh;
+}
+.contentNavButtonItem {
+    white-space: normal;
+}
+.contentNavButton {
+    position: relative;
+    width: 100%;
+    margin:0 auto;
+    padding: 0.5vh;
+    font-family: 'Poppins', sans-serif;
+    font-size: 2vh;
+    font-weight: 400;
+    text-transform: uppercase;
+    text-align:
+    left;
+    letter-spacing: 0.05vh;
+    border-style: none;
+    border-radius: 0.5vw;
+}
+.contentNavSubButton {
+    position: relative;
+    width: auto;
+    padding: 0.5vh;
+    font-family: 'Poppins', sans-serif;
+    font-size: 2vh;
+    font-weight: 400;
+    text-transform: uppercase;
+    text-align: left;
+    letter-spacing: 0.05vh;
+    border-style: none;
+    border-radius: 0.5vw;
+}
+#contentFooter {
+    white-space: normal;
+}
+.contentCard {
+    padding: 1vw !important;
+    position: relative;
+    border-radius: 1vh;
+    text-align: left;
+    font-family: 'Poppins', sans-serif;
+    text-transform: uppercase;
+    font-size: 1.5vh;
+    font-weight: 400;
+    margin-left: 1vh !important;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 0.5vh;
+}
+.contentCard i {
+    padding-right:2vh;
+}
+.blackListed h3 {
     text-align: center;
 }
-
 .logo {
     background-image: url("./qb.png");
     background-size: 20vh 20vh;
@@ -513,8 +780,15 @@ button i {
     background-position-y: bottom;
     background-position-x: center;
 }
-
-table{
-    table-layout:fixed;
-    width: 100%;
+nav {
+    padding:0;
+}
+button {
+    cursor: pointer;
+}
+button:hover {
+    cursor: pointer;
+}
+button i {
+    padding-right: 2vh;
 }

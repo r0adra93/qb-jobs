@@ -15,8 +15,8 @@ local onDuty = false
 local blipList = {}
 --- list of location polys
 local polyLocList = {}
---- checks if player is in vehicle
-local isPedInVehicle = IsPedInAnyVehicle(ped)
+--- list of Jobs key = job name | value = job label
+local jobsList = {}
 -- Functions
 --- sets the player's player and playerJob tables
 local function setCurrentJob()
@@ -34,6 +34,12 @@ local function setCurrentJob()
     end
 end
 exports('CurrentJob',CurrentJob)
+--- sets the jobsList
+local function buildJobsList()
+    for k,v in pairs(Config.Jobs) do
+        jobsList[k] = v.label
+    end
+end
 --- deletes spawned vehicles and refunds deposits
 local function deleteVehicleProcess(plate)
     local data = {};
@@ -75,10 +81,12 @@ local function processButtonList(res)
     mgrBtnList = {
         ["header"] = Config.Jobs[playerJob.name].label .. Lang:t('headings.management'),
         ["currentJob"] = playerJob.name,
+        ["currentJobName"] = Config.Jobs[playerJob.name].label,
         ["icons"] = Config.Jobs[playerJob.name].management.icons,
         ["status"] = Config.Jobs[playerJob.name].management.status,
         ["awards"] = Config.Jobs[playerJob.name].management.awards,
-        ["writeUps"] = Config.Jobs[playerJob.name].management.writeUps,
+        ["reprimands"] = Config.Jobs[playerJob.name].management.reprimands,
+        ["jobsList"] = jobsList
     }
     if Config.Jobs[playerJob.name].uiColors then mgrBtnList.uiColors = Config.Jobs[playerJob.name].uiColors end
     for k,v in pairs(res) do
@@ -89,7 +97,7 @@ end
 local function receiveManagementData(data)
     QBCore.Functions.TriggerCallback('qb-jobs:server:sendManagementData',function(res)
         processButtonList(res)
-        QBCore.Debug(json.encode(mgrBtnList)) -- this is to obtain the json object for testing UI.
+--        QBCore.Debug(json.encode(mgrBtnList)) -- this is to obtain the json object for testing UI.
         SendNUIMessage({
             action = "management",
             btnList = mgrBtnList
@@ -137,9 +145,9 @@ local function takeOutVehicle(result)
         end
         local coords
         local data = {
-            ["garage"] = result[1],
-            ["vehicle"] = result[2],
-            ["selGar"] = result[3]
+            ["garage"] = result[garage],
+            ["vehicle"] = result[vehicle],
+            ["selGar"] = result[selGar]
         }
         local cbData = { ["selGar"] = data.selGar }
         if result[4] then cbData["plate"] = result[4] end
@@ -407,7 +415,7 @@ local function createDutyBlips(playerId, playerLabel, playerJob, playerLocation)
         end
         SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteOnFoot)
         ShowHeadingIndicatorOnBlip(blip, true)
-        if isPedInVehicle then
+        if IsPedInAnyVehicle(ped) then
             SetBlipSprite(blip, Config.Jobs[playerJob].DutyBlips.blipSpriteInVehicle)
             ShowHeadingIndicatorOnBlip(blip, false)
         end
@@ -477,6 +485,7 @@ local function kickOff()
         end
         setCustomsLocations()
         onDuty = playerJob.onduty
+        buildJobsList()
         TriggerServerEvent('qb-jobs:server:initilizeVehicleTracker')
     end)
 end
@@ -557,8 +566,10 @@ RegisterNetEvent('qb-jobs:client:updateBlips', function(dutyPlayers, publicPlaye
 end)
 -- NUI Callbacks
 --- closes the menu
-RegisterNUICallback('closeMenu', function()
+RegisterNUICallback('closeMenu', function(data,cb)
+    data = true
     SetNuiFocus(false,false)
+    cb(data)
 end)
 --- begins the process to spawn the selected vehicle
 RegisterNUICallback('selectedVehicle', function(data,cb)
@@ -574,9 +585,8 @@ end)
 RegisterNUICallback('managementSubMenuActions', function(res,cb)
     local data = {}
     QBCore.Functions.TriggerCallback('qb-jobs:server:processManagementSubMenuActions',function(res1)
-        processButtonList(res1.btnList)
+        processButtonList(res1)
         data.btnList = mgrBtnList
-        --QBCore.Debug(res1)
         cb(data)
     end,res)
 end)

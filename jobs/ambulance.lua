@@ -1,4 +1,3 @@
-local QBCore = exports['qb-core']:GetCoreObject()
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
     ["jobBosses"] = { -- Citizen IDs of the Bosses of this Job
@@ -916,6 +915,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         }
     },
     ["management"] = {
+        ["hideUnWorkedJobs"] = true, -- true = does not display unworked jobs | false = displays unworked jobs.
         ["status"] = {
             ["pending"] = "Pending", -- this is the pending status
             ["hired"] = "Hired", -- this is the hired status
@@ -962,7 +962,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["description"] = "Awarded for being wounded on the mean streets of San Andreas."
             }
         },
-        ["writeUps"] = {
+        ["reprimands"] = {
             {
                 ["title"] = "Malpractice",
                 ["description"] = "Making a mistake while treating a patient"

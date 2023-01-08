@@ -13,31 +13,32 @@
         <main id="container">
             <section id="menuContainer" class="draggable">
                 <section id="mainMenuContainer">
-                    <header>
-                        <h1 id="mainMenuHeader"></h1>
+                    <header id="mainMenuHeader">
+                            <div id="mainMenuHeaderH1Container"><h1 id="mainMenuHeaderH1"></h1></div>
+                            <div id="mainMenuCloseContainer"></div>
                     </header>
-                    <section id="mainMenuContent">
-                        <nav id="mainMenuButtons">
-                            <div id="mainMenuButtonsDom"></div>
-                            <div id="mainMenuButtonsSub"></div>
-                        </nav>
-                    </section>
-                    <footer></footer>
+                    <nav id="mainMenuActionButtons"></nav>
+                    <section id="mainMenuContent"></section>
+                    <footer id="mainMenuFooter"></footer>
                 </section>
                 <section id="subMenuContainer">
-                    <header>
-                        <h2 id="subMenuHeader"></h2>
+                    <header id="subMenuHeader">
+                        <div id="subMenuHeaderH1Container"><h1 id="subMenuHeaderH1"></h1></div>
+                        <div id="subMenuRetractContainer"></div>
                     </header>
-                    <section id="subMenuContent">
-                        <div id="subMenuActionButtons"></div>
-                        <nav id="subMenuButtons">
-                            <div id="subMenuButtonsDom"></div>
-                            <div id="subMenuButtonsSub"></div>
-                        </nav>
-                    </section>
-                    <footer></footer>
+                    <nav id="subMenuActionButtons"></nav>
+                    <section id="subMenuContent"></section>
+                    <footer id="subMenuFooter"></footer>
                 </section>
-                <section id="contentContainer"></section>
+                <section id="contentContainer">
+                    <header id="contentHeader">
+                        <div id="contentHeaderH1Container"><h1 id="contentHeaderH1"></h1></div>
+                        <div id="contentRetractContainer"></div>
+                    </header>
+                    <nav id="contentActionButtons"></nav>
+                    <div id="content"></div>
+                    <footer id="contentFooter"></footer>
+                </section>
             </section>
         </main>
     </body>
