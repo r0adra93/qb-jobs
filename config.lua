@@ -1,8 +1,10 @@
 Config = {}
 Config.UseTarget = GetConvar('UseTarget', 'false') == 'true'
 Config.Jobs = {}
-Config.qbjobs = {}
-Config.qbjobs.duty = true -- true = all players can use /duty | false = only admins can use /duty
-Config.qbjobs.DebugPoly = false -- true = shows polyZone Aeas | false = hides polyZone areas
-Config.qbjobs.fuel = "LegacyFuel"
-Config.qbjobs.keys = "qb-vehiclekeys:server:AcquireVehicleKeys"
+Config.qbjobs = {
+    ["duty"] = true, -- true = all players can use /duty | false = only admins can use /duty
+    ["DebugPoly"] = false, -- true = shows polyZone Aeas | false = hides polyZone areas
+    ["fuel"] = "LegacyFuel",
+    ["keys"] = "qb-vehiclekeys:server:AcquireVehicleKeys",
+    ["hideUnWorkedJobs"] = true -- true = does not display unworked jobs | false = displays unworked jobs.
+}

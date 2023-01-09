@@ -4,7 +4,10 @@ local QBCore = exports['qb-core']:GetCoreObject()
 --- NUI Vehicle Button List Table
 local vehBtnList = {}
 --- NUI Boss Menu Button List Table
-local mgrBtnList = {}
+local mgrBtnList = {
+    ["players"] = {},
+    ["jobs"] = {}
+}
 --- Counts Number of Vehicles a given Job has assigned.
 local vehCount = {}
 --- Tracks all vehicles spawned by players
@@ -15,6 +18,15 @@ local vehTrack = {}
 exports['qb-core']:AddJobs(Config.Jobs)
 -- Functions
 --- Populates the server side QBCore.Shared.Jobs table
+local function errorHandler(error)
+    for _,v in pairs(error) do
+        if v.notify then TriggerClientEvent('QBCore:Notify', v.src, v.msg, v.type) end
+        if v.log then TriggerEvent('qb-log:server:CreateLog', v.resource, v.subject, v.color, v.msg) end
+        if v.console then print(color.bg.red, color.fg.white, string.format("%s %s %s - %s", v.resource, v.msg)) end
+        if v.kick then DropPlayer(src, Lang:t("admin.kick%s",v.pmsg)) end
+        if v.ban then exports["qb-adminmenu"]:BanPlayer(v.src) end
+    end
+end
 local function populateJobs(src)
     CreateThread(function()
         exports['qb-core']:AddJobs(Config.Jobs)
@@ -29,8 +41,8 @@ local function setUnderlingStatus(res)
     local data = {
         ["isOnline"] = false
     }
-    if not res.citid or mgrBtnList[res.citid].source then
-        if mgrBtnList[res.citid] and mgrBtnList[res.citid].source then res.src = mgrBtnList[res.citid].source end
+    if not res.citid or mgrBtnList.players[res.citid].source then
+        if mgrBtnList.players[res.citid] and mgrBtnList.players[res.citid].source then res.src = mgrBtnList.players[res.citid].source end
         data.player = QBCore.Functions.GetPlayer(res.src)
         data.isOnline = true
     else
@@ -44,7 +56,7 @@ end
 local function setJob(res)
     local data = setUnderlingStatus(res)
     local player = data.player
-    local job, grade, queryResult
+    local job, grade, queryResult, rtnError
     local pD = {
         ["job"] = {},
         ["citid"] = res.citid
@@ -63,7 +75,7 @@ local function setJob(res)
         pD.job.grade.name = jobGrade.name
         pD.job.grade.level = tostring(grade)
         pD.job.payment = jobGrade.payment
-        pD.metadata = mgrBtnList[pD.citid].metadata
+        pD.metadata = mgrBtnList.players[pD.citid].metadata
         if not pD.metadata.jobs then pD.metadata.jobs = {} end
         pD.metadata.jobs[job] = {}
         if job ~= "unemployed" then
@@ -78,9 +90,16 @@ local function setJob(res)
                 cb(nil)
             end
         end)
-        if queryResult then TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'JobHistory Update Success', 'green', string.format('%s job history was successfully updated!', pD.citid))
-        else TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'JobHistory Update Failed', 'red', string.format('%s job history was not updated!', pD.citid)) end
+        if queryResult then
+            TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'JobHistory Update Success', 'green', string.format('%s job history was successfully updated!', pD.citid))
+            return rtnError
+        else
+            TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'JobHistory Update Failed', 'red', string.format('%s job history was not updated!', pD.citid))
+            rtnError = "Data did not Save"
+            return rtnError
+        end
     end
+    return rtnError
 end
 --- Prepares data for the buildJobHistory function for the current player
 local function processJobHistory(jhData)
@@ -207,8 +226,8 @@ local function processJobHistory(jhData)
             player.Functions.SetMetaData("jobhistory", jobHistory)
             QBCore.Player.Save(jhData.src)
         else
-            if jhData.citid and mgrBtnList[jhData.citid] then mgrBtnList[jhData.citid].metadata.jobhistory = jobHistory end
-            queryResult = MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?',{json.encode(mgrBtnList[jhData.citid].metadata),jhData.citid}, function(result)
+            if jhData.citid and mgrBtnList.players[jhData.citid] then mgrBtnList.players[jhData.citid].metadata.jobhistory = jobHistory end
+            queryResult = MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?',{json.encode(mgrBtnList.players[jhData.citid].metadata),jhData.citid}, function(result)
                 if next(result) then
                     cb(result)
                 else
@@ -295,30 +314,56 @@ local function sendEmail(mail)
         exports["qb-phone"]:sendNewMailToOffline(mail.recCitID, mailData)
     end)
 end
---- Hires the Job Applicant
-local function hireApplicant(res)
-    local data = {}
-    player.Functions.SetJob(res.job, jobData.newGrade)
-    return data
-end
 --- Submits Job Applications
 local function submitApplication(res)
     local player = QBCore.Functions.GetPlayer(res.src)
-    if not player then return false end
+    local playerJob = player.PlayerData.job
+    local mgrData = {
+        ["citid"] = {},
+        ["job"] = {},
+        ["jobName"] = {}
+    }
+    local data = {
+        ["error"] = {},
+    }
+    local ercnt = 0
+    if not mgrBtn.players[citid] then
+        data.error[ercnt] = {
+            ["subject"] = "Exploit Attempt: submitApplication",
+            ["msg"] = string.format("%s attempted to exploit the fire feature", player.PlayerData.license),
+            ["color"] = "red",
+            ["resource"] = "qb-jobs",
+            ["log"] = true,
+            ["console"] = true
+        }
+        ercnt += 1
+    end
+    if res.citid ~= player.PlayerData.citizenid then
+        local manager = player
+        mgrData.citid = manager.PlayerData.citizenid
+        mgrData.job = manager.PlayerData.job
+        mgrData.jobName = manager.PlayerData.job.name
+        player = {
+            PlayerData = {
+                ["job"] = mgrBtnList.players[res.citid].jobs[mgrData.job.name],
+                ["metadata"] = mgrBtnList.players[res.citid].metadata,
+                ["charinfo"] = mgrBtnList.players[res.citid].charinfo
+            }
+        }
+    end
     local jobData = {
         ["newJob"] = res.job:lower(),
         ["newGrade"] = 0,
         ["newJobGrade"] = "No Grades",
         ["newJobHistory"] = nil,
-        ["currentJob"] = player.PlayerData.job.name:lower(),
-        ["currentGrade"] = tonumber(player.PlayerData.job.grade.level),
-        ["currentJobGrade"] = player.PlayerData.job.grade.name,
+        ["currentJob"] = playerJob.name:lower(),
+        ["currentGrade"] = tonumber(playerJob.grade.level),
+        ["currentJobGrade"] = playerJob.grade.name,
     }
     if player.PlayerData.metadata.jobhistory[jobData.newJob] then jobData.newJobHistory = player.PlayerData.metadata.jobhistory[jobData.newJob] end
     local citid = player.PlayerData.citizenid
     local charInfo = player.PlayerData.charinfo
     local jobInfo = Config.Jobs[res.job]
-    local data = {}
     local gender = Lang:t('email.mr')
     if charInfo.gender == 1 then
         gender = Lang:t('email.mrs')
@@ -351,17 +396,38 @@ local function submitApplication(res)
     }
     if player.PlayerData.metadata.jobs[jobData.newJob] then
         TriggerClientEvent('QBCore:Notify', res.src, "Already Employed")
-        return false
+        data.error[ercnt] = {
+            ["subject"] = "Already Employed",
+            ["msg"] = string.format("%s %s is already employed", player.PlayerData.charinfo.firstname, player.PlayerData.charinfo.firstname),
+            ["color"] = "green",
+            ["resource"] = "qb-jobs",
+            ["log"] = true
+        }
+        ercnt += 1
     end
     if jobData.newJobHistory and jobData.newJobHistory.status and jobData.newJobHistory.status == "pending" then
         TriggerClientEvent('QBCore:Notify', res.src, "Application Pending")
-        return false
+        data.error[ercnt] = {
+            ["subject"] = "Already Applied",
+            ["msg"] = string.format("%s %s is already applied", player.PlayerData.charinfo.firstname, player.PlayerData.charinfo.firstname),
+            ["color"] = "green",
+            ["resource"] = "qb-jobs",
+            ["log"] = true
+        }
+        ercnt += 1
     end
     if jobData.newJobHistory and not jobData.newJobHistory.rehireable then
         TriggerClientEvent('QBCore:Notify', res.src, "Application Refused")
-        return false
+        data.error[ercnt] = {
+            ["subject"] = "Application Refused",
+            ["msg"] = string.format("%s %s is blackListed", player.PlayerData.charinfo.firstname, player.PlayerData.charinfo.firstname),
+            ["color"] = "green",
+            ["resource"] = "qb-jobs",
+            ["log"] = true
+        }
+        ercnt += 1
     end
-    if jobInfo then
+    if not next(data.error) and jobInfo then
         if res.grade then jobData.newGrade = res.grade end
         if tonumber(jobData.newGrade) ~= 0 then jobData.newJobGrade = jobInfo.grades[jobData.newGrade].name end
         if res.quit or res.fired then
@@ -370,18 +436,31 @@ local function submitApplication(res)
                 cjhData.details[cjhData.index.details] = "Quit their job."
                 cjhData.quitcount += 1
                 cjhData.index.details += 1
+                data.msg = "You quit From " .. jobData.currentJob
             elseif res.fired then
-                cjhData.status = "fired"
-                cjhData.details[cjhData.index.details] = "Fired from their job."
-                cjhData.quitcount += 1
-                cjhData.index.details += 1
+                if mgrData.citid then
+                    cjhData.status = "fired"
+                    cjhData.details[cjhData.index.details] = "Fired from their job."
+                    cjhData.quitcount += 1
+                    cjhData.index.details += 1
+                    data.msg = "Terminated From " .. jobData.currentJob
+                else
+                    data.error[ercnt] = {
+                        ["subject"] = "Exploit Attempt: submitApplication",
+                        ["msg"] = string.format("%s attempted to exploit the fire feature", player.PlayerData.license),
+                        ["color"] = "red",
+                        ["resource"] = "qb-jobs",
+                        ["log"] = true,
+                        ["console"] = true
+                    }
+                end
             end
             jobData.newJob = "unemployed"
             jobData.newGrade = 0
         elseif jobData.newJob == jobData.currentJob or player.PlayerData.metadata.jobs[jobData.newJob] then
-            if jobInfo.jobBosses then -- this if statement prevents unmanaged jobs from filling up the metadata.
-                if tonumber(jobData.newGrade) > tonumber(jobData.currentGrade) then jhData.details[jhData.index.details] = "promotion from " .. jobData.currentJobGrade .. " to " .. jobData.newJobGrade
-                elseif tonumber(jobData.newGrade) < tonumber(jobData.currentGrade) then jhData.details[jhData.index.details] = "demotion from " .. jobData.currentJobGrade .. " to " .. jobData.newJobGrade
+            if mgrData.citid then -- this if statement prevents unmanaged jobs from filling up the metadata.
+                if tonumber(jobData.newGrade) > tonumber(jobData.currentGrade) then jhData.details[jhData.index.details] = string.format("promotion from %s to %s",jobData.currentJobGrade, jobData.newJobGrade)
+                elseif tonumber(jobData.newGrade) < tonumber(jobData.currentGrade) then jhData.details[jhData.index.details] = string.format("demotion from %s to %s", jobData.currentJobGrade, jobData.newJobGrade)
                 else jhData.details[jhData.index.details] = "Position remained the same" end
                 jhData.index.details += 1
                 jhData.gradechange += 1
@@ -389,20 +468,26 @@ local function submitApplication(res)
             end
         elseif not jobInfo.jobBosses and not player.PlayerData.metadata.jobs[jobData.newJob] then
             jhData.details[jhData.index.details] = "was hired by " .. jobData.newJob
+            jhData.index.details += 1
             jhData.hiredcount += 1
             jhData.status = "hired"
-        elseif jobInfo.jobBosses and not jobInfo.jobBosses[citid] then
+        elseif res.resub or jobInfo.jobBosses and not jobInfo.jobBosses.players[citid] then
             jhData.applycount += 1
             jhData.status = "pending"
-            msg = Lang:t('info.new_job_app', {job = jobInfo.label})
-            data.citid = citid
-            data.sender = Lang:t('email.jobAppSender', {firstname = charInfo.firstname, lastname = charInfo.lastname})
-            data.subject = Lang:t('email.jobAppSub', {lastname = charInfo.lastname, job = res.job})
-            data.message = Lang:t('email.jobAppMsg', {gender = gender, lastname = charInfo.lastname, job = res.job, firstname = charInfo.firstname, phone = charInfo.phone})
-            TriggerClientEvent('QBCore:Notify', res.src, msg)
-            for k in pairs(jobInfo.jobBosses) do
-                data.recCitID = k
-                sendEmail(data)
+            if res.resub then
+                jhData.details[jhData.index.details] = res.resub
+                jhData.index.details += 1
+            else
+                msg = Lang:t('info.new_job_app', {job = jobInfo.label})
+                data.citid = citid
+                data.sender = Lang:t('email.jobAppSender', {firstname = charInfo.firstname, lastname = charInfo.lastname})
+                data.subject = Lang:t('email.jobAppSub', {lastname = charInfo.lastname, job = res.job})
+                data.message = Lang:t('email.jobAppMsg', {gender = gender, lastname = charInfo.lastname, job = res.job, firstname = charInfo.firstname, phone = charInfo.phone})
+                TriggerClientEvent('QBCore:Notify', res.src, msg)
+                for k in pairs(jobInfo.jobBosses) do
+                    data.recCitID = k
+                    sendEmail(data)
+                end
             end
         elseif not jobInfo.jobBosses or jobInfo.jobBosses[citid] then
             if jobInfo.jobBosses then
@@ -413,32 +498,28 @@ local function submitApplication(res)
                 jobData.newGrade = tostring(jobData.newGrade)
                 jobData.newJobGrade = jobInfo.grades[jobData.newGrade].name
             end
-            data.job = res.job
-            data.grade = jobData.newGrade
-            data.src = res.src
-            data = hireApplicant(data)
-            if not data.error then
-                jhData.status = "hired"
-                jhData.hiredcount += 1
-                jhData.grades[jhData.index.grades] = jobData.newJobGrade
-                jhData.index.grades += 1
-                jhData.details[jhData.index.details] = "Hired on as " .. jobData.newGrade
-                jhData.index.details += 1
-                TriggerClientEvent('QBCore:Notify', res.src, "Hired onto " .. jobData.newJob .. " as " .. jobData.newJobGrade)
-            else
-                TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'SQL Error', 'red', string.format(data.error))
-                print(color.bg.red .. color.fg.white .. data.error)
-                return false
-            end
         else
-            TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'Exploit Attempt: Boss Menu', 'red', string.format(player.PlayerData.citizenid .. " Possible Exploit Attempted from function qb-jobs:submitApplication"))
-            print(color.bg.red .. color.fg.white .. "Possible Exploit Attempted from function qb-jobs:submitApplication")
-            return false
+            data.error[ercnt] = {
+                ["subject"] = "Exploit Attempt: Boss Menu!",
+                ["msg"] = string.format("%s attempted to exploit the Boss Menu", player.PlayerData.license),
+                ["color"] = "red",
+                ["resource"] = "qb-jobs",
+                ["log"] = true,
+                ["console"] = true
+            }
         end
+    end
+    if not next(data.error) and jobData.newJob and jobData.newGrade and data.citid then
+        data.job = jobData.newJob
+        data.grade = jobData.newGrade
+        data.citid = citid
+        TriggerClientEvent('QBCore:Notify', res.src, data.msg)
+        setJob(data)
         processJobHistory(jhData)
         processJobHistory(cjhData)
         return true
     end
+    errorHandler(data.error[ercnt])
     return false
 end
 exports("submitApplication",submitApplication)
@@ -494,25 +575,32 @@ local function buildManagementData(src)
             cb(nil)
         end
     end)
+    mgrBtnList = nil
+    mgrBtnList = {
+        ["players"] = {},
+        ["jobs"] = {}
+    }
     for _,v in pairs(players) do
         plist[v.PlayerData.citizenid] = {
             ["metadata"] = v.PlayerData.metadata,
             ["charinfo"] = v.PlayerData.charinfo,
-            ["source"] = v.PlayerData.source
+            ["source"] = v.PlayerData.source,
+            ["license"] = v.PlayerData.license
         }
     end
     if queryResult then
         for _,v in pairs(queryResult) do
-            mgrBtnList[v.citid] = {}
+            mgrBtnList.players[v.citid] = {}
             if plist[v.citid] then
                 v.metadata = plist[v.citid].metadata
                 v.charinfo = plist[v.citid].charinfo
-                mgrBtnList[v.citid].source = plist[v.citid].source
+                v.source = plist[v.citid].source
+                v.license = plist[v.citid].license
             else
                 v.metadata = json.decode(v.metadata)
                 v.charinfo = json.decode(v.charinfo)
             end
-            if Config.Jobs[playerJob.name].management.hideUnWorkedJobs then
+            if Config.hideUnWorkedJobs then
                 jhList = nil
                 jhList = {}
                 for k1,v1 in pairs(v.metadata.jobhistory) do
@@ -521,7 +609,9 @@ local function buildManagementData(src)
                 v.metadata.jobhistory = nil
                 v.metadata.jobhistory = jhList
             end
-            mgrBtnList[v.citid].metadata = v.metadata
+            mgrBtnList.players[v.citid].metadata = v.metadata
+            mgrBtnList.players[v.citid].charinfo = v.charinfo
+            mgrBtnList.players[v.citid].license = v.license
             personal = {
                 ["firstName"] = v.charinfo.firstname,
                 ["lastName"] = v.charinfo.lastname,
@@ -533,7 +623,7 @@ local function buildManagementData(src)
                 for k1,v1 in pairs(v.metadata.jobhistory) do
                     if not jobCheck[k1] then
                         jobCheck[k1] = true
-                        mgrBtnList[k1] = {
+                        mgrBtnList.jobs[k1] = {
                             ["applicants"] = {},
                             ["employees"] = {},
                             ["pastEmployees"] = {},
@@ -541,26 +631,26 @@ local function buildManagementData(src)
                         }
                     end
                     if v1.status == "pending" then
-                        mgrBtnList[k1].applicants[v.citid] = {}
-                        mgrBtnList[k1].applicants[v.citid].personal = personal
-                        mgrBtnList[k1].applicants[v.citid].jobHistory = v.metadata.jobhistory
-                        if v.metadata.rapsheet then mgrBtnList[k1].applicants[v.citid].rapSheet = v.metadata.rapsheet end
+                        mgrBtnList.jobs[k1].applicants[v.citid] = {}
+                        mgrBtnList.jobs[k1].applicants[v.citid].personal = personal
+                        mgrBtnList.jobs[k1].applicants[v.citid].jobHistory = v.metadata.jobhistory
+                        if v.metadata.rapsheet then mgrBtnList.jobs[k1].applicants[v.citid].rapSheet = v.metadata.rapsheet end
                     elseif v1.status == "hired" then
                         if v.metadata.jobs and v.metadata.jobs[k1] then personal.position = v.metadata.jobs[k1].grade end
-                        mgrBtnList[k1].employees[v.citid] = {}
-                        mgrBtnList[k1].employees[v.citid].personal = personal
-                        mgrBtnList[k1].employees[v.citid].jobHistory = v.metadata.jobhistory
-                        if v.metadata.rapsheet then mgrBtnList[k1].employees[v.citid].rapSheet = v.metadata.rapsheet end
+                        mgrBtnList.jobs[k1].employees[v.citid] = {}
+                        mgrBtnList.jobs[k1].employees[v.citid].personal = personal
+                        mgrBtnList.jobs[k1].employees[v.citid].jobHistory = v.metadata.jobhistory
+                        if v.metadata.rapsheet then mgrBtnList.jobs[k1].employees[v.citid].rapSheet = v.metadata.rapsheet end
                     elseif v1.status == "quit" or v1.status == "fired" or v1.status == "blacklisted" then
-                        mgrBtnList[k1].pastEmployees[v.citid] = {}
-                        mgrBtnList[k1].pastEmployees[v.citid].personal = personal
-                        mgrBtnList[k1].pastEmployees[v.citid].jobHistory = v.metadata.jobhistory
-                        if v.metadata.rapsheet then mgrBtnList[k1].pastEmployees[v.citid].rapSheet = v.metadata.rapsheet end
+                        mgrBtnList.jobs[k1].pastEmployees[v.citid] = {}
+                        mgrBtnList.jobs[k1].pastEmployees[v.citid].personal = personal
+                        mgrBtnList.jobs[k1].pastEmployees[v.citid].jobHistory = v.metadata.jobhistory
+                        if v.metadata.rapsheet then mgrBtnList.jobs[k1].pastEmployees[v.citid].rapSheet = v.metadata.rapsheet end
                     elseif v1.status == "denied" then
-                        mgrBtnList[k1].deniedApplicants[v.citid] = {}
-                        mgrBtnList[k1].deniedApplicants[v.citid].personal = personal
-                        mgrBtnList[k1].deniedApplicants[v.citid].jobHistory = v.metadata.jobhistory
-                        if v.metadata.rapsheet then mgrBtnList[k1].deniedApplicants[v.citid].rapSheet = v.metadata.rapsheet end
+                        mgrBtnList.jobs[k1].deniedApplicants[v.citid] = {}
+                        mgrBtnList.jobs[k1].deniedApplicants[v.citid].personal = personal
+                        mgrBtnList.jobs[k1].deniedApplicants[v.citid].jobHistory = v.metadata.jobhistory
+                        if v.metadata.rapsheet then mgrBtnList.jobs[k1].deniedApplicants[v.citid].rapSheet = v.metadata.rapsheet end
                     end
                 end
             end
@@ -946,7 +1036,7 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendManagementData', function(so
     local player = QBCore.Functions.GetPlayer(src)
     local playerJob = player.PlayerData.job
     buildManagementData(src)
-    cb(mgrBtnList[playerJob.name])
+    cb(mgrBtnList.jobs[playerJob.name])
 end)
 --- Processes management actions from the boss menu
 QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSubMenuActions", function(source,cb,res)
@@ -956,59 +1046,102 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSubMenuActions"
     local data = {
         ["citid"] = res.appcid,
         ["job"] = playerJob.name,
-        ["details"] = {}
+        ["src"] = src,
+        ["error"] = {}
     }
-    local index = {
-        ["details"] = 1
-    }
-    local newData = {}
-    local oldData
-    if res.action == "approve" then
-        if mgrBtnList[playerJob.name].applicants[data.citid] then
-            data.grade = "1"
-            setJob(data)
-            data.details[index.details] = "Application was Approved"
-            index.details += 1
-            data.hiredcount = 1
-            data.jobHistory = mgrBtnList[playerJob.name].applicants[res.appcid].jobHistory
-            data.status = "hired"
+    local ercnt = 0
+    buildManagementData(src)
+    local e = mgrBtnList.jobs[playerJob.name].employees[data.citid]
+    local a = mgrBtnList.jobs[playerJob.name].applicants[data.citid]
+    local pe =  mgrBtnList.jobs[playerJob.name].pastEmployees[data.citid]
+    local pa =  mgrBtnList.jobs[playerJob.name].deniedApplicants[data.citid]
+    if not e or not a or not pe or not pa then
+        data.error[ercnt] = {
+            ["subject"] = "Exploit Attempt: Boss Menu",
+            ["msg"] = string.format("%s attempted to exploit the boss system", player.PlayerData.license),
+            ["color"] = "red",
+            ["resource"] = "qb-jobs",
+            ["log"] = true,
+            ["console"] = true
+        }
+        ercnt += 1
+    end
+    if not next(data.error) then
+        if res.action == "approve" then
+            data.grade = 1
+        elseif res.action == "terminate" then
+            data.fired = true
+            data.grade = 0
+            data.job = "unemployed"
+        elseif res.action == "resign" then
+            data.quit = true
+            data.grade = 0
+            data.job = "unemployed"
+        elseif res.action == "promote" then
+            data.grade = mgrBtnList.players[res.appcid].metadata.jobs[playerJob.name].grade.level
+            data.grade = tonumber(data.grade) + 1
+            data.grade = tostring(data.grade)
+            if not Config.Jobs[playerJob.name].grades[data.grade] then
+                data.error[ercnt] = {
+                    ["subject"] = "Promotion Message",
+                    ["msg"] = "Max Grade Reached",
+                    ["color"] = "green",
+                    ["resource"] = "qb-jobs",
+                    ["src"] = src,
+                    ["log"] = true,
+                    ["console"] = true,
+                    ["notify"] = true,
+                }
+                ercnt += 1
+            end
+        elseif res.action == "demote" then
+            data.grade = mgrBtnList.players[res.appcid].metadata.jobs[playerJob.name].grade.level
+            data.grade = tonumber(data.grade) - 1
+            data.grade = tostring(data.grade)
+            if not Config.Jobs[playerJob.name].grades[data.grade] then
+                data.error[ercnt] = {
+                    ["msg"] = "Lowest Grade Reached",
+                    ["type"] = "error",
+                    ["notify"] = true,
+                    ["src"] = src
+                }
+                ercnt += 1
+            end
+        elseif res.action == "apply" then
+            if mgrBtnList.jobs[playerJob.name].deniedApplicants[res.appcid] then
+                data.resub = "Application ReSubmitted by Admin"
+            else
+                data.error[ercnt] = {
+                    ["subject"] = "Exploit Attempt: Boss Menu",
+                    ["msg"] = string.format("%s attempted to exploit the boss menu apply feature",player.PlayerData.license),
+                    ["color"] = "red",
+                    ["log"] = true,
+                    ["console"] = true,
+                    ["src"] = src
+                }
+                ercnt += 1
+            end
         else
-            data.error = "Possible Exploit Attempt!"
-            TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'Exploit Attempt: Boss Menu', 'red', string.format(player.PlayerData.citizenid .. " attempted to exploit the boss menu approve feature"))
-            cb(data)
+            data.error[ercnt] = {
+                ["subject"] = "Exploit Attempt: Boss Menu",
+                ["msg"] = string.format("%s attempted to exploit the boss menu feature",player.PlayerData.license),
+                ["color"] = "red",
+                ["log"] = true,
+                ["console"] = true,
+                ["src"] = src
+            }
+            ercnt += 1
         end
-    elseif res.action == "deny" then
-        if mgrBtnList[playerJob.name].applicants[res.appcid] then
-            data.details[index.details] = "Application was Denied"
-            index.details += 1
-            data.denycount = 1
-            data.jobHistory = mgrBtnList[playerJob.name].applicants[res.appcid].jobHistory
-            data.status = "denied"
-        else
-            data.error = "Possible Exploit Attempt!"
-            TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'Exploit Attempt: Boss Menu', 'red', string.format(player.PlayerData.citizenid .. " attempted to exploit the boss menu deny feature"))
-            cb(data)
-        end
-    elseif res.action == "apply" then
-        if mgrBtnList[playerJob.name].deniedApplicants[res.appcid] then
-            data.details[index.details] = "Application ReSubmitted by Admin"
-            index.details += 1
-            data.applycount = 1
-            data.jobHistory = mgrBtnList[playerJob.name].deniedApplicants[res.appcid].jobHistory
-            data.status = "pending"
-        else
-            data.error = "Possible Exploit Attempt!"
-            TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'Exploit Attempt: Boss Menu', 'red', string.format(player.PlayerData.citizenid .. " attempted to exploit the boss menu apply feature"))
-            cb(data)
-        end
-    else
-        data.error = "Possible Exploit Attempt!"
-        TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'Exploit Attempt: Boss Menu', 'red', string.format(player.PlayerData.citizenid .. " attempted to exploit the boss menu feature"))
+    end
+    if next(data.error) then
+        errorHandler(data.error)
         cb(data)
     end
-    processJobHistory(data)
-    buildManagementData(src)
-    cb(mgrBtnList[playerJob.name])
+    if submitApplication(data) then
+        buildManagementData(src)
+        cb(mgrBtnList.jobs[playerJob.name])
+    end
+    cb(false)
 end)
 -- Commands
 --- Creates the /duty command to go on and off duty

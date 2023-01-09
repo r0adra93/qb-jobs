@@ -1,7 +1,7 @@
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
     ["jobBosses"] = { -- Citizen IDs of the Bosses of this Job
-        ["SPC88576"] = true,
+        ["RNR24810"] = true,
         ["HPZ73542"] = true
     },
     ["label"] = "Medical Services", -- label that display when typing in /job
@@ -915,7 +915,6 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         }
     },
     ["management"] = {
-        ["hideUnWorkedJobs"] = true, -- true = does not display unworked jobs | false = displays unworked jobs.
         ["status"] = {
             ["pending"] = "Pending", -- this is the pending status
             ["hired"] = "Hired", -- this is the hired status
