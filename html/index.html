@@ -3,7 +3,6 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
         <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0=" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.css">
@@ -12,20 +11,33 @@
     </head>
     <body>
         <main id="container">
-            <section id="qb-jobs-menu-container" class="draggable">
-                <section id="qb-jobs-main-menu-container">
-                    <h1 id="qb-jobs-header" class="h1"></h1>
-                    <nav id="buttons"><ul id="buttons-list"></ul></nav>
-                    <div id="close"></div>
+            <section id="menuContainer" class="draggable">
+                <section id="mainMenuContainer">
+                    <header id="mainMenuHeader">
+                            <div id="mainMenuHeaderH1Container"><h1 id="mainMenuHeaderH1"></h1></div>
+                            <div id="mainMenuCloseContainer"></div>
+                    </header>
+                    <nav id="mainMenuActionButtons"></nav>
+                    <section id="mainMenuContent"></section>
+                    <footer id="mainMenuFooter"></footer>
                 </section>
-                <section id="qb-jobs-sub-menu-container">
-                    <h2 id="qb-jobs-sub-menu-header" class="h2"></h2>
-                    <section id="qb-jobs-page-container">
-                        <div id="qb-jobs-page" class="qb-jobs-vehicleMenu">
-                            <ul id="qb-jobs-list"></ul>
-                        </div>
-                    </section>
-                    <div id="retract"></div>
+                <section id="subMenuContainer">
+                    <header id="subMenuHeader">
+                        <div id="subMenuHeaderH1Container"><h1 id="subMenuHeaderH1"></h1></div>
+                        <div id="subMenuRetractContainer"></div>
+                    </header>
+                    <nav id="subMenuActionButtons"></nav>
+                    <section id="subMenuContent"></section>
+                    <footer id="subMenuFooter"></footer>
+                </section>
+                <section id="contentContainer">
+                    <header id="contentHeader">
+                        <div id="contentHeaderH1Container"><h1 id="contentHeaderH1"></h1></div>
+                        <div id="contentRetractContainer"></div>
+                    </header>
+                    <nav id="contentActionButtons"></nav>
+                    <div id="content"></div>
+                    <footer id="contentFooter"></footer>
                 </section>
             </section>
         </main>

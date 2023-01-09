@@ -4,11 +4,7 @@ Config.Jobs.taxi = {
     ["label"] = "Taxi Driver",
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
-    ["inCityHall"] = {
-        ["listInCityHall"] = true, -- true he job is sent to city hall | false the job is not in city hall
-        ["isManaged"] = true -- true the job is sent to the boss of the job | false the job is automatically assigned
-    },
-
+    ["listInCityHall"] = true, -- true he job is sent to city hall | false the job is not in city hall
     ["plate"] = "TAXI", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
         ['0'] = {
