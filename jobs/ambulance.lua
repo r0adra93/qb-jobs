@@ -4,6 +4,9 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         ["RNR24810"] = true,
         ["HPZ73542"] = true
     },
+    ["webHooks"] = {
+        ["ambulance"] = "https://discord.com/api/webhooks/1063270629710774323/jDO0pm0ue5dXeeG4RR73exttt1tYCTHnlh3Wci8bHYAi_Z9D5MciUNhov3EkRYeS87RM" -- Place your discord webHook here
+    },
     ["label"] = "Medical Services", -- label that display when typing in /job
     ["type"] = "ems", -- job type -- leave set to ems as it's part of the ambulancejob
     ["defaultDuty"] = true, -- duty status when logged on
@@ -33,8 +36,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         },
         ["6"] = {
             ["name"] = 'Chief of Staff',
-            ["payment"] = 1924,
-            ["isboss"] = true
+            ["payment"] = 1924
         }
     },
     ["DutyBlips"] = { -- Blips used to show player's location on map
@@ -93,7 +95,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["Label"] = "Old Management",
                 ["ped"] = {
                     ["model"] = "a_f_o_salton_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
-                    ["coords"] = vector4(320.17, -580.71, 43.32, 334.6),
+                    ["coords"] = vector4(319.52, -573.3, 43.32, 197.28),
                     ["targetIcon"] = "fa-solid fa-bars-progress", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -544,6 +546,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipShortRange"] = true
             }
         },
+--[[ Only until the new one is built
         ["motorworks"] = { -- location of the motorworks job garage
             {
                 ["jobType"] = "ems",
@@ -590,6 +593,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
             }
         },
+]]--
     },
     ["Vehicles"] = {
         ["config"] = {

@@ -71,16 +71,36 @@ const resetMenus = () => {
         $(`#navSub${i}`).hide();
     }
 }
+const chooseNavDirection = (effect,btnid,element,target,targetID) => {
+    closeSlideOuts(btnid)
+    switch (effect) {
+        case "upDown":
+            menuRoutes(element,target)
+        break;
+        case "leftRight":
+            tractMenuWindow(element,target,targetID)
+        break
+    }
+}
+const closeSlideOuts = (btnid) => {
+    if(btnid == "mainMenuNavButton"){
+        $("#contentContainer").removeAttr("class");
+        $("#subMenuContainer").removeAttr("class");
+    }
+    if(btnid == "mainMenuNavSubButton"){
+        $("#contentContainer").removeAttr("class");
+    }
+}
 const traction = (element) => {
     if (element == "#subMenuContainer") {
         emptySubMenu();
         emptyContent();
-        $("#contentContainer").removeClass(`open`);
+        $("#contentContainer").removeAttr("class");
     }else{emptyContent();}
-    $(element).removeClass(`open`);
+    $(element).removeAttr("class");
 }
 const tractMenuWindow = (element,target,targetID) => {
-    clearClass = () => {
+    const clearClass = () => {
         for (i = 0; i <= btnCnt; i++) {
             $(element).removeClass(`${target}${i}`);
         }
@@ -93,7 +113,7 @@ const tractMenuWindow = (element,target,targetID) => {
         $(element).addClass(`open ${target}${targetID}`);
     }
 }
-const menuRoutes = (element, target) => {
+const menuRoutes = (element,target) => {
     if($(element).hasClass(target)) {
         $(`.${target}`).removeClass(target);
     }else{
@@ -116,70 +136,69 @@ const processMainMenu = () => {
     switch(action) {
         case "garage":
             if (btnList.ownedVehicles) {
-                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.ownGarage}"></i>My Garage</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
+                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.ownGarage}"></i>My Garage</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
                 for (const [key] of Object.entries(btnList.ownedVehicles)) {
-                    mainMenuNavButtons += `<div class="mainMenuSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-selgar="ownGarage" data-vehtype="${key}" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-selgar="ownGarage" data-vehtype="${key}" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
                 btnCnt++;
             }
-            mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.jobGarage}"></i>Motorpool</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
+            mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.jobGarage}"></i>Motorpool</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
             for (const [key] of Object.entries(btnList.vehicles)) {
-                mainMenuNavButtons += `<div class="mainMenuSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-selgar="motorpool" data-vehtype="${key}" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
+                mainMenuNavButtons += `<div class="mainMenuSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-selgar="motorpool" data-vehtype="${key}" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
                 btnCnt++
             };
             mainMenuNavButtons += `</div></div>`;
             btnCnt++;
             if (btnList.allowPurchase) {
-                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.jobStore}"></i>Vehicle Shop</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons"></button></div>`;
+                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.jobStore}"></i>Vehicle Shop</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons"></button></div>`;
                 for (const [key] of Object.entries(btnList.vehiclesForSale)) {
-                    mainMenuNavButtons += `<div class="mainMenuSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-selgar="jobStore" data-vehtype="${key}" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-selgar="jobStore" data-vehtype="${key}" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
                 btnCnt++;
             }
             if(!jQuery.isEmptyObject(btnList.returnVehicle)){
-                mainMenuNavButtons += `<div  class="mainMenuNavButtons"><div class="mainMenuButtonItem" id="btnReturnVehicle"><button class="TempMain actionButton" data-id="nav${btnCnt}" data-vehtype="returnVehicle" data-selgar="returnVehicle" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.returnVehicle}"></i>Return Vehicles</button></div></div>`;
+                mainMenuNavButtons += `<div class="mainMenuNavButtons"><div class="mainMenuButtonItem" id="btnReturnVehicle"><button class="TempMain actionButton" data-btnid="mainMenuNavButton" data-id="nav${btnCnt}" data-vehtype="returnVehicle" data-selgar="returnVehicle" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.returnVehicle}"></i>Return Vehicles</button></div></div>`;
                 btnCnt++
                 btnCnt++;
             }
         break;
         case "management":
-            console.log(btnList.applicants)
             if (!jQuery.isEmptyObject(btnList.applicants)) {
-                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.applicants}"></i>Applicants</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
+                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.applicants}"></i>Applicants</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
                 for (const [key] of Object.entries(btnList.applicants)) {
-                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-type="applicants" data-citid="${key}" data-action="bossSubMenu" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.applicant}"></i>${btnList.applicants[key].personal.firstName} ${btnList.applicants[key].personal.lastName}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="applicants" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.applicant}"></i>${btnList.applicants[key].personal.firstName} ${btnList.applicants[key].personal.lastName}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
                 btnCnt++;
             }
             if (!jQuery.isEmptyObject(btnList.employees)) {
-                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.employees}"></i>Employees</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
+                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.employees}"></i>Employees</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
                 for (const [key] of Object.entries(btnList.employees)) {
                     if (typeof btnList.employees[key].personal.position !== "undefined"){title = `<br /> ${btnList.employees[key].personal.position.name}`}
-                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-type="employees" data-citid="${key}" data-action="bossSubMenu" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.employee}"></i>${btnList.employees[key].personal.firstName} ${btnList.employees[key].personal.lastName}${title}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavButton" data-type="employees" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.employee}"></i>${btnList.employees[key].personal.firstName} ${btnList.employees[key].personal.lastName}${title}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
                 btnCnt++;
             }
             if (!jQuery.isEmptyObject(btnList.pastEmployees)) {
-                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.employees}"></i>Employees</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
+                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.employees}"></i>Employees</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
                 for (const [key] of Object.entries(btnList.pastEmployees)) {
-                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-type="pastEmployees" data-citid="${key}" data-action="bossSubMenu" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.employee}"></i>${btnList.pastEmployees[key].personal.firstName} ${btnList.pastEmployees[key].personal.lastName}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="pastEmployees" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.employee}"></i>${btnList.pastEmployees[key].personal.firstName} ${btnList.pastEmployees[key].personal.lastName}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
                 btnCnt++;
             }
             if (!jQuery.isEmptyObject(btnList.deniedApplicants)) {
-                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.deniedApplicants}"></i>Denied Applicants</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
+                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.deniedApplicants}"></i>Denied Applicants</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
                 for (const [key] of Object.entries(btnList.deniedApplicants)) {
-                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-type="deniedApplicants" data-citid="${key}" data-action="bossSubMenu" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.deniedApplicant}"></i>${btnList.deniedApplicants[key].personal.firstName} ${btnList.deniedApplicants[key].personal.lastName}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="deniedApplicants" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.deniedApplicant}"></i>${btnList.deniedApplicants[key].personal.firstName} ${btnList.deniedApplicants[key].personal.lastName}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
@@ -223,14 +242,14 @@ const processSubMenu = (data) => {
             subMenuNavButtons += `<div class="subMenuNavButtons">`;
             for (const [key,value] of Object.entries(vehicles[data.vehType])) {
                 if (data.selGar == "returnVehicle") {
-                    subMenuNavButtons += `<div class="subMenuNavButtonItem"><button id="${key}" class="subMenuNavButton" data-plate="${key}"><i class="${btnList.icons.returnVehicle}"></i>${value.vehicle}<br />${key}</button></div>`;
+                    subMenuNavButtons += `<div class="subMenuNavButtonItem"><button id="${key}" class="subMenuNavButton" data-btnid="subMenuNavButton" data-plate="${key}"><i class="${btnList.icons.returnVehicle}"></i>${value.vehicle}<br />${key}</button></div>`;
                 } else if (data.selGar == "ownGarage") {
                     let btnhide = "";
                     if(btnList.returnVehicle[value.plate]){
                         btnhide = `style="display:none;"`;
                     }
                     if(value.parkingPrice){element = `<br />${value.plate}<br /><u><strong>Parking Fee</strong></u><br />$${value.parkingPrice}`}
-                    subMenuNavButtons += `<div class="subMenuNavButtonItem" id="btn${value.plate}" ${btnhide}><button id="${value.plate}" class="subMenuNavButton" data-plate="${value.plate}" data-selgar="${data.selGar}" data-vehicle="${value.spawn}"><i class="${value.icon}"></i>${value.label}${element}</button></div>`;
+                    subMenuNavButtons += `<div class="subMenuNavButtonItem" id="btn${value.plate}" ${btnhide}><button id="${value.plate}" class="subMenuNavButton" data-btnid="subMenuNavButton" data-plate="${value.plate}" data-selgar="${data.selGar}" data-vehicle="${value.spawn}"><i class="${value.icon}"></i>${value.label}${element}</button></div>`;
                 } else {
                     if (data.selGar == "jobStore") {
                         if(value.purchasePrice){element = `<br /><u><strong>Purchase Price</strong></u><br />$${value.purchasePrice}`}
@@ -240,7 +259,7 @@ const processSubMenu = (data) => {
                         if(value.depositPrice){element += `<br /><u><strong>Refundable Deposit</strong></u><br />$${value.depositPrice}`}
                         if(value.rentPrice){element += `<br /><u><strong>Rental Price</strong></u><br />$${value.rentPrice}`}
                     }
-                    subMenuNavButtons += `<div class="subMenuNavButtonItem"><li><button id="${key}" class="subMenuNavButton" data-selgar="${data.selGar}" data-vehicle="${value.spawn}"><i class="${value.icon}"></i>${value.label}${value.element}</button></div>`;
+                    subMenuNavButtons += `<div class="subMenuNavButtonItem"><li><button id="${key}" class="subMenuNavButton" data-btnid="subMenuNavButton" data-selgar="${data.selGar}" data-vehicle="${value.spawn}"><i class="${value.icon}"></i>${value.label}${value.element}</button></div>`;
                 }
             };
             subMenuNavButtons += "</div>"
@@ -252,50 +271,50 @@ const processSubMenu = (data) => {
             data.header = `${personal.firstName} ${btnList[data.type][data.citid].personal.lastName}`;
             switch(data.type){
                 case "applicants":
-                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="approve"><i class="${btnList.icons.approve}"></i>Approve</button></div>`;
-                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="deny"><i class="${btnList.icons.deny}"></i>Deny</button></div>`;
+                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-effect="leftRight" data-element="#subMenuContainer" data-baction="approve"><i class="${btnList.icons.approve}"></i>Approve</button></div>`;
+                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-effect="leftRight" data-element="#subMenuContainer" data-baction="deny"><i class="${btnList.icons.deny}"></i>Deny</button></div>`;
                 break;
                 case "employees":
-                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="promote"><i class="${btnList.icons.promote}"></i>Promote</button></div>`;
-                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="demote"><i class="${btnList.icons.demote}"></i>Demote</button></div>`;
-                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="pay"><i class="${btnList.icons.pay}"></i>Adjust Pay</button></div>`;
-                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="terminate"><i class="${btnList.icons.fire}"></i>Terminate</button></div>`;
+                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-effect="leftRight" data-element="#subMenuContainer" data-baction="promote"><i class="${btnList.icons.promote}"></i>Promote</button></div>`;
+                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-effect="leftRight" data-element="#subMenuContainer" data-baction="demote"><i class="${btnList.icons.demote}"></i>Demote</button></div>`;
+                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-effect="leftRight" data-element="#subMenuContainer" data-baction="pay"><i class="${btnList.icons.pay}"></i>Adjust Pay</button></div>`;
+                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-effect="leftRight" data-element="#subMenuContainer" data-baction="terminate"><i class="${btnList.icons.fire}"></i>Terminate</button></div>`;
                 break;
                 case "pastEmployees":
                     // added this for future mainMenuContent (maybe)
                 break;
                 case "deniedApplicants":
-                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}"  data-action="bossAction" data-baction="apply"><i class="${btnList.icons.deny}"></i>Reconsider</button></div>`;
+                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}"  data-action="bossAction" data-effect="leftRight" data-element="#subMenuContainer" data-baction="apply"><i class="${btnList.icons.deny}"></i>Reconsider</button></div>`;
                 break;
             }
             subMenuNavButtons = `<div class="subMenuNavButtons">`
             btnCnt++;
-            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-job="${btnList.currentJob}" data-ctype="personal" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.personal}"></i>Personal Details</button></div>`;
+            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-job="${btnList.currentJob}" data-ctype="personal" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.personal}"></i>Personal Details</button></div>`;
             btnCnt++
-            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-job="${btnList.currentJob}" data-ctype="rapSheet" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.rapSheet}"></i>Rap Sheet</button></div>`;
+            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-job="${btnList.currentJob}" data-ctype="rapSheet" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.rapSheet}"></i>Rap Sheet</button></div>`;
             btnCnt++
-            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-action="navButton" data-targetID="empty" data-target="TempSub" data-effect="upDown" data-element="#navSub${btnCnt}" data-id="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>${btnList.currentJobName} Record</button><div id="navSub${btnCnt}" class="subMenuNavSubButtons">`;
+            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempSub" data-effect="upDown" data-element="#navSub${btnCnt}" data-id="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>${btnList.currentJobName} Record</button><div id="navSub${btnCnt}" class="subMenuNavSubButtons">`;
             btnCnt++;
-            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" actionButton" data-job="${btnList.currentJob}" data-ctype="history" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Stats</button></div>`;
+            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" actionButton" data-btnid="subMenuNavSubButton" data-job="${btnList.currentJob}" data-ctype="history" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Stats</button></div>`;
             btnCnt++;
-            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" actionButton" data-job="${btnList.currentJob}" data-ctype="awards" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Awards</button></div>`;
+            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" actionButton" data-btnid="subMenuNavSubButton" data-job="${btnList.currentJob}" data-ctype="awards" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Awards</button></div>`;
             btnCnt++;
-            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" actionButton" data-job="${btnList.currentJob}" data-ctype="reprimands" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Reprimands</button></div>`;
+            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" actionButton" data-btnid="subMenuNavSubButton" data-job="${btnList.currentJob}" data-ctype="reprimands" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Reprimands</button></div>`;
             btnCnt++;
-            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" actionButton" data-job="${btnList.currentJob}" data-ctype="notes" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Notes</button></div>`;
+            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" actionButton" data-job="${btnList.currentJob}" data-ctype="notes" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-btnid="subMenuNavSubButton" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Notes</button></div>`;
             btnCnt++;
             subMenuNavButtons += `</div></div>`;
-            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-action="navButton" data-targetID="empty" data-target="TempSub" data-effect="upDown" data-element="#navSub${btnCnt}" data-id="${btnCnt}"><i class="${btnList.icons.jobHistory}"></i>Job History</button><div id="navSub${btnCnt}" class="subMenuNavSubButtons">`;
+            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempSub" data-effect="upDown" data-element="#navSub${btnCnt}" data-id="${btnCnt}"><i class="${btnList.icons.jobHistory}"></i>Job History</button><div id="navSub${btnCnt}" class="subMenuNavSubButtons">`;
             btnCnt++;
             if(!$.isEmptyObject(jobHistory)) {
                 $.each(jobHistory, function(k,v){
                     if(k != btnList.currentJob) {
-                        btn += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" data-job="${k}" data-ctype="history" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.jobHistory}"></i>${k} Stats<br />${v.status}</button></div>`;
+                        btn += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" data-btnid="subMenuNavSubButton" data-job="${k}" data-ctype="history" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.jobHistory}"></i>${k} Stats<br />${v.status}</button></div>`;
                         btnCnt++;
                     }
                 })
             }
-            if(btn == ""){btn = `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton">No Job History</button></div>`;}
+            if(btn == ""){btn = `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton" data-btnid="subMenuNavSubButton">No Job History</button></div>`;}
             btnCnt++;
             subMenuNavButtons += `${btn}</div></div>`;
         break;
@@ -390,6 +409,14 @@ const appendMainMenuHeader = () => {
     $("#mainMenuHeaderH1").append(btnList.header);
     $("#mainMenuCloseContainer").append(`<button id="closeButton" class="actionButton"  data-action="close"><i class="${btnList.icons.close}"></i></button>`)
 }
+const errorMessage = (error) => {
+    v.msg += "<table>";
+    $.each(error,(k,v) => {
+        v.msg += `<tr><th>${k}</th><td>${v}</td>`
+    });
+    v.msg += "</table>";
+    $(".alert").append(v.msg);
+}
 /* Main / Root Function */
 $(document).ready(function(){
     window.addEventListener('message', function(event) {
@@ -412,8 +439,12 @@ $(document).ready(function(){
 /* Button Controls */
 $(document).on('click', ".actionButton", function(e){
     e.preventDefault();
-    let element;
     let data;
+    let btnid = $(this).data('btnid');
+    let effect = $(this).data('effect');
+    let target = $(this).data('target');
+    let targetID = $(this).data('targetid');
+    let element = $(this).data('element');
     switch ($(this).data("action")){
         case "bossAction":
             data = {
@@ -454,7 +485,6 @@ $(document).on('click', ".actionButton", function(e){
                 citid:$(this).data("citid")
             };
             processSubMenu(data);
-            tractMenuWindow("#subMenuContainer",$(this).data("target"),$(this).data("targetid"));
         break;
         case "bossContent":
             data = {
@@ -464,7 +494,6 @@ $(document).on('click', ".actionButton", function(e){
                 ctype:$(this).data("ctype")
             };
             processContent(data);
-            tractMenuWindow("#contentContainer",$(this).data("target"),$(this).data("targetid"))
         break;
         case "selVeh":
             data.garage = btnList.garage;
@@ -480,7 +509,6 @@ $(document).on('click', ".actionButton", function(e){
             data.selGar = $(this).data('selgar');
             emptySubMenu();
             processSubMenu(data);
-            tractMenuWindow("#subMenuContainer",data.subid);
         break;
         case "delVeh":
             if(btnList.returnVehicle[data.plate].selGar == "ownGarage") {
@@ -498,18 +526,6 @@ $(document).on('click', ".actionButton", function(e){
             }, "json");
         break;
         case "navButton":
-            let target = $(this).data('target');
-            let targetID = $(this).data('targetid');
-            element = $(this).data('element');
-            let effect = $(this).data('effect');
-            switch (effect) {
-                case "upDown":
-                    menuRoutes(element,target)
-                break;
-                case "leftRight":
-                    tractMenuWindow(element,target,targetID)
-                break
-            }
         break;
         case "retract":
             element = $(this).data('element');
@@ -518,6 +534,9 @@ $(document).on('click', ".actionButton", function(e){
         case "close":
             close();
         break;
+    }
+    if(effect != "undefined"){
+        chooseNavDirection(effect,btnid,element,target,targetID)
     }
 })
 $(document).on('keyup', function(e) {

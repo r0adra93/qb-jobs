@@ -15,23 +15,16 @@ local onDuty = false
 local blipList = {}
 --- list of location polys
 local polyLocList = {}
+--- comboZone for location polys
+local locCombo = {}
 --- list of Jobs key = job name | value = job label
 local jobsList = {}
 -- Functions
 --- sets the player's player and playerJob tables
 local function setCurrentJob()
-    local function jobPop()
-        player = QBCore.Functions.GetPlayerData()
-        playerJob = player.job
-    end
-    if not playerJob then
-        while not playerJob do
-            jobPop()
-            Wait(5000)
-        end
-    else
-        jobPop()
-    end
+    player = QBCore.Functions.GetPlayerData()
+    playerJob = player.job
+    return true
 end
 exports('CurrentJob',CurrentJob)
 --- sets the jobsList
@@ -225,6 +218,7 @@ local function toggleDuty()
     elseif playerJob.type == "ambulance" then
         TriggerServerEvent("hospital:server:UpdateCurrentDoctors")
     end
+    return true
 end
 --- Listens for actions to interact with job peds
 local function Listen4Control(data)
@@ -232,25 +226,9 @@ local function Listen4Control(data)
     CreateThread(function()
         while ControlListen do
             if IsControlJustReleased(0, 38) then
-                if data.event == "toggleDuty" then
-                    toggleDuty()
-                elseif data.event == "openBossMenu" then
-                    receiveManagementData(data)
-                elseif data.event == "openOldBossMenu" then
-                    TriggerEvent("qb-bossmenu:client:OpenMenu")
-                elseif data.event == "receiveGaragedVehicles" then
-                    receiveGaragedVehicles(data)
-                elseif data.event == "openStash" then
-                    TriggerServerEvent("qb-jobs:server:openStash")
-                elseif data.event == "openArmory" then
-                    TriggerServerEvent("qb-jobs:server:openArmory")
-                elseif data.event == "openTrash" then
-                    TriggerServerEvent("qb-jobs:server:openTrash")
-                elseif data.event == "openOutfits" then
-                    openOutfits()
-                elseif data.event == "openMotorworks" then
-                    openMotorworks(data)
-                end
+                if data.fn then data.fn(data)
+                elseif data.event then TriggerEvent(data.event)
+                elseif data.svrEvent then TriggerServerEvent(data.svrEvent) end
             end
             Wait(1)
         end
@@ -260,80 +238,83 @@ end
 local function spawnPeds()
     while not playerJob do setCurrentJob() Wait(5000) end
     if not Config.Jobs[playerJob.name].Locations then return end
-    local index = 1
+    local current
+    local zones = {}
+    local index = {
+        zones = 0,
+        comboZones = 0
+    }
+    local pedSet = {
+        ["duty"] = {
+            ["fn"] = toggleDuty,
+            ["label"] = Lang:t('info.onoff_duty'),
+            ["duty"] = true
+        },
+        ["management"] = {
+            ["fn"] = receiveManagementData,
+            ["label"] = Lang:t('info.enter_management'),
+            ["duty"] = false
+        },
+        ["oldManagement"] = {
+            ["event"] = "qb-bossmenu:client:OpenMenu",
+            ["label"] = "enter Old Management",
+            ["duty"] = false
+        },
+        ["garages"] = {
+            ["fn"] = receiveGaragedVehicles,
+            ["label"] = Lang:t('info.enter_garage'),
+            ["duty"] = false
+        },
+        ["stashes"] = {
+            ["svrEvent"] = "qb-jobs:server:openStash",
+            ["label"] = Lang:t('info.stash_enter'),
+            ["duty"] = false
+        },
+        ["armories"] = {
+            ["svrEvent"] = "qb-jobs:server:openArmory",
+            ["label"] = Lang:t('info.enter_armory'),
+            ["duty"] = false
+        },
+        ["trash"] = {
+            ["svrEvent"] = "qb-jobs:server:openTrash",
+            ["label"] = Lang:t('info.trash_enter'),
+            ["duty"] = false
+        },
+        ["outfits"] = {
+            ["fn"] = openOutfits,
+            ["label"] = Lang:t('info.enter_outfit'),
+            ["duty"] = false
+        },
+        ["motorworks"] = {
+            ["fn"] = openMotorworks,
+            ["label"] = Lang:t('info.enter_motorworks'),
+            ["duty"] = false
+        }
+    }
     for k,v in pairs(Config.Jobs[playerJob.name].Locations) do
-        local pedSet = {}
-        if k == "duty" then
-            pedSet.event = "toggleDuty"
-            pedSet.label = Lang:t('info.onoff_duty')
-            pedSet.dataPass = false
-        elseif k == "management" and Config.Jobs.ambulance.jobBosses[player.citizenid] then
-            pedSet.event = "openBossMenu"
-            pedSet.label = Lang:t('info.enter_management')
-            pedSet.dataPass = false
-            pedSet.clntSvr = client
-        elseif k == "oldManagement" and Config.Jobs.ambulance.jobBosses[player.citizenid] then
-            pedSet.event = "openOldBossMenu"
-            pedSet.label = "enter Old Management"
-            pedSet.dataPass = false
-            pedSet.clntSvr = client
-        elseif k == "garages" then
--- I don't know yet            pedSet.inGarageRange = true
-            pedSet.event = "receiveGaragedVehicles"
-            pedSet.label = Lang:t('info.enter_garage')
-            pedSet.dataPass = true
-            pedSet.clntSvr = client
-        elseif k == "stashes" then
-            pedSet.event = "openStash"
-            pedSet.label = Lang:t('info.stash_enter')
-            pedSet.dataPass = false
-            pedSet.clntSvr = server
-        elseif k == "armories" then
-            pedSet.event = "openArmory"
-            pedSet.label = Lang:t('info.enter_armory')
-            pedSet.dataPass = false
-            pedSet.clntSvr = server
-        elseif k == "trash" then
-            pedSet.event = "openTrash"
-            pedSet.label = Lang:t('info.trash_enter')
-            pedSet.dataPass = false
-            pedSet.clntSvr = server
-        elseif k == "outfits" then
-            pedSet.event = "openOutfits"
-            pedSet.label = Lang:t('info.enter_outfit')
-            pedSet.dataPass = false
-            pedSet.clntSvr = client
-        elseif k == "motorworks" then
-            pedSet.event = "openMotorworks"
-            pedSet.label = Lang:t('info.enter_motorworks')
-            pedSet.dataPass = false
-            pedSet.clntSvr = client
-        elseif k == "stations" then
-            pedSet = {}
-        end
-        if pedSet then
-            for k1,v1 in pairs(v) do
-                if v1.ped then
-                    local current = v1.ped
-                    current.id = k1;
-                    current.model = type(current.model) == 'string' and joaat(current.model) or current.model
-                    RequestModel(current.model)
-                    while not HasModelLoaded(current.model) do
-                        Wait(0)
-                    end
-                    local ped = CreatePed(0, current.model, current.coords.x, current.coords.y, current.coords.z -1,false, false)
-                    pedList[index] = ped
-                    SetEntityHeading(ped,  current.coords.w)
-                    FreezeEntityPosition(ped, true)
-                    SetEntityInvincible(ped, true)
-                    SetBlockingOfNonTemporaryEvents(ped, true)
-                    current.pedHandle = ped
-                    current.location = k
-                    current.event = pedSet.event
-                    current.dataPass = pedSet.dataPass
-                    current.clntSvr = pedSet.clntSvr
-                    if pedSet then
-                        if Config.UseTarget then
+        for k1,v1 in pairs(v) do
+            if v1.ped then
+                current = v1.ped
+                current.id = k1
+                current.model = type(current.model) == 'string' and joaat(current.model) or current.model
+                RequestModel(current.model)
+                while not HasModelLoaded(current.model) do
+                    Wait(0)
+                end
+                local ped = CreatePed(0, current.model, current.coords.x, current.coords.y, current.coords.z -1,false, false)
+                pedList[#pedList+1] = ped
+                SetEntityHeading(ped,  current.coords.w)
+                FreezeEntityPosition(ped, true)
+                SetEntityInvincible(ped, true)
+                SetBlockingOfNonTemporaryEvents(ped, true)
+                current.pedHandle = ped
+                current.location = k
+                current.event = pedSet.event
+                current.dataPass = pedSet.dataPass
+                current.clntSvr = pedSet.clntSvr
+                pedsSpawned = true
+                if pedSet then
+                    if Config.UseTarget then
                             exports['qb-target']:AddTargetEntity(ped, {
                                 options = {
                                     {
@@ -345,41 +326,55 @@ local function spawnPeds()
                                 },
                                 distance = current.ped.drawDistance
                             })
-                        else
-                            if current.zoneOptions then
-                                local zone = BoxZone:Create(current.coords.xyz, current.zoneOptions.length, current.zoneOptions.width, {
+                    else
+                        if current.zoneOptions then
+                            zones[#zones+1] = BoxZone:Create(
+                                current.coords.xyz,
+                                current.zoneOptions.length,
+                                current.zoneOptions.width,
+                                {
                                     name = "zone_qbjobs_" .. ped,
                                     heading = current.coords.w,
                                     minZ = current.coords.z - 1,
                                     maxZ = current.coords.z + 1,
-                                    debugPoly = Config.qbjobs.DebugPoly
-                                })
-                                polyLocList[zone] = zone
-                                zone:onPlayerInOut(function(inside)
-                                    if onDuty or k == "duty" then
-                                        if inside then
-                                            exports['qb-core']:DrawText(pedSet.label, 'left')
-                                            Listen4Control(current)
-                                        else
-                                            ControlListen = false
-                                            exports['qb-core']:HideText()
-                                        end
-                                    end
-                                end)
-                            end
+                                    debugPoly = Config.qbjobs.DebugPoly,
+                                    data = pedSet[k]
+                                }
+                            )
+                            polyLocList[#polyLocList+1] = zones[index.zones]
                         end
-                        index = index + 1
                     end
                 end
             end
         end
     end
-    pedsSpawned = true
+    if zones then
+        locCombo = ComboZone:Create(zones, {name = "JobsCombo", debugPoly = Config.qbjobs.DebugPoly})
+        locCombo:onPlayerInOut(function(isPointInside,_,zone)
+            if onDuty or zone and zone.data.duty then
+                if isPointInside then
+                    ControlListen = true
+                    exports['qb-core']:DrawText(zone.data.label, 'left')
+                    Listen4Control(zone.data)
+                else
+                    ControlListen = false
+                    exports['qb-core']:HideText()
+                end
+            end
+        end)
+    end
 end
 --- destroys all spawned job peds
 local function killPeds()
-    for _,v in pairs(pedList) do
-        DeleteEntity(v)
+    if pedList then
+        for _,v in pairs(pedList) do
+            DeleteEntity(v)
+        end
+    end
+    if polyLocList then
+        for _,v in pairs(polyLocList) do
+            v:destroy()
+        end
     end
     pedsSpawned = false
 end
@@ -473,7 +468,7 @@ end
 --- all start up functions, tables and threads
 local function kickOff()
     CreateThread(function()
-        TriggerServerEvent("qb-jobs:server:BuildJobHistory")
+--        TriggerServerEvent("qb-jobs:server:BuildJobHistory")
         TriggerServerEvent("qb-jobs:server:populateJobs")
         TriggerServerEvent("qb-jobs:server:countVehicle")
         setCurrentJob()

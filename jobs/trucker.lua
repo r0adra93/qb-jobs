@@ -8,27 +8,27 @@ Config.Jobs.trucker = {
     ["listInCityHall"] = true, -- true he job is sent to city hall | false the job is not in city hall
     ["plate"] = "CMRC", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
-        ['0'] = {
+        ['1'] = {
             ["name"] = "Class D Driver", -- Vans
             ["payment"] = 75,
             ["rep"] = 0
         },
-        ['1'] = {
+        ['2'] = {
             ["name"] = "Class B Driver", -- Large Trucks
             ["payment"] = 100,
             ["rep"] = 20
         },
-        ['2'] = {
+        ['3'] = {
             ["name"] = "Class B Driver + PS", -- Bus Driver
             ["payment"] = 125,
             ["rep"] = 40
         },
-        ['3'] = {
+        ['4'] = {
             ["name"] = "Class A Driver + PS", -- Dry Van, Flat Bed, Refer and Buses
             ["payment"] = 125,
             ["rep"] = 60
         },
-        ['4'] = {
+        ['5'] = {
             ["name"] = "Class A Driver + HNTPS", -- Any Commercial Vehicle including Tankers, Doubles / Triples
             ["payment"] = 150,
             ["rep"] = 80
