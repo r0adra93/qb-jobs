@@ -47,7 +47,7 @@ local Translations = {
     email = {
         jobAppSender = "%{firstname} %{lastname}",
         jobAppSub = "%{job} Application",
-        jobAppMsg = "Hello %{gender} %{lastname}<br /><br />An application is pending for %{job}.<br /><br />Please review the application with your Personal Assistant at your earliest convienance.<br /><br />Follwing Info Submitted:<br /><br />Full Name: %{firstname} %{lastname}<br />Phone: %{phone}<br />",
+        jobAppMsg = "Hello Boss!<br /><br />An application is pending for %{job}.<br /><br />Please review the application with your Personal Assistant at your earliest convienance.<br /><br />Follwing Info Submitted:<br /><br />Full Name: %{firstname} %{lastname}<br />Phone: %{phone}<br />",
         mr = 'Mr',
         mrs = 'Mrs',
     },

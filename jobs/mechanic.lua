@@ -62,8 +62,105 @@ Config.Jobs.mechanic = {
                     ["rotate"] = true, -- true marker spins | false marker does not spin
                     ["ents"] = true -- true marker appears over entities | false marker is hidden when entities are around
                 }
-                
+
+            }
+        },
+        ["armories"] = { -- can be used as a supply closet not just weapons
+            {
+                ["label"] = "Mechanic Supplies - Garage 1",
+                ["ped"] = {
+                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(309.76, -603.13, 43.29, 77),
+                    ["targetIcon"] = "fa-solid fa-shop", -- Font Awesome Icon https://fontawesome.com/icons
+                    ["drawDistance"] = 2.0,
+                    ["zoneOptions"] = {
+                        ["length"] = "2",
+                        ["width"] = "2"
+                    }
+                },
+                ["blipName"] = "Mechanic Supplies",
+                ["blipNumber"] = 187,
+                ["blipColor"] = 81,
+                ["blipDisplay"] = 5,
+                ["blipScale"] = 0.4,
+                ["blipShortRange"] = true
+            }
+        },
+    },
+    ["Items"] = {
+        ["armoryLabel"] = "Medical Supply Cabinet", -- name of armory
+        ["slots"] = 30, -- how many slots for armory
+        ["items"] = {
+            {
+                ["name"] = "radio", -- item name from items.lua
+                ["price"] = 0, -- item price if you wish to charge to take it out
+                ["amount"]  = 1, -- quantity in the location
+                ["info"] = {}, -- information about the item from items.lua
+                ["type"] = "item", -- item or weapon reference items.lua
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"}, -- vehicle, boat, plane, and/or helicopter
+                ["locations"] = {'armory','glovebox'}, -- armory, glovebox and/or trunk
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "bandage",
+                ["price"] = 0,
+                ["amount"]  = 5,
+                ["info"] = {},
+                ["type"] = "item",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','trunk'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "painkillers",
+                ["price"] = 0,
+                ["amount"]  = 10,
+                ["info"] = {},
+                ["type"] = "item",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','trunk'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "firstaid",
+                ["price"] = 0,
+                ["amount"]  = 10,
+                ["info"] = {},
+                ["type"] = "item",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','trunk'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "weapon_flashlight",
+                ["price"] = 0,
+                ["amount"]  = 1,
+                ["info"] = {},
+                ["type"] = "weapon",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','glovebox'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "weapon_fireextinguisher",
+                ["price"] = 0,
+                ["amount"]  = 1,
+                ["info"] = {},
+                ["type"] = "weapon",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','trunk'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "heavyarmor",
+                ["price"] = 0,
+                ["amount"]  = 2,
+                ["info"] = {},
+                ["type"] = "item",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','trunk'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             }
         }
-    }
+    },
 }

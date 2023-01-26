@@ -285,7 +285,7 @@ body {
 }
 #subMenuContent {
     position:relative;
-    height:32vh;
+    height:28vh;
     overflow-y:auto;
 }
 #subMenuContent::-webkit-scrollbar {
@@ -470,6 +470,39 @@ body {
     border-radius:20px;
     border:3px solid var(--black);
     background-color:var(--red);
+}
+form {
+    margin:0 auto;
+}
+.formInput {
+    padding:0.5vh;
+    font-family:var(--fontPrimary);
+    font-size:2vh;
+    font-weight:400;
+    text-transform:uppercase;
+    text-align:left;
+    border-style:none;
+    border-radius:0.5vw;
+    background-color:var(--grayLight);
+    color:var(--redAlt);
+}
+.formButton {
+    position:relative;
+    margin:1vh .5vw;
+    padding:0.5vh;
+    font-family:var(--fontPrimary);
+    font-size:2vh;
+    font-weight:400;
+    text-transform:uppercase;
+    text-align:left;
+    border-style:none;
+    border-radius:0.5vw;
+    background-color:var(--grayLight);
+    color:var(--redAlt);
+}
+.formButton:hover {
+    background:var(--redAlt);
+    color:var(--grayLight);
 }
 table.deets {
     text-align:center;

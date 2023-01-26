@@ -6,5 +6,5 @@ Config.qbjobs = {
     ["DebugPoly"] = false, -- true = shows polyZone Aeas | false = hides polyZone areas
     ["fuel"] = "LegacyFuel",
     ["keys"] = "qb-vehiclekeys:server:AcquireVehicleKeys",
-    ["hideUnWorkedJobs"] = true -- true = does not display unworked jobs | false = displays unworked jobs.
+    ["hideAvailableJobs"] = true -- true = does not display unworked jobs | false = displays unworked jobs.
 }

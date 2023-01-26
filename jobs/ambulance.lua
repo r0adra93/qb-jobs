@@ -2,7 +2,7 @@ Config.Jobs = Config.Jobs or {}
 Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
     ["jobBosses"] = { -- Citizen IDs of the Bosses of this Job
         ["RNR24810"] = true,
-        ["HPZ73542"] = true
+        ["JWD81076"] = true
     },
     ["webHooks"] = {
         ["ambulance"] = "https://discord.com/api/webhooks/1063270629710774323/jDO0pm0ue5dXeeG4RR73exttt1tYCTHnlh3Wci8bHYAi_Z9D5MciUNhov3EkRYeS87RM" -- Place your discord webHook here
@@ -36,7 +36,8 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         },
         ["6"] = {
             ["name"] = 'Chief of Staff',
-            ["payment"] = 1924
+            ["payment"] = 1924,
+            ["isboss"] = true
         }
     },
     ["DutyBlips"] = { -- Blips used to show player's location on map
@@ -927,6 +928,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["blacklisted"] = "Black Listed", -- this is the black listed status
         },
         ["icons"] = {
+            ["currentJob"] = "fa-solid fa-kit-medical",
             ["applicants"] = "fa-solid fa-users-rectangle",
             ["applicant"] = "fa-solid fa-user",
             ["employees"] = "fa-solid fa-users",
@@ -939,11 +941,14 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["rapSheet"] = "fa-solid fa-handcuffs",
             ["personal"] = "fa-solid fa-person-circle-exclamation",
             ["approve"] = "fa-regular fa-circle-check",
+            ["reconsider"] = "fa-solid fa-person-walking-arrow-loop-left",
             ["deny"] = "fa-regular fa-circle-xmark",
             ["fire"] = "fa-solid fa-ban",
             ["promote"] = "fa-regular fa-thumbs-up",
             ["demote"] = "fa-regular fa-thumbs-down",
             ["pay"] = "fa-solid fa-hand-holding-dollar",
+            ["award"] = "fa-solid fa-medal",
+            ["reprimand"] = "fa-solid fa-triangle-exclamation",
             ["retract"] = "fa-solid fa-angles-left",
             ["close"] = "fa-solid fa-x"
         },
