@@ -499,6 +499,7 @@ form {
     border-radius:0.5vw;
     background-color:var(--grayLight);
     color:var(--redAlt);
+    cursor:pointer;
 }
 .formButton:hover {
     background:var(--redAlt);

@@ -403,12 +403,13 @@ const processContent = (data) => {
             content += `</table></div>`;
         break;
         case "actionButtons":
-            content = `<div class="contentBody"><form method="post" action="https://qb-jobs/managementSubMenuActions">`;
+            content = `<div class="contentBody"><form method="post" class="actionForm">`;
             switch(data.action){
                 case "pay":
                     contentHeader = "Set Pay Rate";
-                    content += `$<input type="number" name="data[payRate]" value="${payRate}" class="formInput" /><br />`;
-                    content += `<input type="hidden" name="data[appcid]" value="${data.citid}" />`;
+                    content += `$<input type="number" name="payRate" value="${payRate}" class="formInput" /><br />`;
+                    content += `<input type="hidden" name="appcid" value="${data.citid}" />`;
+                    content += `<input type="hidden" name="action" value="pay" />`;
                 break;
             }
             content += `<input type="reset" value="Reset" class="formButton" /><input type="submit" name="submit" value="Submit" class="formButton" /></form></div>`;
@@ -452,7 +453,7 @@ $(document).ready(function(){
 */
 });
 /* Button Controls */
-$(document).on('click', ".actionButton", function(e){
+$(document).on('click', ".actionButton", function(e) {
     e.preventDefault();
     let data;
     let btnid = $(this).data('btnid');
@@ -555,6 +556,47 @@ $(document).on('click', ".actionButton", function(e){
         chooseNavDirection(effect,btnid,element,target,targetID)
     }
 })
+
+
+$(document).on("submit",".actionForm", (evt) => {
+    evt.preventDefault();
+
+    const formData = new FormData(evt.target).entries()
+    $.post('https://qb-jobs/managementSubMenuActions', JSON.stringify(Object.fromEntries(formData)), function(res){
+        traction("#subMenuContainer");
+        delete btnList;
+        btnList = res.btnList;
+        action = "management";
+        dbgmsg = "MGMTHere";
+        empty();
+        appendMainMenuHeader();
+        processMainMenu();
+    })
+/*
+    fetch('https://qb-jobs/managementSubMenuActions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(Object.fromEntries(formData)),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        traction("#subMenuContainer");
+        delete btnList;
+        btnList = res.btnList;
+        action = "management";
+        dbgmsg = "MGMTHere";
+        empty();
+        appendMainMenuHeader();
+        processMainMenu();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+*/
+});
+
 $(document).on('keyup', function(e) {
     if(e.key == "Escape"){ close(); }
 });
