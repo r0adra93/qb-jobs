@@ -65,7 +65,7 @@ local errorHandler = function(error)
     end
     return jsMsg
 end
----
+--- SQL handler
 local sqlHandler = function(sql)
     local data = {
         ["success"] = {},
@@ -105,8 +105,9 @@ local function populateJobs(src)
     end)
 end
 exports('populateJobs',populateJobs)
+--- Sends webhook from config to qb-smallresources
 local sendWebHooks = function()
-    for k,v in pairs(Config.Jobs) do
+    for _,v in pairs(Config.Jobs) do
         if v.webHooks then
             exports['qb-smallresources']:addToWebhooks(v.webHooks)
         end
@@ -236,8 +237,6 @@ local function processJobHistory(jhData)
     return jobHistory
 end
 exports("processJobHistory",processJobHistory)
---- Saves the online & offline playerData
-
 --- Sets the job up for the underling
 local function setJob(res)
     local data = setUnderlingStatus(res)
@@ -256,7 +255,7 @@ local function setJob(res)
     local src = res.src -- Manager's Source
     local ercnt = 0
     local player = data.player
-    local jobGrade, queryResult
+    local jobGrade, queryResult, sql
     local pD = {
         ["job"] = {},
         ["citid"] = res.citid
@@ -302,38 +301,22 @@ local function setJob(res)
         pD.metadata = metaData
         pD.metadata.jobs = jobs
         pD.metadata.jobhistory[job] = jobHistory
-        queryResult = MySQL.update.await('UPDATE players SET job = ?, metadata = ? WHERE citizenid = ?',{json.encode(pD.job),json.encode(pD.metadata),pD.citid}, function(result)
-            if next(result) then
-                cb(result)
-            else
-                cb(nil)
-            end
-        end)
-        if queryResult then
-            data.success[ercnt] = {
-                ["subject"] = "User Data Saved",
-                ["msg"] = string.format("JobHistory Update Success"),
-                ["jsMsg"] = "User Saved!",
-                ["color"] = "success",
-                ["logName"] = "qbjobs",
-                ["src"] = src,
-                ["log"] = true
-            }
-            errorHandler(data.success)
-        else
-            data.error[ercnt] = {
-                ["subject"] = "User Data Did Not Save",
-                ["msg"] = string.format("JobHistory Update Failure, processJobHistory msg#004"),
-                ["jsMsg"] = "Save Error!",
-                ["color"] = "error",
-                ["logName"] = "qbjobs",
-                ["src"] = src,
-                ["log"] = true,
-                ["console"] = true
-            }
-            errorHandler(data.error)
-            return data
-        end
+        sql = {
+            ["query"] = string.format("UPDATE players SET job = ?, metadata = ? WHERE citizenid = ?",json.encode(pD.job),json.encode(pD.metadata),pD.citid),
+            ["from"] = "qb-jobs/server/main.lua > function > setJob"
+        }
+        queryResult = sqlHandler(sql)
+        if queryResult.error and next(queryResult.error) then return queryResult end
+        data.success[ercnt] = {
+            ["subject"] = "User Data Saved",
+            ["msg"] = string.format("JobHistory Update Success"),
+            ["jsMsg"] = "User Saved!",
+            ["color"] = "success",
+            ["logName"] = "qbjobs",
+            ["src"] = src,
+            ["log"] = true
+        }
+        errorHandler(data.success)
         data.player = QBCore.Player.GetOfflinePlayer(citid)
     end
     return data
@@ -599,17 +582,6 @@ local function sendToCityHall()
         end
     end
 end
---- verifies society accounts SHOULD GO TO BANK
-local function verifySociety()
-    local bossList = {}
-    local bossMenu = MySQL.query.await('SELECT `job_name` AS "jobName" FROM `management_funds` WHERE type = "boss"', {})
-    for _,v in pairs(bossMenu) do bossList[v.jobName] = v.jobName end
-    for k in pairs(Config.Jobs) do
-        if not bossList[k] then
-            MySQL.query.await("INSERT INTO `management_funds` (`job_name`,`amount`,`type`) VALUES (?,0,'boss')", {k})
-        end
-    end
-end
 --- sends MotorworksConfig table to qb-customs
 local function sendToCustoms()
     local data = {}
@@ -630,15 +602,14 @@ local function buildManagementData(src)
     local players = QBCore.Functions.GetQBPlayers()
     local jobCheck = {}
     local plist = {}
-    local personal, jhList
+    local personal, jhList, sql, queryResult
     local sqlQuery = string.format("$.jobhistory.%s.status",playerJob.name)
-    local queryResult = MySQL.query.await('SELECT citizenid AS citid, charinfo, metadata, license FROM `players` WHERE JSON_VALUE(metadata, ?) != "available"',{sqlQuery}, function(result)
-        if next(result) then
-            cb(result)
-        else
-            cb(nil)
-        end
-    end)
+    sql = {
+        ["query"] = string.format('SELECT citizenid AS citid, charinfo, metadata, license FROM `players` WHERE JSON_VALUE(metadata, ?) != "available"',sqlQuery),
+        ["from"] = "qb-jobs/server/main.lua > function > buildManagementData"
+    }
+    queryResult = sqlHandler(sql)
+    if queryResult.error and next(queryResult.error) then return queryResult end
     mgrBtnList = nil
     mgrBtnList = {
         ["players"] = {},
@@ -769,69 +740,49 @@ local manageStaff = function(res)
     end
     local denyManagerAction = function(info)
         local ercnt = 0
-        local data = {
+        local output = {
             ["error"] = {},
             ["success"] = {}
         }
         local jobName = info.manager.job
         local citid = info.staff.citid
-        data = {
+        local data = {
             ["citid"] = citid,
             ["job"] = jobName,
             [jobName] = {
                 ["denycount"] = 1,
                 ["details"] = {string.format("was denied in %s",jobName)},
                 ["status"] = "denied"
-            },
-            ["error"] = {},
-            ["success"] = {}
+            }
         }
         local staff = setUnderlingStatus(res)
         local metaData = staff.player.PlayerData.metadata
         local jobHistory = processJobHistory(data)
-        local output, queryResult
+        local queryResult, sql
         staff = setUnderlingStatus(res)
         if staff.isOnline then output = staff.player.Functions.AddToJobHistory(jobName,jobHistory)
         else
             metaData.jobhistory[jobName] = jobHistory
-            queryResult = MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?',{json.encode(metaData),citid}, function(result)
-                if next(result) then
-                    cb(result)
-                else
-                    cb(nil)
-                end
-            end)
-            if queryResult then
-                data.success[ercnt] = {
-                    ["subject"] = string.format("%s Denial", jobName),
-                    ["msg"] = string.format("%s was denied with %s.", citid, jobName),
-                    ["jsMsg"] = string.format("%s was denied with %s.", citid, jobName),
-                    ["src"] = src,
-                    ["color"] = "notice",
-                    ["logName"] = "qbjobs",
-                    ["log"] = true,
-                    ["notify"] = true
-                }
-                errorHandler(data.success)
-            else
-                data.error[ercnt] = {
-                    ["subject"] = "User Data Did Not Save",
-                    ["msg"] = string.format("JobHistory Update Failure, processJobHistory msg#007"),
-                    ["jsMsg"] = "Save Error!",
-                    ["color"] = "error",
-                    ["logName"] = "qbjobs",
-                    ["src"] = src,
-                    ["log"] = true,
-                    ["console"] = true
-                }
-                errorHandler(data.error)
-                return data
-            end
-            data.player = QBCore.Player.GetOfflinePlayer(citid)
+            sql = {
+                ["query"] = string.format('UPDATE players SET metadata = ? WHERE citizenid = ?',json.encode(metaData),citid),
+                ["from"] = "qb-jobs/server/main.lua > function > manageStaff > denyManagerAction > "
+            }
+            queryResult = sqlHandler(sql)
+            if queryResult.error and next(queryResult.error) then return queryResult end
+            output.success[ercnt] = {
+                ["subject"] = string.format("%s Denial", jobName),
+                ["msg"] = string.format("%s was denied with %s.", citid, jobName),
+                ["jsMsg"] = string.format("%s was denied with %s.", citid, jobName),
+                ["src"] = src,
+                ["color"] = "notice",
+                ["logName"] = "qbjobs",
+                ["log"] = true,
+                ["notify"] = true
+            }
+            errorHandler(output.success)
         end
-        if data.error and next(data.error) then return data end
-
-        return data
+        if output.error and next(output.error) then return output end
+        return output
     end
     local terminateManagerAction = function(info)
         local grade = "0"
@@ -982,55 +933,39 @@ local manageStaff = function(res)
                 ["details"] = {string.format("was reconsidered in %s",jobName)},
                 ["status"] = "pending"
             },
+        }
+        local output = {
             ["error"] = {},
             ["success"] = {}
         }
         local staff = setUnderlingStatus(res)
         local metaData = staff.player.PlayerData.metadata
         local jobHistory = processJobHistory(data)
-        local output, queryResult
+        local sql, queryResult
         staff = setUnderlingStatus(res)
         if staff.isOnline then output = staff.player.Functions.AddToJobHistory(jobName,jobHistory)
         else
             metaData.jobhistory[jobName] = jobHistory
-            queryResult = MySQL.update.await('UPDATE players SET metadata = ? WHERE citizenid = ?',{json.encode(metaData),citid}, function(result)
-                if next(result) then
-                    cb(result)
-                else
-                    cb(nil)
-                end
-            end)
-            if queryResult then
-                data.success[ercnt] = {
-                    ["subject"] = string.format("%s Reconsidered", data.citid),
-                    ["msg"] = string.format("%s was reconsidered with %s.", data.citid, jobName),
-                    ["jsMsg"] = string.format("%s was reconsidered with %s.", data.citid, jobName),
-                    ["src"] = src,
-                    ["color"] = "notice",
-                    ["logName"] = "qbjobs",
-                    ["log"] = true,
-                    ["notify"] = true
-                }
-                errorHandler(data.success)
-            else
-                data.error[ercnt] = {
-                    ["subject"] = "User Data Did Not Save",
-                    ["msg"] = string.format("JobHistory Update Failure, processJobHistory msg#006"),
-                    ["jsMsg"] = "Save Error!",
-                    ["color"] = "error",
-                    ["logName"] = "qbjobs",
-                    ["src"] = src,
-                    ["log"] = true,
-                    ["console"] = true
-                }
-                errorHandler(data.error)
-                return data
-            end
-            data.player = QBCore.Player.GetOfflinePlayer(citid)
+            sql = {
+                ["query"] = string.format('UPDATE players SET metadata = ? WHERE citizenid = ?',json.encode(metaData),citid),
+                ["from"] = "qb-jobs/server/main.lua > function > > manageStaff > reconsiderManagerAction"
+            }
+            queryResult = sqlHandler(sql)
+            if queryResult.error and next(queryResult.error) then return queryResult end
+            output.success[ercnt] = {
+                ["subject"] = string.format("%s Reconsidered", data.citid),
+                ["msg"] = string.format("%s was reconsidered with %s.", data.citid, jobName),
+                ["jsMsg"] = string.format("%s was reconsidered with %s.", data.citid, jobName),
+                ["src"] = src,
+                ["color"] = "notice",
+                ["logName"] = "qbjobs",
+                ["log"] = true,
+                ["notify"] = true
+            }
+            errorHandler(output.success)
         end
-        if data.error and next(data.error) then return data end
-
-        return data
+        if output.error and next(output.error) then return output end
+        return output
     end
     local payManagerAction = function(info)
         local output = {
@@ -1080,8 +1015,10 @@ local manageStaff = function(res)
             end
             sql = {
                 ["query"] = string.format("UPDATE players SET job = ?, metadata = ? WHERE citizenid = ?",json.encode(staffJob),json.encode(metaData),citid),
-                ["from"] = "qb-jobs/server/main.lua > function > payMangerAction"
+                ["from"] = "qb-jobs/server/main.lua > function > manageStaff > payMangerAction"
             }
+            queryResult = sqlHandler(sql)
+            if queryResult.error and next(queryResult.error) then return queryResult end
             data.player = QBCore.Player.GetOfflinePlayer(citid)
         end
         if data.error and next(data.error) then return data end
@@ -1472,7 +1409,7 @@ QBCore.Functions.CreateCallback("qb-jobs:server:vehiclePlateCheck", function(sou
     local player = QBCore.Functions.GetPlayer(source)
     if not player then return false end
     local playerJob = player.PlayerData.job
-    local plate, vehProps, ppl
+    local plate, vehProps, ppl, sql, queryResult
     local pplMax = 4
     res.platePrefix = Config.Jobs[playerJob.name].VehicleConfig.plate
     ppl = string.len(res.platePrefix)
@@ -1486,8 +1423,13 @@ QBCore.Functions.CreateCallback("qb-jobs:server:vehiclePlateCheck", function(sou
     res.vehTrack = vehTrack[player.PlayerData.citizenid]
     plate = exports["qb-vehicleshop"]:JobsPlateGen(res)
     if res.selGar == "ownGarage" then
-        local result = MySQL.query.await('SELECT mods FROM player_vehicles WHERE plate = ?', {plate})
-        if result[1] then vehProps = json.decode(result[1].mods) end
+        sql = {
+            ["query"] = string.format('SELECT mods FROM player_vehicles WHERE plate = ?',plate),
+            ["from"] = "qb-jobs/server/main.lua > callback > vehiclePlateCheck"
+        }
+        queryResult = sqlHandler(sql)
+        if queryResult.error and next(queryResult.error) then return queryResult end
+        if queryResult[1] then vehProps = json.decode(queryResult[1].mods) end
     end
     cb(plate, vehProps)
 end)
@@ -1496,7 +1438,7 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(s
     local player = QBCore.Functions.GetPlayer(source)
     if not player then return false end
     local playerJob = player.PlayerData.job
-    local vehShort, queryResult
+    local vehShort, queryResult, sql
     local vehList = {
         ["vehicles"] = {},
         ["vehiclesForSale"] = {},
@@ -1553,13 +1495,12 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(s
     if Config.Jobs[playerJob.name].VehicleConfig.ownedVehicles then
         vehList.allowPurchase = true
     end
-    queryResult = MySQL.query.await('SELECT plate, vehicle FROM player_vehicles WHERE citizenid = ? AND (state = ?) AND job = ?', {player.PlayerData.citizenid, 0, playerJob.name}, function(result)
-        if next(result) then
-            cb(result)
-        else
-            cb(nil)
-        end
-    end)
+    sql = {
+        ["query"] = string.format('SELECT plate, vehicle FROM player_vehicles WHERE citizenid = ? AND (state = ?) AND job = ?',player.PlayerData.citizenid, 0, playerJob.name),
+        ["from"] = "qb-jobs/server/main.lua > callback > sendGaragedVehicles"
+    }
+    queryResult = sqlHandler(sql)
+    if queryResult.error and next(queryResult.error) then return queryResult end
     for _, v in pairs(queryResult) do
         vehShort = Config.Jobs[playerJob.name].Vehicles[v.vehicle]
         if(vehShort.authGrades[playerJob.grade.level] and typeList[vehShort.type]) then
