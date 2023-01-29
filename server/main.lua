@@ -715,115 +715,135 @@ end
 --- Processes Jobs
 local manageStaff = function(res)
     local src = res.manager.src
-    local approveManagerAction = function(info)
-        local citid = info.staff.citid
-        local jobName = info.manager.job -- employer job (also employee job)
+    local citid = info.staff.citid
+    local output = {
+        ["error"] = {},
+        ["success"] = {}
+    }
+    local ercnt = 0
+    if not buildManagementData(src) then
+        output.error[ercnt] = {
+            ["subject"] = "Jobs Boss Menu Error",
+            ["msg"] = "Unable to Build Mgmt Data in function: manageStaff",
+            ["jsMsg"] = "Failure!",
+            ["color"] = "error",
+            ["logName"] = "qbjobs",
+            ["src"] = src,
+            ["log"] = true,
+            ["console"] = true
+        }
+        errorHandler(output.error)
+        return output
+    end
+    if not mgrBtnList.players[citid] then
+        output.error[ercnt] = {
+            ["subject"] = "Player Does not Exist",
+            ["msg"] = string.format("%s does not exist in %s", citid, managerJob.name),
+            ["jsMsg"] = string.format("%s does not exist!", citid),
+            ["color"] = "error",
+            ["logName"] = "qbjobs",
+            ["log"] = true,
+            ["console"] = true
+        }
+        errorHandler(output.error)
+        return output
+    end
+    local sql, queryResult
+    local jobName = info.manager.job -- employer job (also employee job)
+    local staff = setUnderlingStatus(res)
+    local staffJob = staff.metadata.jobs[managerJob.name]
+    local metaData = staff.player.PlayerData.metadata
+    local data = {
+        ["citid"] = citid,
+        ["job"] = jobName,
+        ["staff"] = {
+            ["data"] = staff,
+            ["citid"] = res.appcid,
+            ["job"] = staffJob.name
+        },
+        ["manager"] = {
+            ["data"] = manager,
+            ["src"] = src,
+            ["citid"] = manager.PlayerData.citizenid,
+            ["job"] = managerJob.name,
+        }
+    }
+    local approveManagerAction = function(_)
         local grade = "1"
         local gradeName = Config.Jobs[jobName].grades[grade].name
-        local data = {
-            ["citid"] = citid,
-            ["job"] = jobName,
-            ["prevJob"] = jobName,
-            ["newJob"] = jobName,
-            ["grade"] = grade,
-            ["gradeName"] = gradeName,
-            [jobName] = {
-                ["hiredcount"] = 1,
-                ["details"] = {string.format("was hired onto %s",jobName)},
-                ["status"] = "hired"
-            },
-            ["error"] = {},
-            ["success"] = {}
+        data.prevJob = jobName
+        data.newJob = jobName
+        data.grade = grade
+        data.gradeName = gradeName
+        data[jobName] = {
+            ["hiredcount"] = 1,
+            ["details"] = {string.format("was hired onto %s",jobName)},
+            ["status"] = "hired"
         }
-        local output = setJob(data)
-        if output.error and next(output.error) then return output end
-    end
-    local denyManagerAction = function(info)
-        local ercnt = 0
-        local output = {
-            ["error"] = {},
-            ["success"] = {}
-        }
-        local jobName = info.manager.job
-        local citid = info.staff.citid
-        local data = {
-            ["citid"] = citid,
-            ["job"] = jobName,
-            [jobName] = {
-                ["denycount"] = 1,
-                ["details"] = {string.format("was denied in %s",jobName)},
-                ["status"] = "denied"
-            }
-        }
-        local staff = setUnderlingStatus(res)
-        local metaData = staff.player.PlayerData.metadata
-        local jobHistory = processJobHistory(data)
-        local queryResult, sql
-        staff = setUnderlingStatus(res)
-        if staff.isOnline then output = staff.player.Functions.AddToJobHistory(jobName,jobHistory)
-        else
-            metaData.jobhistory[jobName] = jobHistory
-            sql = {
-                ["query"] = string.format('UPDATE players SET metadata = ? WHERE citizenid = ?',json.encode(metaData),citid),
-                ["from"] = "qb-jobs/server/main.lua > function > manageStaff > denyManagerAction > "
-            }
-            queryResult = sqlHandler(sql)
-            if queryResult.error and next(queryResult.error) then return queryResult end
-            output.success[ercnt] = {
-                ["subject"] = string.format("%s Denial", jobName),
-                ["msg"] = string.format("%s was denied with %s.", citid, jobName),
-                ["jsMsg"] = string.format("%s was denied with %s.", citid, jobName),
-                ["src"] = src,
-                ["color"] = "notice",
-                ["logName"] = "qbjobs",
-                ["log"] = true,
-                ["notify"] = true
-            }
-            errorHandler(output.success)
-        end
+        output = setJob(data)
         if output.error and next(output.error) then return output end
         return output
     end
-    local terminateManagerAction = function(info)
-        local grade = "0"
-        local jobName = "unemployed"
-        local newJobName = jobName
-        local prevJobName = info.manager.job
-        local gradeName = Config.Jobs[jobName].grades[grade].name
-        local data = {
-            ["citid"] = info.staff.citid,
-            ["grade"] = grade,
-            ["gradeName"] = gradeName,
-            ["job"] = prevJobName,
-            ["prevJob"] = prevJobName,
-            ["newJob"] = newJobName,
-            [prevJobName] = {
-                ["firedcount"] = 1,
-                ["details"] = {string.format("was terminated from %s",prevJobName)},
-                ["status"] = "fired"
-            },
-            ["error"] = {},
-            ["success"] = {}
+    local denyManagerAction = function(_)
+        data[jobName] = {
+            ["denycount"] = 1,
+            ["details"] = {string.format("was denied in %s",jobName)},
+            ["status"] = "denied"
         }
-        local output = setJob(data)
+        local jobHistory = processJobHistory(data)
+        if staff.isOnline then
+            output = staff.player.Functions.AddToJobHistory(jobName,jobHistory)
+            return output
+        end
+        metaData.jobhistory[jobName] = jobHistory
+        sql = {
+            ["query"] = string.format('UPDATE players SET metadata = ? WHERE citizenid = ?',json.encode(metaData),citid),
+            ["from"] = "qb-jobs/server/main.lua > function > manageStaff > denyManagerAction > "
+        }
+        queryResult = sqlHandler(sql)
+        if queryResult.error and next(queryResult.error) then return queryResult end
+        output.success[ercnt] = {
+            ["subject"] = string.format("%s Denial", jobName),
+            ["msg"] = string.format("%s was denied with %s.", citid, jobName),
+            ["jsMsg"] = string.format("%s was denied with %s.", citid, jobName),
+            ["src"] = src,
+            ["color"] = "notice",
+            ["logName"] = "qbjobs",
+            ["log"] = true,
+            ["notify"] = true
+        }
+        errorHandler(output.success)
         if output.error and next(output.error) then return output end
+        return output
     end
-    local promoteManagerAction = function(info)
-        local prevGrade = info.action.promote.grade
-        local newGrade = tonumber(prevGrade) + 1
-        local grade = tostring(newGrade)
-        local data = {
-            ["error"] = {},
-            ["success"] = {}
-        }
-        local ercnt = 0
-        local jobName = info.manager.job
+    local terminateManagerAction = function(_)
+        local grade = "0"
+        jobName = "unemployed"
         local newJobName = jobName
-        local prevJobName = info.manager.job
+        local prevJobName = data.manager.job
+        local gradeName = Config.Jobs[jobName].grades[grade].name
+        data.grade = grade
+        data.gradeName = gradeName
+        data.job = prevJobName
+        data.prevJob = prevJobName
+        data.newJob = newJobName
+        data[prevJobName] = {
+            ["firedcount"] = 1,
+            ["details"] = {string.format("was terminated from %s",prevJobName)},
+            ["status"] = "fired"
+        }
+        output = setJob(data)
+        if output.error and next(output.error) then return output end
+        return output
+    end
+    local gradeManagerAction = function(info)
+        local prevGrade = info[res.action].prevGrade
+        local newGrade = info[res.action].newGrade
+        local grade = tostring(newGrade)
         if not Config.Jobs[jobName].grades[grade] then
-            data.error[ercnt] = {
-                ["subject"] = "Can't Promote Any Higher",
-                ["msg"] = string.format("%s can not be promoted any higher in %s.", info.staff.citid, jobName),
+            output.error[ercnt] = {
+                ["subject"] = string.format("Can't %s Any Further",res.action),
+                ["msg"] = string.format("%s can not be info[res.action].details any further in %s.", citid, jobName),
                 ["jsMsg"] = "Highest grade reached!",
                 ["src"] = src,
                 ["color"] = "notice",
@@ -831,117 +851,40 @@ local manageStaff = function(res)
                 ["log"] = true,
                 ["notify"] = true
             }
-            errorHandler(data.error)
-            return data
+            errorHandler(output.error)
+            return output
         end
         local gradeName = Config.Jobs[jobName].grades[grade].name
         local prevGradeName = Config.Jobs[jobName].grades[prevGrade].name
-        data = {
-            ["citid"] = info.staff.citid,
-            ["grade"] = grade,
-            ["gradeName"] = gradeName,
-            ["job"] = prevJobName,
-            ["prevJob"] = prevJobName,
-            ["newJob"] = newJobName,
-            [prevJobName] = {
-                ["gradechangecount"] = 1,
-                ["details"] = {string.format("was promoted from %s to %s in %s",prevGradeName,gradeName,jobName)},
-                ["status"] = "hired"
-            },
-            ["error"] = {},
-            ["success"] = {}
+        data.grade = grade
+        data.gradeName = gradeName
+        data.prevJob = jobName
+        data.newJob = jobName
+        data[jobName] = {
+            ["gradechangecount"] = 1,
+            ["details"] = {string.format("was %s from %s to %s",info[res.action].details,prevGradeName,gradeName)}
         }
-        local output = setJob(data)
+        output = setJob(data)
         if output.error and next(output.error) then return output end
-        data.success[ercnt] = {
-            ["subject"] = "Promotion Alert",
-            ["msg"] = string.format("%s was promoted from %s to %s in %s.", data.citid, prevGradeName, gradeName, jobName),
-            ["jsMsg"] = string.format("%s was promoted from %s to %s in %s.", data.citid, prevGradeName, gradeName, jobName),
+        output.success[ercnt] = {
+            ["subject"] = string.format("%s Alert",info[res.action].subject),
+            ["msg"] = string.format("%s in %s.",data[jobName].details, jobName),
+            ["jsMsg"] = info[res.action].subject,
             ["src"] = src,
             ["color"] = "notice",
             ["logName"] = "qbjobs",
             ["log"] = true,
             ["notify"] = true
         }
-        errorHandler(data.success)
+        errorHandler(output.success)
+        return output
     end
-    local demoteManagerAction = function(info)
-        local prevGrade = info.action.demote.grade
-        local newGrade = tonumber(prevGrade) - 1
-        local grade = tostring(newGrade)
-        local ercnt = 0
-        local data = {
-            ["error"] = {},
-            ["success"] = {}
+    local reconsiderManagerAction = function(_)
+        data[jobName] = {
+            ["details"] = {string.format("was reconsidered in %s",jobName)},
+            ["status"] = "pending"
         }
-        local jobName = info.manager.job
-        local newJobName = jobName
-        local prevJobName = info.manager.job
-        if not Config.Jobs[jobName].grades[grade] then
-            data.error[ercnt] = {
-                ["subject"] = "Can't Demote Any Lower",
-                ["msg"] = string.format("%s can not be demote any lower in %s.", info.staff.citid, jobName),
-                ["jsMsg"] = "Lowest grade reached!",
-                ["src"] = src,
-                ["color"] = "notice",
-                ["logName"] = "qbjobs",
-                ["log"] = true,
-                ["notify"] = true
-            }
-            errorHandler(data.error)
-            return data
-        end
-        local gradeName = Config.Jobs[jobName].grades[grade].name
-        local prevGradeName = Config.Jobs[jobName].grades[prevGrade].name
-        data = {
-            ["citid"] = info.staff.citid,
-            ["grade"] = grade,
-            ["gradeName"] = gradeName,
-            ["job"] = prevJobName,
-            ["prevJob"] = prevJobName,
-            ["newJob"] = newJobName,
-            [prevJobName] = {
-                ["gradechangecount"] = 1,
-                ["details"] = {string.format("was demoted from %s to %s in %s",prevGradeName,gradeName,jobName)},
-                ["status"] = "hired"
-            },
-            ["error"] = {},
-            ["success"] = {}
-        }
-        local output = setJob(data)
-        if output.error and next(output.error) then return output.error end
-        data.success[ercnt] = {
-            ["subject"] = "Demotion Alert",
-            ["msg"] = string.format("%s was demoted from %s to %s in %s.", data.citid, prevGradeName, gradeName, jobName),
-            ["jsMsg"] = string.format("%s was demoted from %s to %s in %s.", data.citid, prevGradeName, gradeName, jobName),
-            ["src"] = src,
-            ["color"] = "notice",
-            ["logName"] = "qbjobs",
-            ["log"] = true,
-            ["notify"] = true
-        }
-        errorHandler(data.success)
-    end
-    local reconsiderManagerAction = function(info)
-        local ercnt = 0
-        local jobName = info.manager.job
-        local citid = info.staff.citid
-        local data = {
-            ["citid"] = citid,
-            ["job"] = jobName,
-            [jobName] = {
-                ["details"] = {string.format("was reconsidered in %s",jobName)},
-                ["status"] = "pending"
-            },
-        }
-        local output = {
-            ["error"] = {},
-            ["success"] = {}
-        }
-        local staff = setUnderlingStatus(res)
-        local metaData = staff.player.PlayerData.metadata
         local jobHistory = processJobHistory(data)
-        local sql, queryResult
         staff = setUnderlingStatus(res)
         if staff.isOnline then output = staff.player.Functions.AddToJobHistory(jobName,jobHistory)
         else
@@ -953,9 +896,9 @@ local manageStaff = function(res)
             queryResult = sqlHandler(sql)
             if queryResult.error and next(queryResult.error) then return queryResult end
             output.success[ercnt] = {
-                ["subject"] = string.format("%s Reconsidered", data.citid),
-                ["msg"] = string.format("%s was reconsidered with %s.", data.citid, jobName),
-                ["jsMsg"] = string.format("%s was reconsidered with %s.", data.citid, jobName),
+                ["subject"] = string.format("%s Reconsidered", citid),
+                ["msg"] = string.format("%s was reconsidered with %s.", citid, jobName),
+                ["jsMsg"] = string.format("%s was reconsidered with %s.", citid, jobName),
                 ["src"] = src,
                 ["color"] = "notice",
                 ["logName"] = "qbjobs",
@@ -967,37 +910,15 @@ local manageStaff = function(res)
         if output.error and next(output.error) then return output end
         return output
     end
-    local payManagerAction = function(info)
-        local output = {
-            ["error"] = {},
-            ["success"] = {}
-        }
-        local ercnt = 0
+    local payManagerAction = function(_)
         local payRate = res.payRate
         if not QBCore.Functions.PrepForSQL(src,payRate,"^%d+$") then
             output.error[ercnt] = true
             return output
         end
-        local jobName = info.manager.job
-        local citid = info.staff.citid
-        local data = {
-            ["citid"] = citid,
-            ["job"] = jobName,
-            [jobName] = {
-                ["details"] = {string.format("pay was changed to %s",payRate)},
-                ["status"] = "hired"
-            },
-            ["error"] = {},
-            ["success"] = {}
-        }
-        local staff = setUnderlingStatus(res)
-        local metaData = staff.player.PlayerData.metadata
         local jobHistory = processJobHistory(data)
-        local staffJob = staff.player.PlayerData.job
         local jobData = metaData.jobs[jobName]
-        local sql, queryResult
         jobData.payment = payRate
-        staff = setUnderlingStatus(res)
         if staff.isOnline then
             output = staff.player.Functions.AddToJobHistory(jobName,jobHistory)
             if output.error and next(output.error) then return output end
@@ -1005,7 +926,8 @@ local manageStaff = function(res)
             if output.error and next(output.error) then return output end
             if staffJob.name == jobName then staff.player.Functions.UpdateJob(jobData) end
             if output.error and next(output.error) then return output end
-            staff = setUnderlingStatus(res)
+            output = setUnderlingStatus(res)
+            return output
         else
             metaData.jobhistory[jobName] = jobHistory
             metaData.jobs[jobName] = jobData
@@ -1038,108 +960,53 @@ local manageStaff = function(res)
     res.citid = res.appcid
     local manager = QBCore.Functions.GetPlayer(src)
     local managerJob = manager.PlayerData.job
-    local staff = setUnderlingStatus(res)
-    staff = staff.player.PlayerData
-    local staffJob = {
-        ["name"] = managerJob.name,
-        ["type"] = managerJob.type,
-        ["label"] = managerJob.label,
-        ["grade"] = {
-            ["level"] = 0,
-            ["name"] = "Freelancer"
-        },
-        ["onduty"] = false,
-        ["payment"] = 0
-    }
-    if staff.metadata.jobs[managerJob.name] then
-        staffJob = nil
-        staffJob = staff.metadata.jobs[managerJob.name]
-    end
     local grade = staffJob.grade.level
-    local data = {
-        ["staff"] = {
-            ["data"] = staff,
-            ["citid"] = res.appcid,
-            ["job"] = staffJob.name
+    data.action = {
+        ["approve"] = {
+            ["grade"] = "1",
+            ["func"] = approveManagerAction
         },
-        ["manager"] = {
-            ["data"] = manager,
-            ["src"] = src,
-            ["citid"] = manager.PlayerData.citizenid,
-            ["job"] = managerJob.name,
+        ["terminate"] = {
+            ["status"] = "fired",
+            ["grade"] = 0,
+            ["job"] = "unemployed",
+            ["func"] = terminateManagerAction
         },
-        ["action"] = {
-            ["approve"] = {
-                ["grade"] = "1",
-                ["func"] = approveManagerAction
-            },
-            ["terminate"] = {
-                ["status"] = "fired",
-                ["grade"] = 0,
-                ["job"] = "unemployed",
-                ["func"] = terminateManagerAction
-            },
-            ["deny"] = {
-                ["status"] = "denied",
-                ["func"] = denyManagerAction
-            },
-            ["resign"] = {
-                ["status"] = "quit",
-                ["grade"] = 0,
-                ["job"] = "unemployed"
-            },
-            ["promote"] = {
-                ["status"] = "promote",
-                ["grade"] = grade,
-                ["func"] = promoteManagerAction
-            },
-            ["demote"] = {
-                ["status"] = "demote",
-                ["grade"] = grade,
-                ["func"] = demoteManagerAction
-            },
-            ["reconsider"] = {
-                ["status"] = "pending",
-                ["func"] = reconsiderManagerAction
-            },
-            ["pay"] = {
-                ["status"] = "pay",
-                ["func"] = payManagerAction
-            }
+        ["deny"] = {
+            ["status"] = "denied",
+            ["func"] = denyManagerAction
         },
-        ["error"] = {},
-        ["success"] = {}
+        ["resign"] = {
+            ["status"] = "quit",
+            ["grade"] = 0,
+            ["job"] = "unemployed"
+        },
+        ["promote"] = {
+            ["status"] = "promote",
+            ["prevGrade"] = grade,
+            ["newGrade"] = tonumber(grade) + 1,
+            ["details"] = "promoted",
+            ["subject"] = "Promotion",
+            ["func"] = gradeManagerAction
+        },
+        ["demote"] = {
+            ["status"] = "demote",
+            ["prevGrade"] = grade,
+            ["newGrade"] = tonumber(grade) - 1,
+            ["details"] = "demoted",
+            ["subject"] = "Demotion",
+            ["func"] = gradeManagerAction
+        },
+        ["reconsider"] = {
+            ["status"] = "pending",
+            ["func"] = reconsiderManagerAction
+        },
+        ["pay"] = {
+            ["status"] = "pay",
+            ["func"] = payManagerAction
+        }
     }
-    local ercnt = 0
-    local output
-    if not buildManagementData(src) then
-        data.error[ercnt] = {
-            ["subject"] = "Jobs Boss Menu Error",
-            ["msg"] = "Unable to Build Mgmt Data in function: manageStaff",
-            ["jsMsg"] = "Failure!",
-            ["color"] = "error",
-            ["logName"] = "qbjobs",
-            ["src"] = src,
-            ["log"] = true,
-            ["console"] = true
-        }
-        errorHandler(data.error)
-        return data
-    end
-    if not mgrBtnList.players[data.staff.citid] then
-        data.error[ercnt] = {
-            ["subject"] = "Player Does not Exist",
-            ["msg"] = string.format("%s does not exist in %s", data.staff.citid, managerJob.name),
-            ["jsMsg"] = "Exploit Failed",
-            ["color"] = "exploit",
-            ["logName"] = "exploit",
-            ["log"] = true,
-            ["console"] = true
-        }
-        errorHandler(data.error)
-        return data
-    end
-    output = data.action[res.action].func(data)
+    output = data.action[res.action].func(data.action)
     return output
 end
 --- functions to run at resource start
@@ -1148,7 +1015,6 @@ local function kickOff()
         sendWebHooks()
         countVehPop()
         sendToCityHall()
-        verifySociety()
         sendToCustoms()
         MySQL.query("DELETE FROM stashitems WHERE stash LIKE '%trash%'")
     end)

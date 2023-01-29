@@ -12,6 +12,8 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
     ["defaultDuty"] = true, -- duty status when logged on
     ["offDutyPay"] = false, -- true get paid even off duty
     ["listInCityHall"] = true, -- true the job is sent to city hall | false the job is not in city hall
+    -- future feature ["canBill"] = true, -- true allows the job to use /bill to charge another player immediately | false disables the ability
+    -- future feature ["canInvoice"] = true, -- true allows the job to send an invoice to a player to allow a player to pay later | false disables this feature
     ["grades"] = {
 --        [0] = {["name"] = "No Grades", ["payment"] = 30}, -- Reserved Do Not Touch
         ["1"] = { -- job grade starts at 1 (0 is Reserved)
