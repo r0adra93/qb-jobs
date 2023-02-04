@@ -75,7 +75,7 @@ local function processButtonList(res)
         ["header"] = Config.Jobs[playerJob.name].label .. Lang:t('headings.management'),
         ["currentJob"] = playerJob.name,
         ["currentJobName"] = Config.Jobs[playerJob.name].label,
-        ["icons"] = Config.Jobs[playerJob.name].management.icons,
+        ["icons"] = Config.Jobs[playerJob.name].menu.icons,
         ["status"] = Config.Jobs[playerJob.name].management.status,
         ["awards"] = Config.Jobs[playerJob.name].management.awards,
         ["reprimands"] = Config.Jobs[playerJob.name].management.reprimands,
@@ -161,7 +161,7 @@ local function takeOutVehicle(result)
                     SetVehicleNumberPlateText(data.netid, data.plate)
                     data.plate = QBCore.Functions.GetPlate(data.netid)
                     SetEntityHeading(data.netid, coords.w)
-                    exports[Config.qbjobs.fuel]:SetFuel(data.netid, 100.0)
+                    exports[Config.fuel]:SetFuel(data.netid, 100.0)
                     SetVehicleFixed(data.netid)
                     SetEntityAsMissionEntity(data.netid, true, true)
                     SetVehicleDoorsLocked(data.netid, 2)
@@ -176,7 +176,7 @@ local function takeOutVehicle(result)
                         end
                     end
                     if properties then QBCore.Functions.SetVehicleProperties(data.netid, vehicleProps) end
-                    TriggerServerEvent(Config.qbjobs.keys, data.plate)
+                    TriggerServerEvent(Config.keys, data.plate)
                     if Config.Jobs[playerJob.name].Items and (Config.Jobs[playerJob.name].Items.trunk or Config.Jobs[playerJob.name].Items.glovebox) then
                         local tseData = {}
                         tseData.vehicle = data.vehicle
@@ -220,6 +220,41 @@ local function toggleDuty()
     end
     return true
 end
+local getMultiJobMenu = function()
+    local jobHistory = player.metadata.jobhistory
+    local status = "available"
+    local output = {
+        ["jobs"] = {
+            ["hired"] = {},
+            ["available"] = {}
+        },
+        ["icons"] = Config.menu.icons
+    }
+    for k in pairs(Config.Jobs) do
+        if jobHistory[k] then status = jobHistory[k].status end
+        output.jobs.available[k] = {
+            ["name"] = k,
+            ["label"] = Config.Jobs[k].label,
+            ["status"] = status
+        }
+        if player.metadata.jobs[k] then
+            output.jobs.hired[k] = {
+                ["name"] = k,
+                ["label"] = Config.Jobs[k].label,
+                ["status"] = "hired"
+            }
+            if playerJob.name == k then output.jobs.hired[k].active = true end
+            output.jobs.available[k] = nil
+        end
+        output.jobs.available.unemployed = nil
+    end
+    QBCore.Debug(output)
+    SendNUIMessage({
+        action = "multiJob",
+        btnList = output
+    })
+    SetNuiFocus(true,true)
+end
 --- Listens for actions to interact with job peds
 local function Listen4Control(data)
     ControlListen = true
@@ -230,6 +265,7 @@ local function Listen4Control(data)
                 elseif data.event then TriggerEvent(data.event)
                 elseif data.svrEvent then TriggerServerEvent(data.svrEvent) end
             end
+            if multiJobMenu then getMultiJobMenu() end
             Wait(1)
         end
     end)
@@ -253,11 +289,6 @@ local function spawnPeds()
         ["management"] = {
             ["fn"] = receiveManagementData,
             ["label"] = Lang:t('info.enter_management'),
-            ["duty"] = false
-        },
-        ["oldManagement"] = {
-            ["event"] = "qb-bossmenu:client:OpenMenu",
-            ["label"] = "enter Old Management",
             ["duty"] = false
         },
         ["garages"] = {
@@ -314,7 +345,7 @@ local function spawnPeds()
                 current.clntSvr = pedSet.clntSvr
                 pedsSpawned = true
                 if pedSet then
-                    if Config.UseTarget then
+                    if Config.useTarget then
                             exports['qb-target']:AddTargetEntity(ped, {
                                 options = {
                                     {
@@ -337,7 +368,7 @@ local function spawnPeds()
                                     heading = current.coords.w,
                                     minZ = current.coords.z - 1,
                                     maxZ = current.coords.z + 1,
-                                    debugPoly = Config.qbjobs.DebugPoly,
+                                    debugPoly = Config.debugPoly,
                                     data = pedSet[k]
                                 }
                             )
@@ -349,7 +380,7 @@ local function spawnPeds()
         end
     end
     if zones then
-        locCombo = ComboZone:Create(zones, {name = "JobsCombo", debugPoly = Config.qbjobs.DebugPoly})
+        locCombo = ComboZone:Create(zones, {name = "JobsCombo", debugPoly = Config.debugPoly})
         locCombo:onPlayerInOut(function(isPointInside,_,zone)
             if onDuty or zone and zone.data.duty then
                 if isPointInside then
@@ -559,6 +590,9 @@ RegisterNetEvent('qb-jobs:client:updateBlips', function(dutyPlayers, publicPlaye
         end
     end
 end)
+RegisterNetEvent('qb-jobs:client:multiJobMenu',function()
+    getMultiJobMenu()
+end)
 -- NUI Callbacks
 --- closes the menu
 RegisterNUICallback('closeMenu', function(data,cb)
@@ -585,3 +619,18 @@ RegisterNUICallback('managementSubMenuActions', function(res,cb)
         cb(data)
     end,res)
 end)
+--- boss menu button society actions processor
+RegisterNUICallback('managementSocietyActions', function(res,cb)
+    local data = {}
+    QBCore.Functions.TriggerCallback('qb-jobs:server:processManagementSocietyActions',function(res1)
+        processButtonList(res1)
+        data.btnList = mgrBtnList
+        cb(data)
+    end,res)
+end)
+-- Commands
+--- J to open multiJob menu
+RegisterCommand("jobs", function()
+    getMultiJobMenu()
+end, false)
+RegisterKeyMapping("jobs","MultiJob Menu","keyboard","j")

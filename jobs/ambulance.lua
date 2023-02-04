@@ -5,7 +5,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         ["JWD81076"] = true
     },
     ["webHooks"] = {
-        ["ambulance"] = "https://discord.com/api/webhooks/1063270629710774323/jDO0pm0ue5dXeeG4RR73exttt1tYCTHnlh3Wci8bHYAi_Z9D5MciUNhov3EkRYeS87RM" -- Place your discord webHook here
+        ["ambulance"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
     },
     ["label"] = "Medical Services", -- label that display when typing in /job
     ["type"] = "ems", -- job type -- leave set to ems as it's part of the ambulancejob
@@ -14,6 +14,46 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
     ["listInCityHall"] = true, -- true the job is sent to city hall | false the job is not in city hall
     -- future feature ["canBill"] = true, -- true allows the job to use /bill to charge another player immediately | false disables the ability
     -- future feature ["canInvoice"] = true, -- true allows the job to send an invoice to a player to allow a player to pay later | false disables this feature
+    ["menu"] = { -- Menu settings for boss and vehicle menus
+        ["icons"] = { -- icons for boss and vehicle menus
+            ["applicant"] = "fa-solid fa-user",
+            ["applicants"] = "fa-solid fa-users-rectangle",
+            ["approve"] = "fa-regular fa-circle-check",
+            ["award"] = "fa-solid fa-medal",
+            ["boat"] = "fa-solid fa-ship",
+--            ["close"] = "fa-regular fa-circle-xmark",
+            ["close"] = "fa-solid fa-x",
+            ["currentJob"] = "fa-solid fa-kit-medical",
+            ["demote"] = "fa-regular fa-thumbs-down",
+            ["deniedApplicant"] = "fa-solid fa-user-slash",
+            ["deniedApplicants"] = "fa-solid fa-users-slash",
+            ["deny"] = "fa-regular fa-circle-xmark",
+            ["employee"] = "fa-solid fa-user",
+            ["employees"] = "fa-solid fa-users",
+            ["fire"] = "fa-solid fa-ban",
+            ["helicopter"] = "fa-solid fa-helicopter",
+            ["jobGarage"] = "fa-solid fa-square-parking",
+            ["jobHistory"] = "fa-regular fa-address-card",
+            ["jobStore"] = "fa-solid fa-store",
+            ["ownGarage"] = "fa-solid fa-warehouse",
+            ["pastEmployee"] = "fa-solid fa-user-slash",
+            ["pastEmployees"] = "fa-solid fa-users-slash",
+            ["pay"] = "fa-solid fa-hand-holding-dollar",
+            ["personal"] = "fa-solid fa-person-circle-exclamation",
+            ["plane"] = "fa-solid fa-plane",
+            ["promote"] = "fa-regular fa-thumbs-up",
+            ["rapSheet"] = "fa-solid fa-handcuffs",
+            ["reconsider"] = "fa-solid fa-person-walking-arrow-loop-left",
+            ["reprimand"] = "fa-solid fa-triangle-exclamation",
+            ["retract"] = "fa-solid fa-angles-left",
+            ["returnVehicle"] = "fa-solid fa-rotate-left",
+            ["society"] = "fa-solid fa-money-bill-1-wave",
+            ["societyDeposit"] = "fa-solid fa-right-to-bracket",
+            ["societyWithdrawl"] = "fa-solid fa-right-from-bracket",
+            ["vehicle"] = "fa-solid fa-truck-medical",
+            ["quit"] = "fa-regular fa-circle-xmark"
+        }
+    },
     ["grades"] = {
 --        [0] = {["name"] = "No Grades", ["payment"] = 30}, -- Reserved Do Not Touch
         ["1"] = { -- job grade starts at 1 (0 is Reserved)
@@ -38,8 +78,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         },
         ["6"] = {
             ["name"] = 'Chief of Staff',
-            ["payment"] = 1924,
-            ["isboss"] = true
+            ["payment"] = 1924
         }
     },
     ["DutyBlips"] = { -- Blips used to show player's location on map
@@ -86,27 +125,6 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                     }
                 },
                 ["blipName"] = "Medical Management",
-                ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
-                ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
-                ["blipDisplay"] = 5, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
-                ["blipScale"] = 0.4, -- set the size of the blip on the full size map
-                ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
-            }
-        },
-        ["oldManagement"] = { -- location of boss' management station
-            {
-                ["Label"] = "Old Management",
-                ["ped"] = {
-                    ["model"] = "a_f_o_salton_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
-                    ["coords"] = vector4(319.52, -573.3, 43.32, 197.28),
-                    ["targetIcon"] = "fa-solid fa-bars-progress", -- Font Awesome Icon https://fontawesome.com/icons
-                    ["drawDistance"] = 2.0,
-                    ["zoneOptions"] = {
-                        ["length"] = "4",
-                        ["width"] = "2"
-                    }
-                },
-                ["blipName"] = "Old Management",
                 ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
                 ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
                 ["blipDisplay"] = 5, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
@@ -609,18 +627,6 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["ownedParkingFee"] = true, -- true = players are charged when checking out vehicle | false = players are not charged when checking out vehicle
             ["allowPurchase"] = true, -- true = players pay a fee to own vehicle | false = players are not charged a fee to own a vehicle
             ["societyPurchase"] = true, -- true = the job pays the vehicle fees | false = player pays fees to the job
-            ["icons"] = {
-                ["boat"] = "fa-solid fa-ship",
-                ["helicopter"] = "fa-solid fa-helicopter",
-                ["plane"] = "fa-solid fa-plane",
-                ["vehicle"] = "fa-solid fa-truck-medical",
-                ["ownGarage"] = "fa-solid fa-warehouse",
-                ["jobGarage"] = "fa-solid fa-square-parking",
-                ["jobStore"] = "fa-solid fa-store",
-                ["returnVehicle"] = "fa-solid fa-rotate-left",
-                ["close"] = "fa-regular fa-circle-xmark",
-                ["retract"] = "fa-solid fa-angles-left"
-            }
         },
         ["vehicles"] = {
             ["ambulance"] = { -- Spawn Code
@@ -649,7 +655,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                     ["grades"] = {0,1,2,3},
                     ["livery"] = 2, -- First Livery Starts At 0
                     ["extras"] = {
-                        [1] = 1, -- 0 = On | 1 = Off
+                        [1] = 1, -- 0 = Show | 1 = Hide
                         [2] = 0,
                         [3] = 0,
                         [4] = 0,
@@ -668,7 +674,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                     ["grades"] = {4,5,6},
                     ["livery"] = 1, -- First Livery Starts At 0
                     ["extras"] = {
-                        [1] = 1, -- 0 = On | 1 = Off
+                        [1] = 1, -- 0 = Show | 1 = Hide
                         [2] = 0,
                         [3] = 0,
                         [4] = 0,
@@ -905,9 +911,9 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 }
             },
             {
-                outfitLabel = 'Polo',
+                ["outfitLabel"] = 'Polo',
                 ["authGrades"] = {3,4,5,6},
-                outfitData = {
+                ["outfitData"] = {
                     ['arms'] = {item = 105, texture = 0}, -- Arms
                     ['t-shirt'] = {item = 13, texture = 0}, -- T-Shirt
                     ['torso2'] = {item = 257, texture = 0}, -- Jackets
@@ -924,9 +930,9 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 }
             },
             {
-                outfitLabel = 'Doctor',
+                ["outfitLabel"] = 'Doctor',
                 ["authGrades"] = {4,5,6},
-                outfitData = {
+                ["outfitData"] = {
                     ['arms'] = {item = 105, texture = 0}, -- Arms
                     ['t-shirt'] = {item = 39, texture = 3}, -- T-Shirt
                     ['torso2'] = {item = 7, texture = 1}, -- Jackets
@@ -951,31 +957,6 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["fired"] = "Fired", -- this is the fired status
             ["quit"] = "Quit", -- this is the quit status
             ["blacklisted"] = "Black Listed", -- this is the black listed status
-        },
-        ["icons"] = {
-            ["currentJob"] = "fa-solid fa-kit-medical",
-            ["applicants"] = "fa-solid fa-users-rectangle",
-            ["applicant"] = "fa-solid fa-user",
-            ["employees"] = "fa-solid fa-users",
-            ["employee"] = "fa-solid fa-user",
-            ["pastEmployees"] = "fa-solid fa-users-slash",
-            ["pastEmployee"] = "fa-solid fa-user-slash",
-            ["deniedApplicants"] = "fa-solid fa-users-slash",
-            ["deniedApplicant"] = "fa-solid fa-user-slash",
-            ["jobHistory"] = "fa-regular fa-address-card",
-            ["rapSheet"] = "fa-solid fa-handcuffs",
-            ["personal"] = "fa-solid fa-person-circle-exclamation",
-            ["approve"] = "fa-regular fa-circle-check",
-            ["reconsider"] = "fa-solid fa-person-walking-arrow-loop-left",
-            ["deny"] = "fa-regular fa-circle-xmark",
-            ["fire"] = "fa-solid fa-ban",
-            ["promote"] = "fa-regular fa-thumbs-up",
-            ["demote"] = "fa-regular fa-thumbs-down",
-            ["pay"] = "fa-solid fa-hand-holding-dollar",
-            ["award"] = "fa-solid fa-medal",
-            ["reprimand"] = "fa-solid fa-triangle-exclamation",
-            ["retract"] = "fa-solid fa-angles-left",
-            ["close"] = "fa-solid fa-x"
         },
         ["awards"] = {
             {
@@ -1011,10 +992,6 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             {
                 ["title"] = "No Call / No Show",
                 ["description"] = "Fails to call out & fails to show up."
-            },
-            {
-                ["title"] = "Other",
-                ["description"] = "Any reason that necessitates a write up."
             }
         }
     },

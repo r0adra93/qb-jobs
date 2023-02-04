@@ -354,6 +354,10 @@ body {
     background:var(--redAlt);
     color:var(--grayLight);
 }
+.subMenuContentBody {
+    background:var(--white);
+    padding:1vh 2vw;
+}
 #subMenuFooter {
     white-space:normal;
 }
@@ -476,8 +480,9 @@ form {
 }
 .formInput {
     padding:0.5vh;
+    margin:.2vh;
     font-family:var(--fontPrimary);
-    font-size:2vh;
+    font-size:1.5vh;
     font-weight:400;
     text-transform:uppercase;
     text-align:left;
@@ -488,10 +493,10 @@ form {
 }
 .formButton {
     position:relative;
-    margin:1vh .5vw;
+    margin:1vh .2vw;
     padding:0.5vh;
     font-family:var(--fontPrimary);
-    font-size:2vh;
+    font-size:1.5vh;
     font-weight:400;
     text-transform:uppercase;
     text-align:left;
@@ -602,7 +607,7 @@ ul.contentList li:nth-child(odd) {
 }
 .logo {
     background-image:url("./qb.png");
-    background-size:20vh 20vh;
+    background-size:20vh 20vw;
     background-repeat:no-repeat;
     background-position-y:bottom;
     background-position-x:center;

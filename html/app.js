@@ -170,7 +170,7 @@ const processMainMenu = () => {
             if (!jQuery.isEmptyObject(btnList.applicants)) {
                 mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.applicants}"></i>Applicants</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
                 for (const [key] of Object.entries(btnList.applicants)) {
-                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="applicants" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.applicant}"></i>${btnList.applicants[key].personal.firstName} ${btnList.applicants[key].personal.lastName}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="applicants" data-btype="manageStaff" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.applicant}"></i>${btnList.applicants[key].personal.firstName} ${btnList.applicants[key].personal.lastName}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
@@ -180,7 +180,7 @@ const processMainMenu = () => {
                 mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.employees}"></i>Employees</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
                 for (const [key] of Object.entries(btnList.employees)) {
                     if (typeof btnList.employees[key].personal.position !== "undefined"){title = `<br /> ${btnList.employees[key].personal.position.name} | $${btnList.employees[key].personal.payRate}`}
-                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavButton" data-type="employees" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.employee}"></i>${btnList.employees[key].personal.firstName} ${btnList.employees[key].personal.lastName}${title}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavButton" data-type="employees" data-btype="manageStaff" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.employee}"></i>${btnList.employees[key].personal.firstName} ${btnList.employees[key].personal.lastName}${title}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
@@ -189,7 +189,7 @@ const processMainMenu = () => {
             if (!jQuery.isEmptyObject(btnList.pastEmployees)) {
                 mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.pastEmployees}"></i>Past Employees</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
                 for (const [key] of Object.entries(btnList.pastEmployees)) {
-                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="pastEmployees" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.pastEmployee}"></i>${btnList.pastEmployees[key].personal.firstName} ${btnList.pastEmployees[key].personal.lastName}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="pastEmployees" data-btype="manageStaff" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.pastEmployee}"></i>${btnList.pastEmployees[key].personal.firstName} ${btnList.pastEmployees[key].personal.lastName}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
@@ -198,11 +198,48 @@ const processMainMenu = () => {
             if (!jQuery.isEmptyObject(btnList.deniedApplicants)) {
                 mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.deniedApplicants}"></i>Denied Applicants</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
                 for (const [key] of Object.entries(btnList.deniedApplicants)) {
-                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="deniedApplicants" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.deniedApplicant}"></i>${btnList.deniedApplicants[key].personal.firstName} ${btnList.deniedApplicants[key].personal.lastName}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="deniedApplicants" data-btype="manageStaff" data-citid="${key}" data-action="bossSubMenu" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.deniedApplicant}"></i>${btnList.deniedApplicants[key].personal.firstName} ${btnList.deniedApplicants[key].personal.lastName}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
                 btnCnt++;
+            }
+            mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.society}"></i>Society Account</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
+            btnCnt++;
+            mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="sa1"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="societyManage" data-btype="manageSociety" data-action="society" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}" data-selector="deposit"><i class="${btnList.icons.societyDeposit}"></i>Make Deposit</button></div>`;
+            btnCnt++;
+            mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="sa2"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="societyManage" data-btype="manageSociety" data-action="society" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}" data-selector="withdrawl"><i class="${btnList.icons.societyWithdrawl}"></i>Make Withdrawl</button></div>`;
+            btnCnt++;
+/* Future Ready for Bank Update
+            mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="sa3"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-type="societyHistory" data-btype="manageSociety" data-action="society" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.societyDeposit}"></i>Account History</button></div>`;
+            btnCnt++;
+*/
+            mainMenuNavButtons += "</div></div>";
+        break;
+        case "multiJob":
+            let status = "";
+            if (!jQuery.isEmptyObject(btnList.jobs.hired)) {
+                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.hiredOn}"></i>Hired Onto</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
+                btnCnt++;
+                for (const [key, value] of Object.entries(btnList.jobs.hired)) {
+                    status = `<button class="mainMenuContentButtonActivate actionButton" data-type="multiJob" data-btype="available" data-job="${value.name}"><i class="${btnList.icons.job}"></i>Activate</button>`
+                    if (value.active === true) {status = `<span class="mainMenuContentActive">Active</span>`}
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}">${value.label} ${status} <button data-type="multijob" data-btype="quit" data-job="${value.name}"><i class="${btnList.icons.quit}"></i>Quit</button></div>`;
+                    btnCnt++
+                };
+                mainMenuNavButtons += "</div></div>";
+            }
+            status = "";
+            if (!jQuery.isEmptyObject(btnList.jobs.available)) {
+                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.hired}"></i>Available Jobs</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
+                btnCnt++;
+                for (const [key, value] of Object.entries(btnList.jobs.available)) {
+                    status = `<button class="mainMenuContentButtonActivate actionButton" data-type="multiJob" data-btype="available" data-job="${value.name}"><i class="${btnList.icons.job}"></i>Apply</button>`
+                    if (value.status === "pending") {status = `<span class="mainMenuContentActive">Pending</span>`}
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}">${value.label} ${status}</div>`;
+                    btnCnt++
+                };
+                mainMenuNavButtons += "</div></div>";
             }
         break;
     }
@@ -265,10 +302,6 @@ const processSubMenu = (data) => {
             subMenuNavButtons += "</div>"
         break;
         case "management":
-            const jobHistory = btnList[data.type][data.citid].jobHistory;
-            const personal = btnList[data.type][data.citid].personal
-            if(!jobHistory[btnList.currentJob].rehireable){subMenuNavButtons += `<h3 class="blackListed">-- DO NOT HIRE --<br />Black Listed</h3>`;}
-            data.header = `${personal.firstName} ${btnList[data.type][data.citid].personal.lastName}`;
             switch(data.type){
                 case "applicants":
                     subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="approve"><i class="${btnList.icons.approve}"></i>Approve</button></div>`;
@@ -280,8 +313,10 @@ const processSubMenu = (data) => {
                     subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-citid="${data.citid}" data-job="${btnList.currentJob}" data-action="bossContent" data-baction="pay" data-ctype="actionButtons" data-type="${data.type}" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.pay}"></i>Adjust Pay</button></div>`;
                     btnCnt++
                     subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="terminate"><i class="${btnList.icons.fire}"></i>Terminate</button></div>`;
-                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="award"><i class="${btnList.icons.award}"></i>Award</button></div>`;
-                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="reprimand"><i class="${btnList.icons.reprimand}"></i>Reprimand</button></div>`;
+                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-citid="${data.citid}" data-job="${btnList.currentJob}" data-action="bossContent" data-baction="award" data-ctype="actionButtons" data-type="${data.type}" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.award}"></i>Award</button></div>`;
+                    btnCnt++
+                    subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-citid="${data.citid}" data-job="${btnList.currentJob}" data-action="bossContent" data-baction="reprimand" data-ctype="actionButtons" data-type="${data.type}" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.reprimand}"></i>Reprimand</button></div>`;
+                    btnCnt++
                 break;
                 case "pastEmployees":
                     subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="reconsider"><i class="${btnList.icons.reconsider}"></i>Reconsider</button></div>`;
@@ -289,37 +324,67 @@ const processSubMenu = (data) => {
                 case "deniedApplicants":
                     subMenuActionButtons += `<div class="subMenuActionButtonItem"><button class="subMenuActionButton actionButton" data-appcid="${data.citid}" data-action="bossAction" data-baction="reconsider"><i class="${btnList.icons.reconsider}"></i>Reconsider</button></div>`;
                 break;
+                case "societyHistory":
+                    /* Future Proof when bank update is ready uncomment this code!
+                    data.header = `Society Account History`;
+                    subMenuNavButtons = `<div class="contentBody"><table class="deets">`;
+                    subMenuNavButtons += `<caption>Society Account Details</caption>`;
+                    subMenuNavButtons += `<tr><th>Number</th><th>Type</th><th>Description</th></tr>`
+                    $.each(btnList.society.accountHistory,(k,v) => {
+                        subMenuNavButtons += `<tr><td>${k}</td><td>${v.type}</td><td>${v.description}</td></tr>`;
+                    });
+                    subMenuNavButtons += `</table></div>`;
+                    */
+                break;
+                case "societyManage":
+                    data.header = `${data.btnTitle}`;
+                    subMenuNavButtons = `<div class="subMenuContentBody"><table class="deets">`
+                    subMenuNavButtons += `<caption>Society Account</caption>`;
+                    subMenuNavButtons += `<tr><th>Balance:</th><td>${btnList.society.balance}</td></tr>`
+                    subMenuNavButtons += `</table>`;
+                    subMenuNavButtons += `<form method="post" class="societyForm">`;
+                    subMenuNavButtons += `${btnList.config.currencySymbol}<input type="number" name="depwit" value="0" class="formInput" /><br />`;
+                    subMenuNavButtons += `<input type="hidden" name="selector" value="${data.selector}" /><br />`;
+                    subMenuNavButtons += `<input type="reset" name="reset" value="Reset" class="formButton" /> <input type="submit" name="submit" value="${data.btnTitle}" class="formButton" />`;
+                    subMenuNavButtons += `</form></div>`;
+                break;
             }
-            subMenuNavButtons = `<div class="subMenuNavButtons">`
-            btnCnt++;
-            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-job="${btnList.currentJob}" data-ctype="personal" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.personal}"></i>Personal Details</button></div>`;
-            btnCnt++
-            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-job="${btnList.currentJob}" data-ctype="rapSheet" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.rapSheet}"></i>Rap Sheet</button></div>`;
-            btnCnt++
-            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempSub" data-effect="upDown" data-element="#navSub${btnCnt}" data-id="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>${btnList.currentJobName} Record</button><div id="navSub${btnCnt}" class="subMenuNavSubButtons">`;
-            btnCnt++;
-            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" data-btnid="subMenuNavSubButton" data-job="${btnList.currentJob}" data-ctype="history" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Stats</button></div>`;
-            btnCnt++;
-            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" data-btnid="subMenuNavSubButton" data-job="${btnList.currentJob}" data-ctype="awards" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Awards</button></div>`;
-            btnCnt++;
-            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" data-btnid="subMenuNavSubButton" data-job="${btnList.currentJob}" data-ctype="reprimands" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Reprimands</button></div>`;
-            btnCnt++;
-            subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" data-job="${btnList.currentJob}" data-ctype="notes" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-btnid="subMenuNavSubButton" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Notes</button></div>`;
-            btnCnt++;
-            subMenuNavButtons += `</div></div>`;
-            subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempSub" data-effect="upDown" data-element="#navSub${btnCnt}" data-id="${btnCnt}"><i class="${btnList.icons.jobHistory}"></i>Job History</button><div id="navSub${btnCnt}" class="subMenuNavSubButtons">`;
-            btnCnt++;
-            if(!$.isEmptyObject(jobHistory)) {
+            if (data.btype == "manageStaff") {
+                const jobHistory = btnList[data.type][data.citid].jobHistory;
+                const personal = btnList[data.type][data.citid].personal
+                if(!jobHistory[btnList.currentJob].rehireable){subMenuNavButtons += `<h3 class="blackListed">-- DO NOT HIRE --<br />Black Listed</h3>`;}
+                data.header = `${personal.firstName} ${btnList[data.type][data.citid].personal.lastName}`;
+                subMenuNavButtons = `<div class="subMenuNavButtons">`
+                btnCnt++;
+                subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-job="${btnList.currentJob}" data-ctype="personal" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.personal}"></i>Personal Details</button></div>`;
+                btnCnt++
+                subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-job="${btnList.currentJob}" data-ctype="rapSheet" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.rapSheet}"></i>Rap Sheet</button></div>`;
+                btnCnt++
+                subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempSub" data-effect="upDown" data-element="#navSub${btnCnt}" data-id="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>${btnList.currentJobName} Record</button><div id="navSub${btnCnt}" class="subMenuNavSubButtons">`;
+                btnCnt++;
+                subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" data-btnid="subMenuNavSubButton" data-job="${btnList.currentJob}" data-ctype="history" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Stats</button></div>`;
+                btnCnt++;
+                subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" data-btnid="subMenuNavSubButton" data-job="${btnList.currentJob}" data-ctype="awards" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Awards</button></div>`;
+                btnCnt++;
+                subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" data-btnid="subMenuNavSubButton" data-job="${btnList.currentJob}" data-ctype="reprimands" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Reprimands</button></div>`;
+                btnCnt++;
+                subMenuNavButtons += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" data-job="${btnList.currentJob}" data-ctype="notes" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-btnid="subMenuNavSubButton" data-targetid="${btnCnt}"><i class="${btnList.icons.currentJob}"></i>Notes</button></div>`;
+                btnCnt++;
+                subMenuNavButtons += `</div></div>`;
+                subMenuNavButtons += `<div class="subMenuNavButtonItem"><button class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempSub" data-effect="upDown" data-element="#navSub${btnCnt}" data-id="${btnCnt}"><i class="${btnList.icons.jobHistory}"></i>Job History</button><div id="navSub${btnCnt}" class="subMenuNavSubButtons">`;
+                btnCnt++;
+                if(!$.isEmptyObject(jobHistory)) {
                 $.each(jobHistory, function(k,v){
                     if(k != btnList.currentJob) {
                         btn += `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton actionButton" data-btnid="subMenuNavSubButton" data-job="${k}" data-ctype="history" data-type="${data.type}" data-citid="${data.citid}" data-action="bossContent" data-effect="leftRight" data-element="#contentContainer" data-target="con" data-targetid="${btnCnt}"><i class="${btnList.icons.jobHistory}"></i>${k} Stats<br />${v.status}</button></div>`;
                         btnCnt++;
                     }
                 })
+                }
+                if(btn == ""){btn = `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton" data-btnid="subMenuNavSubButton">No Job History</button></div>`;}
+                btnCnt++;
+                subMenuNavButtons += `${btn}</div></div>`;
             }
-            if(btn == ""){btn = `<div class="subMenuNavSubButtonItem"><button class="subMenuNavSubButton" data-btnid="subMenuNavSubButton">No Job History</button></div>`;}
-            btnCnt++;
-            subMenuNavButtons += `${btn}</div></div>`;
         break;
     }
     emptySubMenu();
@@ -338,7 +403,6 @@ const processContent = (data) => {
     const reprimands = jobHistory.reprimands
     const details = jobHistory.details
     const jobName = btnList.jobsList[data.job]
-    const payRate = btnList.employees[data.citid].personal.payRate
     let status = {
         hired: [],
         fired: [],
@@ -403,16 +467,40 @@ const processContent = (data) => {
             content += `</table></div>`;
         break;
         case "actionButtons":
+            let desc = "";
             content = `<div class="contentBody"><form method="post" class="actionForm">`;
             switch(data.action){
                 case "pay":
                     contentHeader = "Set Pay Rate";
-                    content += `$<input type="number" name="payRate" value="${payRate}" class="formInput" /><br />`;
+                    content += `$<input type="number" name="payRate" value="${btnList.employees[data.citid].personal.payRate}" class="formInput" /><br />`;
                     content += `<input type="hidden" name="appcid" value="${data.citid}" />`;
                     content += `<input type="hidden" name="action" value="pay" />`;
                 break;
+                case "award":
+                    contentHeader = "Choose Award";
+                    content += `<select name="awrep" class="formSelect formInput" /><option>Select Award</option>`;
+                    $.each(btnList.awards,(k,v) => {
+                        content += `<option value="${k}" data-desc="${v.description}" class="formOption">${v.title}</option>`
+                        if(typeof(desc) === "undefined"){desc = v.description}
+                    });
+                    content += `</select>`;
+                    content += `<input type="hidden" name="appcid" value="${data.citid}" />`;
+                    content += `<input type="hidden" name="action" value="award" />`;
+                break;
+                case "reprimand":
+                    contentHeader = "Choose Reprimand";
+                    content += `<select name="awrep" class="formSelect formInput" /><option>Select Reprimand</option>`;
+                    $.each(btnList.reprimands,(k,v) => {
+                        content += `<option value="${k}" data-desc="${v.description}" class="formOption">${v.title}</option>`
+                        if(typeof(desc) === "undefined"){desc = v.description};
+                    });
+                    content += `</select>`;
+                    content += `<input type="hidden" name="appcid" value="${data.citid}" />`;
+                    content += `<input type="hidden" name="action" value="reprimand" />`;
+                break;
             }
-            content += `<input type="reset" value="Reset" class="formButton" /><input type="submit" name="submit" value="Submit" class="formButton" /></form></div>`;
+            content += `<div class="formDescription"></div>`;
+            content += `<input type="reset" value="Reset" class="formButton formReset" /><input type="submit" name="submit" value="Submit" class="formButton" /></form></div>`;
         break;
     }
     emptyContent();
@@ -420,11 +508,11 @@ const processContent = (data) => {
     $("#contentRetractContainer").append(`<button class="contentRetractButton actionButton" data-action="retract" data-element="#contentContainer"><i class="${btnList.icons.retract}"></i></button>`)
     $("#contentActionButtons").append(contentActionButtons);
     $("#content").append(content);
-}
+};
 const appendMainMenuHeader = () => {
     $("#mainMenuHeaderH1").append(btnList.header);
     $("#mainMenuCloseContainer").append(`<button id="closeButton" class="actionButton"  data-action="close"><i class="${btnList.icons.close}"></i></button>`)
-}
+};
 const errorMessage = (error) => {
     v.msg += "<table>";
     $.each(error,(k,v) => {
@@ -432,7 +520,16 @@ const errorMessage = (error) => {
     });
     v.msg += "</table>";
     $(".alert").append(v.msg);
-}
+};
+$(document).on("change",".formSelect", function(e){
+    $(".formSelect option:selected").each(function (){
+        let desc = $(this).data('desc');
+        $(".formDescription").html(desc);
+    })
+});
+$(document).on('click',".formReset", function(e){
+    $(".formDescription").html("");
+});
 /* Main / Root Function */
 $(document).ready(function(){
     window.addEventListener('message', function(event) {
@@ -443,7 +540,7 @@ $(document).ready(function(){
         appendMainMenuHeader()
         $(".draggable").draggable();
         open();
-    })
+    });
 /**  Development Testing Code **/
 /*
     action = "management"
@@ -468,22 +565,6 @@ $(document).on('click', ".actionButton", function(e) {
                 action:$(this).data("baction")
             }
             $.post('https://qb-jobs/managementSubMenuActions', JSON.stringify(data), function(res){
-                switch(data.action){
-                    case "deny":
-                    break;
-                    case "apply":
-                    break;
-                    case "approve":
-                    break;
-                    case "pay":
-                    break;
-                    case "promote":
-                    break;
-                    case "demote":
-                    break;
-                    case "terminate":
-                    break;
-                }
                 traction("#subMenuContainer");
                 delete btnList;
                 btnList = res.btnList;
@@ -498,7 +579,8 @@ $(document).on('click', ".actionButton", function(e) {
             data = {
                 type:$(this).data("type"),
                 job:$(this).data("job"),
-                citid:$(this).data("citid")
+                citid:$(this).data("citid"),
+                btype:$(this).data("btype")
             };
             processSubMenu(data);
         break;
@@ -544,6 +626,16 @@ $(document).on('click', ".actionButton", function(e) {
         break;
         case "navButton":
         break;
+        case "society":
+            data = {
+                type:$(this).data("type"),
+                btype:$(this).data("btype"),
+                selector:$(this).data("selector")
+            };
+            data.btnTitle = "Deposit"
+            if (data.selector == "withdrawl") {data.btnTitle = "Withdrawl"};
+            processSubMenu(data);
+        break;
         case "retract":
             element = $(this).data('element');
             traction(element);
@@ -556,12 +648,9 @@ $(document).on('click', ".actionButton", function(e) {
         chooseNavDirection(effect,btnid,element,target,targetID)
     }
 })
-
-
-$(document).on("submit",".actionForm", (evt) => {
-    evt.preventDefault();
-
-    const formData = new FormData(evt.target).entries()
+$(document).on("submit",".actionForm", (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target).entries()
     $.post('https://qb-jobs/managementSubMenuActions', JSON.stringify(Object.fromEntries(formData)), function(res){
         traction("#subMenuContainer");
         delete btnList;
@@ -596,7 +685,43 @@ $(document).on("submit",".actionForm", (evt) => {
     });
 */
 });
-
+$(document).on("submit",".societyForm", (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target).entries()
+    $.post('https://qb-jobs/managementSocietyActions', JSON.stringify(Object.fromEntries(formData)), function(res){
+        traction("#subMenuContainer");
+        delete btnList;
+        btnList = res.btnList;
+        action = "management";
+        dbgmsg = "MGMTHere";
+        empty();
+        appendMainMenuHeader();
+        processMainMenu();
+    })
+/*
+    fetch('https://qb-jobs/managementSubMenuActions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(Object.fromEntries(formData)),
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        traction("#subMenuContainer");
+        delete btnList;
+        btnList = res.btnList;
+        action = "management";
+        dbgmsg = "MGMTHere";
+        empty();
+        appendMainMenuHeader();
+        processMainMenu();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+*/
+});
 $(document).on('keyup', function(e) {
     if(e.key == "Escape"){ close(); }
 });

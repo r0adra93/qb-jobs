@@ -47,6 +47,23 @@ local vehTrack = {}
 --- Populates  the server side QBCore.Shared.Jobs table at resource start
 exports['qb-core']:AddJobs(Config.Jobs)
 -- Functions
+--- places commas into numbers | credit https://lua-users.org/wiki/FormattingNumbers
+local comma_value = function(amount)
+    local k
+    amount = tostring(amount)
+    while true do
+        amount, k = string.gsub(amount, "^(-?%d+)(%d%d%d)", '%1,%2')
+        if (k==0) then
+            break
+        end
+    end
+    return Config.currencySymbol .. amount
+end
+--- Remove Decimal
+local removeDecimal = function(amount)
+    amount = string.format("%.0f",amount)
+    return amount
+end
 --- Error / Message Handler
 local errorHandler = function(error)
     local pcolor = "^1"
@@ -93,7 +110,7 @@ local sqlHandler = function(sql)
         return data
     end
     data.result = queryResult
-    return data
+    return data.result
 end
 --- Populates the server side QBCore.Shared.Jobs table
 local function populateJobs(src)
@@ -117,24 +134,21 @@ end
 local function setUnderlingStatus(res)
     local src = res.src
     local citid = res.citid
-    local data = {
-        ["isOnline"] = false,
+    local output = {
+        ["isOnline"] = true,
+        ["player"] = {},
         ["error"] = {},
         ["success"] = {}
     }
     local ercnt = 0
-    if src then
-        data.player = QBCore.Functions.GetPlayer(src)
-    elseif citid then
-        data.player = QBCore.Functions.GetPlayerByCitizenId(citid)
+    output.player = QBCore.Functions.GetPlayer(src)
+    if not output.player or not next(output.player) then output.player = QBCore.Functions.GetPlayerByCitizenId(citid) end
+    if not output.player or not next(output.player) then
+        output.player = QBCore.Player.GetOfflinePlayer(citid)
+        output.isOnline = false
     end
-    if data.player then data.isOnline = true end
-    if not data.isOnline then
-        data.player = QBCore.Player.GetOfflinePlayer(citid)
-        data.isOnline = false
-    end
-    if not data.player then
-        data.error[ercnt] = {
+    if not output.player or not next(output.player) then
+        output.error[ercnt] = {
             ["subject"] = "Player Does Not Exist!",
             ["msg"] = string.format("player does not exist in setUnderlingStatus! #msg001"),
             ["jsMsg"] = "Player Does Not Exist!",
@@ -144,20 +158,30 @@ local function setUnderlingStatus(res)
             ["log"] = true,
             ["console"] = true
         }
-        errorHandler(data.error)
-        return data
+        errorHandler(output.error)
+        return output
     end
-    return data
+    return output
 end
 --- Prepares data for the buildJobHistory function for the current player
 local function processJobHistory(jhData)
     --- Builds the Job History metadata table.
     local function buildJobHistory(res)
         local jobName = res.job
-        if jobName == "unemployed" then return "false" end
-        local jobData
+        local output = {
+            ["error"] = {},
+            ["success"] = {}
+        }
+        local ercnt = 0
+        if not res[jobName] then res[jobName] = {} end
+        if jobName == "unemployed" then
+            output.error[ercnt] = "failed"
+            return output
+        end
+        local jobData, status
         local jobHistory = {}
         if res.player.PlayerData.metadata.jobhistory then jobHistory = res.player.PlayerData.metadata.jobhistory end
+        if jobHistory and jobHistory[jobName] and jobHistory[jobName].status then status = jobHistory[jobName].status end
         local jhList = {
             ["status"] = "available",
             ["rehireable"] = true,
@@ -181,30 +205,29 @@ local function processJobHistory(jhData)
         for k in pairs(Config.Jobs) do
             if not jobHistory[k] then
                 jobHistory[k] = jhList
-                if k == "unemployed" then jobHistory[k] = nil end
             end
         end
         if jobHistory["unemployed"] then jobHistory["unemployed"] = nil end
         jobData = jobHistory[jobName]
         for kp,vp in pairs(jhList) do
             if type(vp) == "table"  then
-                if res[res.job][kp] then
+                if res[jobName][kp] then
                     if jobData[kp] then
                         for _ in pairs(jobData[kp]) do
                             index[kp] += 1
                         end
                     end
                     if index[kp] == 0 then index[kp] = 1 end
-                    for _,v in pairs(res[res.job][kp]) do
+                    for _,v in pairs(res[jobName][kp]) do
                         jobData[kp][index[kp]] = v
                         index[kp] += 1
                     end
                 end
             elseif type(vp) == "number" then
-                if not res[res.job][kp] then res[res.job][kp] = 0 end
-                jobData[kp] += res[res.job][kp]
+                if not res[jobName][kp] then res[jobName][kp] = 0 end
+                jobData[kp] += res[jobName][kp]
             elseif kp == "status" then
-                if res[res.job][kp] then jobData[kp] = res[res.job][kp] end
+                if res[jobName][kp] then jobData[kp] = res[jobName][kp] end
             end
         end
         if jobName == "unemployed" then jobData = nil end
@@ -221,7 +244,7 @@ local function processJobHistory(jhData)
     jhData.error = {}
     jhData.success = {}
     if not Config.Jobs[jhData.job] then
-        jhData.error[ercnt] = {
+        output.error[ercnt] = {
             ["subject"] = "Job Does Not Exist",
             ["msg"] = "Job Does Not Exist in processJobHistory, msg001",
             ["color"] = "error",
@@ -230,8 +253,8 @@ local function processJobHistory(jhData)
             ["log"] = true,
             ["console"] = true
         }
-        errorHandler(jhData.error)
-        return "failed"
+        errorHandler(output.error)
+        return output
     end
     jobHistory = buildJobHistory(jhData)
     return jobHistory
@@ -302,7 +325,7 @@ local function setJob(res)
         pD.metadata.jobs = jobs
         pD.metadata.jobhistory[job] = jobHistory
         sql = {
-            ["query"] = string.format("UPDATE players SET job = ?, metadata = ? WHERE citizenid = ?",json.encode(pD.job),json.encode(pD.metadata),pD.citid),
+            ["query"] = string.format("UPDATE `players` SET `job` = '%s', `metadata` = '%s' WHERE `citizenid` = '%s'",json.encode(pD.job),json.encode(pD.metadata),pD.citid),
             ["from"] = "qb-jobs/server/main.lua > function > setJob"
         }
         queryResult = sqlHandler(sql)
@@ -431,7 +454,7 @@ local function submitApplication(res)
             ["notify"] = true
         }
         errorHandler(data.error)
-        return false
+        return data
     end
     if jobData.newJobHistory and jobData.newJobHistory.status == "pending" then
         data.error[ercnt] = {
@@ -445,7 +468,7 @@ local function submitApplication(res)
             ["notify"] = true
         }
         errorHandler(data.error)
-        return false
+        return data
     end
     if jobData.newJobHistory and not jobData.newJobHistory.rehireable then
         data.error[ercnt] = {
@@ -459,7 +482,7 @@ local function submitApplication(res)
             ["notify"] = true
         }
         errorHandler(data.error)
-        return false
+        return data
     end
     if jobInfo then
         if res.grade then jobData.newGradeLevel = res.grade end
@@ -467,6 +490,8 @@ local function submitApplication(res)
         if jobInfo.jobBosses and not jobInfo.jobBosses[citid] then
             jhData[jhData.job].applycount += 1
             jhData[jhData.job].status = "pending"
+            jhData[jhData.job].details[jhData.index.details] = string.format("applied for %s", jobData.newJob)
+            jhData.index.details += 1
             data.citid = citid
             data.sender = Lang:t('email.jobAppSender', {firstname = charInfo.firstname, lastname = charInfo.lastname})
             data.subject = Lang:t('email.jobAppSub', {lastname = charInfo.lastname, job = res.job})
@@ -535,14 +560,16 @@ local function submitApplication(res)
                 ["console"] = true
             }
             errorHandler(data.error)
-            return false
+            return data
         end
     end
     jobHistory = processJobHistory(jhData)
-    if not jobHistory then return "failure" end
+    if jobHistory and jobHistory.error then
+        return jobHistory
+    end
     player.Functions.AddToJobHistory(jhData.job,jobHistory)
     player = QBCore.Functions.GetPlayer(src)
-    return "success"
+    return data
 end
 exports("submitApplication",submitApplication)
 --- multiJob Processing
@@ -599,13 +626,14 @@ local function buildManagementData(src)
     }
     local ercnt = 0
     local playerJob = player.PlayerData.job
+    local jobName = playerJob.name
     local players = QBCore.Functions.GetQBPlayers()
     local jobCheck = {}
     local plist = {}
+    local societyAccounts = exports["qb-banking"]:sendSocietyAccounts(src,jobName)
     local personal, jhList, sql, queryResult
-    local sqlQuery = string.format("$.jobhistory.%s.status",playerJob.name)
     sql = {
-        ["query"] = string.format('SELECT citizenid AS citid, charinfo, metadata, license FROM `players` WHERE JSON_VALUE(metadata, ?) != "available"',sqlQuery),
+        ["query"] = string.format("SELECT `citizenid` AS 'citid', `charinfo`, `metadata`, `license` FROM `players` WHERE JSON_VALUE(`metadata`, '$.jobhistory.%s.status') != 'available'",playerJob.name),
         ["from"] = "qb-jobs/server/main.lua > function > buildManagementData"
     }
     queryResult = sqlHandler(sql)
@@ -640,7 +668,7 @@ local function buildManagementData(src)
                 v.charinfo = json.decode(v.charinfo)
             end
             jhList = v.metadata.jobhistory
-            if Config.qbjobs.hideAvailableJobs then
+            if Config.hideAvailableJobs then
                 jhList = nil
                 jhList = {}
                 for k1,v1 in pairs(v.metadata.jobhistory) do
@@ -666,7 +694,13 @@ local function buildManagementData(src)
                             ["applicants"] = {},
                             ["employees"] = {},
                             ["pastEmployees"] = {},
-                            ["deniedApplicants"] = {}
+                            ["deniedApplicants"] = {},
+                            ["society"] = {
+                                ["balance"] = comma_value(societyAccounts.accounts[k1])
+                            },
+                            ["config"] = {
+                                ["currencySymbol"] = QBCore.Config.Money.CurrencySymbol
+                            }
                         }
                     end
                     if v1.status == "pending" then
@@ -714,8 +748,17 @@ local function buildManagementData(src)
 end
 --- Processes Jobs
 local manageStaff = function(res)
+    local awrep = tonumber(1)
+    if res.awrep then
+        awrep = tonumber(res.awrep)
+        if not QBCore.Functions.PrepForSQL(src,awrep,"^%d+$") then
+            output.error[ercnt] = true
+            return output
+        end
+        awrep += 1
+    end
     local src = res.manager.src
-    local citid = info.staff.citid
+    local citid = res.appcid
     local output = {
         ["error"] = {},
         ["success"] = {}
@@ -749,16 +792,23 @@ local manageStaff = function(res)
         return output
     end
     local sql, queryResult
-    local jobName = info.manager.job -- employer job (also employee job)
+    local manager = QBCore.Functions.GetPlayer(src)
+    local managerJob = manager.PlayerData.job
+    local jobName = managerJob.name -- employer job (also employee job)
     local staff = setUnderlingStatus(res)
-    local staffJob = staff.metadata.jobs[managerJob.name]
     local metaData = staff.player.PlayerData.metadata
+    local staffJob = metaData.jobs[managerJob.name]
+    if not staffJob then
+        staffJob = {
+            ["grade"] = {["level"] = 1}
+        }
+    end
     local data = {
         ["citid"] = citid,
         ["job"] = jobName,
         ["staff"] = {
             ["data"] = staff,
-            ["citid"] = res.appcid,
+            ["citid"] = citid,
             ["job"] = staffJob.name
         },
         ["manager"] = {
@@ -768,8 +818,8 @@ local manageStaff = function(res)
             ["job"] = managerJob.name,
         }
     }
-    local approveManagerAction = function(_)
-        local grade = "1"
+    local approveManagerAction = function(info)
+        local grade = info.approve.grade
         local gradeName = Config.Jobs[jobName].grades[grade].name
         data.prevJob = jobName
         data.newJob = jobName
@@ -782,6 +832,17 @@ local manageStaff = function(res)
         }
         output = setJob(data)
         if output.error and next(output.error) then return output end
+        output.success[ercnt] = {
+            ["subject"] = string.format("Approval Alert"),
+            ["msg"] = string.format("%s was approved with %s.", citid, jobName),
+            ["jsMsg"] = string.format("%s was approved.", citid),
+            ["src"] = src,
+            ["color"] = "notice",
+            ["logName"] = "qbjobs",
+            ["log"] = true,
+            ["notify"] = true
+        }
+        errorHandler(output.success)
         return output
     end
     local denyManagerAction = function(_)
@@ -797,13 +858,14 @@ local manageStaff = function(res)
         end
         metaData.jobhistory[jobName] = jobHistory
         sql = {
-            ["query"] = string.format('UPDATE players SET metadata = ? WHERE citizenid = ?',json.encode(metaData),citid),
+            ["query"] = string.format("UPDATE `players` SET `metadata` = '%s' WHERE `citizenid` = '%s'",json.encode(metaData),citid),
             ["from"] = "qb-jobs/server/main.lua > function > manageStaff > denyManagerAction > "
         }
         queryResult = sqlHandler(sql)
         if queryResult.error and next(queryResult.error) then return queryResult end
+        if output.error and next(output.error) then return output end
         output.success[ercnt] = {
-            ["subject"] = string.format("%s Denial", jobName),
+            ["subject"] = string.format("Denial Alert"),
             ["msg"] = string.format("%s was denied with %s.", citid, jobName),
             ["jsMsg"] = string.format("%s was denied with %s.", citid, jobName),
             ["src"] = src,
@@ -813,7 +875,6 @@ local manageStaff = function(res)
             ["notify"] = true
         }
         errorHandler(output.success)
-        if output.error and next(output.error) then return output end
         return output
     end
     local terminateManagerAction = function(_)
@@ -834,6 +895,17 @@ local manageStaff = function(res)
         }
         output = setJob(data)
         if output.error and next(output.error) then return output end
+        output.success[ercnt] = {
+            ["subject"] = string.format("Termination Alert"),
+            ["msg"] = string.format("%s was Terminated from %s",citid,prevJobName),
+            ["jsMsg"] = string.format("Terminated from %s",prevJobName),
+            ["src"] = src,
+            ["color"] = "notice",
+            ["logName"] = "qbjobs",
+            ["log"] = true,
+            ["notify"] = true
+        }
+        errorHandler(output.success)
         return output
     end
     local gradeManagerAction = function(info)
@@ -868,7 +940,7 @@ local manageStaff = function(res)
         if output.error and next(output.error) then return output end
         output.success[ercnt] = {
             ["subject"] = string.format("%s Alert",info[res.action].subject),
-            ["msg"] = string.format("%s in %s.",data[jobName].details, jobName),
+            ["msg"] = string.format("%s in %s.",info[res.action].details, jobName),
             ["jsMsg"] = info[res.action].subject,
             ["src"] = src,
             ["color"] = "notice",
@@ -879,10 +951,10 @@ local manageStaff = function(res)
         errorHandler(output.success)
         return output
     end
-    local reconsiderManagerAction = function(_)
+    local reconsiderManagerAction = function(info)
         data[jobName] = {
             ["details"] = {string.format("was reconsidered in %s",jobName)},
-            ["status"] = "pending"
+            ["status"] = info.reconsider.status
         }
         local jobHistory = processJobHistory(data)
         staff = setUnderlingStatus(res)
@@ -890,13 +962,13 @@ local manageStaff = function(res)
         else
             metaData.jobhistory[jobName] = jobHistory
             sql = {
-                ["query"] = string.format('UPDATE players SET metadata = ? WHERE citizenid = ?',json.encode(metaData),citid),
+                ["query"] = string.format("UPDATE `players` SET `metadata` = '%s' WHERE `citizenid` = '%s'",json.encode(metaData),citid),
                 ["from"] = "qb-jobs/server/main.lua > function > > manageStaff > reconsiderManagerAction"
             }
             queryResult = sqlHandler(sql)
             if queryResult.error and next(queryResult.error) then return queryResult end
             output.success[ercnt] = {
-                ["subject"] = string.format("%s Reconsidered", citid),
+                ["subject"] = string.format("Reconsideration Alert"),
                 ["msg"] = string.format("%s was reconsidered with %s.", citid, jobName),
                 ["jsMsg"] = string.format("%s was reconsidered with %s.", citid, jobName),
                 ["src"] = src,
@@ -936,7 +1008,7 @@ local manageStaff = function(res)
                 staffJob = jobData
             end
             sql = {
-                ["query"] = string.format("UPDATE players SET job = ?, metadata = ? WHERE citizenid = ?",json.encode(staffJob),json.encode(metaData),citid),
+                ["query"] = string.format("UPDATE `players` SET `job` = '%s', `metadata` = '%s' WHERE `citizenid` = '%s'",json.encode(staffJob),json.encode(metaData),citid),
                 ["from"] = "qb-jobs/server/main.lua > function > manageStaff > payMangerAction"
             }
             queryResult = sqlHandler(sql)
@@ -945,7 +1017,7 @@ local manageStaff = function(res)
         end
         if data.error and next(data.error) then return data end
         data.success[ercnt] = {
-            ["subject"] = string.format("%s Pay Adjustment", data.citid),
+            ["subject"] = string.format("Pay Adjustment Alert"),
             ["msg"] = string.format("%s pay was adjusted to %s in %s.", data.citid, payRate, jobName),
             ["jsMsg"] = string.format("%s pay was adjusted to %s in %s.", data.citid, payRate, jobName),
             ["src"] = src,
@@ -957,10 +1029,42 @@ local manageStaff = function(res)
         errorHandler(data.success)
         return data
     end
-    res.citid = res.appcid
-    local manager = QBCore.Functions.GetPlayer(src)
-    local managerJob = manager.PlayerData.job
-    local grade = staffJob.grade.level
+    local awrepManagerAction = function(info)
+        data[jobName] = {
+            ["details"] = {string.format('%s was %s: %s in %s',citid,info[res.action].details,info[res.action].awrep,jobName)},
+            [info[res.action].confs] = {info[res.action].awrep},
+            ["status"] = "hired"
+        }
+        local jobHistory = processJobHistory(data)
+        if staff.isOnline then
+            output = staff.player.Functions.AddToJobHistory(jobName,jobHistory)
+            if output.error and next(output.error) then return output end
+            output = setUnderlingStatus(res)
+            return output
+        else
+            metaData.jobhistory[jobName] = jobHistory
+            sql = {
+                ["query"] = string.format("UPDATE `players` SET `metadata` = '%s' WHERE `citizenid` = '%s'",json.encode(metaData),citid),
+                ["from"] = "qb-jobs/server/main.lua > function > manageStaff > awrepManagerAction"
+            }
+            queryResult = sqlHandler(sql)
+            if queryResult.error and next(queryResult.error) then return queryResult end
+            data.player = QBCore.Player.GetOfflinePlayer(citid)
+        end
+        if data.error and next(data.error) then return data end
+        data.success[ercnt] = {
+            ["subject"] = string.format("%s Alert",info[res.action].subject),
+            ["msg"] = string.format('%s was %s: "%s" in %s',citid,info[res.action].details,info[res.action].awrep,jobName),
+            ["jsMsg"] = string.format('was %s: "%s"',info[res.action].details,info[res.action].awrep),
+            ["src"] = src,
+            ["color"] = "notice",
+            ["logName"] = "qbjobs",
+            ["log"] = true,
+            ["notify"] = true
+        }
+        errorHandler(data.success)
+        return data
+    end
     data.action = {
         ["approve"] = {
             ["grade"] = "1",
@@ -983,16 +1087,17 @@ local manageStaff = function(res)
         },
         ["promote"] = {
             ["status"] = "promote",
-            ["prevGrade"] = grade,
-            ["newGrade"] = tonumber(grade) + 1,
+            ["prevGrade"] = staffJob.grade.level,
+            ["newGrade"] = tonumber(staffJob.grade.level) + 1,
+            ["grade"] = tonumber(staffJob.grade.level) + 1,
             ["details"] = "promoted",
             ["subject"] = "Promotion",
             ["func"] = gradeManagerAction
         },
         ["demote"] = {
             ["status"] = "demote",
-            ["prevGrade"] = grade,
-            ["newGrade"] = tonumber(grade) - 1,
+            ["prevGrade"] = staffJob.grade.level,
+            ["newGrade"] = tonumber(staffJob.grade.level) - 1,
             ["details"] = "demoted",
             ["subject"] = "Demotion",
             ["func"] = gradeManagerAction
@@ -1004,7 +1109,21 @@ local manageStaff = function(res)
         ["pay"] = {
             ["status"] = "pay",
             ["func"] = payManagerAction
-        }
+        },
+        ["award"] = {
+            ["awrep"] = Config.Jobs[jobName].management.awards[awrep].title,
+            ["details"] = "awarded",
+            ["subject"] = "Award",
+            ["confs"] = "awards",
+            ["func"] = awrepManagerAction
+        },
+        ["reprimand"] = {
+            ["awrep"] = Config.Jobs[jobName].management.reprimands[awrep].title,
+            ["details"] = "reprimanded",
+            ["subject"] = "Reprimand",
+            ["confs"] = "reprimands",
+            ["func"] = awrepManagerAction
+        },
     }
     output = data.action[res.action].func(data.action)
     return output
@@ -1290,7 +1409,7 @@ QBCore.Functions.CreateCallback("qb-jobs:server:vehiclePlateCheck", function(sou
     plate = exports["qb-vehicleshop"]:JobsPlateGen(res)
     if res.selGar == "ownGarage" then
         sql = {
-            ["query"] = string.format('SELECT mods FROM player_vehicles WHERE plate = ?',plate),
+            ["query"] = string.format("SELECT `mods` FROM `player_vehicles` WHERE `plate` = '%s'",plate),
             ["from"] = "qb-jobs/server/main.lua > callback > vehiclePlateCheck"
         }
         queryResult = sqlHandler(sql)
@@ -1319,7 +1438,7 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(s
     }
     vehList.uiColors = Config.Jobs[playerJob.name].uiColors
     vehList.label = Config.Jobs[playerJob.name].label
-    vehList.icons = Config.Jobs[playerJob.name].VehicleConfig.icons
+    vehList.icons = Config.Jobs[playerJob.name].menu.icons
     vehList.garage = data
     vehList.header = Config.Jobs[playerJob.name].label .. Lang:t('headings.garages')
     for _,v in pairs(Config.Jobs[playerJob.name].Locations.garages[data].spawnPoint) do
@@ -1362,7 +1481,7 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(s
         vehList.allowPurchase = true
     end
     sql = {
-        ["query"] = string.format('SELECT plate, vehicle FROM player_vehicles WHERE citizenid = ? AND (state = ?) AND job = ?',player.PlayerData.citizenid, 0, playerJob.name),
+        ["query"] = string.format("SELECT `plate`, `vehicle` FROM `player_vehicles` WHERE `citizenid` = '%s' AND (`state` = '%s') AND `job` = '%s'",player.PlayerData.citizenid, 0, playerJob.name),
         ["from"] = "qb-jobs/server/main.lua > callback > sendGaragedVehicles"
     }
     queryResult = sqlHandler(sql)
@@ -1396,26 +1515,133 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSubMenuActions"
     local src = source
     local manager = QBCore.Functions.GetPlayer(src)
     local managerJob = manager.PlayerData.job
-    local output = {["error"] = {}}
+    local managerLicense = manager.PlayerData.license
+    local ercnt = 0
+    local output = {
+        ["error"] = {}
+    }
     res.manager = {
         ["src"] = src
     }
+    if not mgrBtnList.players[res.appcid] then
+        output.error[ercnt] = {
+            ["subject"] = "Player Data Missing",
+            ["msg"] = string.format("Player data missing; Boss Menu used by: ?",res.appcid),
+            ["jsMsg"] = "Player Data Missing",
+            ["color"] = "error",
+            ["logName"] = "qbjobs",
+            ["src"] = src,
+            ["log"] = true,
+            ["console"] = true
+        }
+        cb(output)
+        return output
+    end
+    res.citid = res.appcid
+    if not QBCore.Functions.PrepForSQL(src,res.action,"^%a+$") then
+        output.error[ercnt] = {
+            ["subject"] = "Action Data Invalid",
+            ["msg"] = string.format("Action data Invalid Boss Menu used by: ?",managerLicense),
+            ["jsMsg"] = "Action Data Invalid",
+            ["color"] = "error",
+            ["logName"] = "qbjobs",
+            ["src"] = src,
+            ["log"] = true,
+            ["console"] = true
+        }
+        cb(output)
+        return output
+    end
     output = manageStaff(res)
-    if output and output.error and next(output.error) then
+    if not output or output.error and next(output.error) then
+        cb(output)
         return output
     end
     output = buildManagementData(src)
-    if output and output.error and next(output.error) then
+    if not output or output.error and next(output.error) then
+        cb(output)
         return output
     end
     cb(mgrBtnList.jobs[managerJob.name])
+    return output
+end)
+--- Processes society actions from the boss menu
+QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSocietyActions", function(source,cb,res)
+    local src = source
+    local manager = QBCore.Functions.GetPlayer(src)
+    local managerJob = manager.PlayerData.job
+    local managerLicense = manager.PlayerData.license
+    local ercnt = 0
+    local output = {
+        ["error"] = {}
+    }
+    if not QBCore.Functions.PrepForSQL(src,res.depwit,"^%d+$") then
+        output.error[ercnt] = {
+            ["subject"] = "Amount is Invalid",
+            ["msg"] = string.format("Amount is invalid boss menu used by: %s",managerLicense),
+            ["jsMsg"] = "Amount is Invalid",
+            ["color"] = "error",
+            ["logName"] = "qbjobs",
+            ["src"] = src,
+            ["log"] = true,
+            ["console"] = true
+        }
+        cb(output)
+        return output
+    end
+    output = exports["qb-banking"]:societyDepwit(src,res.depwit,res.selector)
+    output = buildManagementData(src)
+    if not output or output.error and next(output.error) then
+        cb(output)
+        return output
+    end
+    cb(mgrBtnList.jobs[managerJob.name])
+    return output
+end)
+--- Processes multiJob menu items
+QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(source,cb,res)
+    QBCore.Debug(res)
+    local src = source
+    local player = QBCore.Functions.GetPlayer(src)
+    local output = {
+        ["src"] = src,
+        ["job"] = player.PlayerData.job.name,
+        ["grade"] = 0,
+        ["error"] = {}
+    }
+    local ercnt = 0
+    if res.job then
+        if not QBCore.Functions.PrepForSQL(src,res.job,"^%a+$") then
+            output.error[ercnt] = {
+                ["subject"] = "Amount is Invalid",
+                ["msg"] = string.format("Amount is invalid boss menu used by: %s",player.PlayerData.license),
+                ["jsMsg"] = "Amount is Invalid",
+                ["color"] = "error",
+                ["logName"] = "qbjobs",
+                ["src"] = src,
+                ["log"] = true,
+                ["console"] = true
+            }
+            cb(output)
+            return output
+        end
+        output.job = res.job
+--        output = submitApplication(output)
+    end
+    if not output or output.error and next(output.error) then
+        cb(output)
+        return output
+    end
+    cb("ok")
+    return output
 end)
 -- Commands
 --- Creates the /duty command to go on and off duty
 QBCore.Commands.Add("duty", Lang:t("commands.duty"), {}, false, function()
-    TriggerClientEvent('qb-jobs:client:toggleDuty',-1)
+    local src = source
+    TriggerClientEvent('qb-jobs:client:toggleDuty',src)
 end)
 --- Creates the /jobs command to open the multi-jobs menu.
 QBCore.Commands.Add("jobs", Lang:t("commands.duty"), {}, false, function()
-    TriggerClientEvent('qb-jobs:client:multiJobsMenu',-1)
+    TriggerClientEvent('qb-jobs:client:multiJobMenu',-1)
 end)
