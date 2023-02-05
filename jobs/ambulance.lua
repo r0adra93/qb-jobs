@@ -1,8 +1,8 @@
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
     ["jobBosses"] = { -- Citizen IDs of the Bosses of this Job
-        ["RNR24810"] = true,
-        ["JWD81076"] = true
+        ["RNR24810"] = "RNR24810",
+        ["JWD81076"] = "RNR24810"
     },
     ["webHooks"] = {
         ["ambulance"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"

@@ -8,6 +8,7 @@ Config = {
     ["hideAvailableJobs"] = true, -- true = does not display unworked jobs | false = displays unworked jobs.
     ["currencySymbol"] = "$", -- Sets the currency symbol.
     ["menu"] = {
+        ["headerMultiJob"] = "Multi-Job Menu",
         ["icons"] = {
             ["close"] = "fa-solid fa-x",
             ["retract"] = "fa-solid fa-angles-left",
@@ -15,6 +16,9 @@ Config = {
             ["hiredOn"] = "fa-solid fa-check-to-slot",
             ["available"] = "fa-solid fa-laptop-file",
             ["activate"] = "fa-solid fa-toggle-on",
+            ["apply"] = "fa-regular fa-clipboard",
+            ["active"] = "fa-solid fa-land-mine-on",
+            ["pending"] = "fa-solid fa-file-circle-question"
         }
     }
 }

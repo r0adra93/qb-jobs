@@ -2,6 +2,9 @@ local QBCore = exports['qb-core']:GetCoreObject()
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.reporter = {
     ["label"] = "News Reporter",
+    ["webHooks"] = {
+        ["reporter"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+    },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
     ["inCityHall"] = {
@@ -50,7 +53,7 @@ Config.Jobs.reporter = {
 
     ["plate"] = "NEWS", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
-        ['0'] = {
+        ['1'] = {
             ["name"] = "Journalist",
             ["payment"] = 50
         }

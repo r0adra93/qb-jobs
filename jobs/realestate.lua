@@ -1,6 +1,9 @@
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.realestate = {
     ["label"] = "Real Estate",
+    ["webHooks"] = {
+        ["realestate"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+    },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
     ["inCityHall"] = {
@@ -49,19 +52,19 @@ Config.Jobs.realestate = {
 
     ["plate"] = "H4U", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
-        ['0'] = {
+        ['1'] = {
             name = 'Residential Sales Agent',
             payment = 75
         },
-        ['1'] = {
+        ['2'] = {
             name = 'Commercial Sales Agent',
             payment = 100
         },
-        ['2'] = {
+        ['3'] = {
             name = 'Broker Agent',
             payment = 125
         },
-        ['3'] = {
+        ['4'] = {
             name = 'Broker',
             isboss = true,
             payment = 150

@@ -2,6 +2,9 @@
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.judge = {
     ["label"] = "judge",
+    ["webHooks"] = {
+        ["judge"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+    },
     ["defaultDuty"] = true,
     ["offDutyPay"] = true,
     ["inCityHall"] = {
@@ -50,7 +53,7 @@ Config.Jobs.judge = {
 
     ["plate"] = "JUST", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
-        ['0'] = {
+        ['1'] = {
             ["name"] = "Honorary",
             ["payment"] = 400
         }

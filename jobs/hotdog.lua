@@ -1,6 +1,9 @@
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.hotdog = {
     ["label"] = "Hotdog Vendor",
+    ["webHooks"] = {
+        ["hotdog"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+    },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
     ["inCityHall"] = {
@@ -49,7 +52,7 @@ Config.Jobs.hotdog = {
 
     ["plate"] = "DOGS", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
-        ['0'] = {
+        ['1'] = {
             ["name"] = "Sales",
             ["payment"] = 50
         }

@@ -192,6 +192,51 @@ body {
 #mainMenuContent footer {
     white-space:normal;
 }
+.mainMenuContentContainer {
+    display:grid;
+}
+.mainMenuContentContainer td:nth-child(odd) {
+    width:40%;
+}
+.mainMenuContentContainer td:nth-child(even) {
+    width:60%;
+}
+.mainMenuContentContainer tr:nth-child(odd) {
+    background-color:var(--white)
+}
+.mainMenuContentContainer tr:nth-child(even) {
+    background-color:var(--grayLight)
+}
+.mainMenuContentButtonActivate {
+    background-color:var(--green);
+    color:var(--white);
+    border-radius:2vh;
+    box-shadow:18px 0px 30px -12px var(--black);
+}
+.mainMenuContentButtonActivate:hover {
+    background:var(--white);
+    color:var(--green);
+}
+.mainMenuContentActive {
+    color:var(--red);
+    border-radius:2vh;
+    box-shadow:18px 0px 30px -12px var(--black);
+}
+.mainMenuContentPending {
+    color:var(--black);
+    border-radius:2vh;
+    box-shadow:18px 0px 30px -12px var(--black);
+}
+.mainMenuContentButtonQuit {
+    background:var(--red);
+    color:var(--white);
+    border-radius:2vh;
+    box-shadow:18px 0px 30px -12px var(--black);
+}
+.mainMenuContentButtonQuit:hover {
+    background:var(--white);
+    color:var(--red);
+}
 #subMenuContainer {
     position:absolute;
     border-radius:2vh;
@@ -597,6 +642,15 @@ ul.contentList li:nth-child(odd) {
 }
 #contentFooter {
     white-space:normal;
+}
+.whiteBG {
+    background-color:var(--white);
+    color:var(--red);
+    font-size:2vh;
+    padding:1vh;
+    margin:0.5vh 0 0 0;
+    border-radius:2vh;
+    box-shadow:18px 0px 30px 0px var(--black);
 }
 .blackListed {
     background-color:var(--black);

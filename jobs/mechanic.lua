@@ -1,6 +1,9 @@
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.mechanic = {
     ["label"] = "mechanic",
+    ["webHooks"] = {
+        ["mechanic"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+    },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
     ["inCityHall"] = {
@@ -49,23 +52,23 @@ Config.Jobs.mechanic = {
 
     ["plate"] = "BRKN", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
-        ['0'] = {
+        ['1'] = {
             ["name"] = "Apprentice",
             ["payment"] = 50
         },
-        ['1'] = {
+        ['2'] = {
             ["name"] = "Service Tech",
             ["payment"] = 75
         },
-        ['2'] = {
+        ['3'] = {
             ["name"] = "Mechanic",
             ["payment"] = 100
         },
-        ['3'] = {
+        ['4'] = {
             ["name"] = "Master Mechanic",
             ["payment"] = 125
         },
-        ['4'] = {
+        ['5'] = {
             ["name"] = "Manager",
             ["payment"] = 150,
             ["isboss"] = true

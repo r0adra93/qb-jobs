@@ -2,6 +2,9 @@
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.lawyer = {
     ["label"] = "Law Firm",
+    ["webHooks"] = {
+        ["lawyer"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+    },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
     ["inCityHall"] = {
@@ -50,23 +53,23 @@ Config.Jobs.lawyer = {
 
     ["plate"] = "LWRU", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
-        ['0'] = {
+        ['1'] = {
             ["name"] = "Associate",
             ["payment"] = 200
         },
-        ['1'] = {
+        ['2'] = {
             ["name"] = "Junior Partner",
             ["payment"] = 225
         },
-        ['2'] = {
+        ['3'] = {
             ["name"] = "Partner",
             ["payment"] = 250
         },
-        ['3'] = {
+        ['4'] = {
             ["name"] = "Managing Partner",
             ["payment"] = 275
         },
-        ['4'] = {
+        ['5'] = {
             ["name"] = "Named Partner",
             ["payment"] = 300,
             ["isboss"] = true

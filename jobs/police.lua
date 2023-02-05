@@ -1,6 +1,9 @@
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.police = { -- name the job
     ["label"] = "Law Enforcement", -- label that display when typing in /job
+    ["webHooks"] = {
+        ["police"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+    },
     ["type"] = "leo", -- job type
     ["defaultDuty"] = true, -- duty status when logged on
     ["offDutyPay"] = false, -- true get paid even off duty
@@ -59,23 +62,23 @@ Config.Jobs.police = { -- name the job
         },
     },
     ["grades"] = {
-        ['0'] = {
+        ['1'] = {
             ["name"] = "Recruit",
             ["payment"] = 50
         },
-        ['1'] = {
+        ['2'] = {
             ["name"] = "Officer",
             ["payment"] = 75
         },
-        ['2'] = {
+        ['3'] = {
             ["name"] = "Sergeant",
             ["payment"] = 100
         },
-        ['3'] = {
+        ['4'] = {
             ["name"] = "Lieutenant",
             ["payment"] = 125
         },
-        ['4'] = {
+        ['5'] = {
             ["name"] = "Chief",
             ["payment"] = 150,
             ["isboss"] = true

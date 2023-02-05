@@ -165,13 +165,13 @@ local function setUnderlingStatus(res)
 end
 --- Prepares data for the buildJobHistory function for the current player
 local function processJobHistory(jhData)
+    local output = {
+        ["error"] = {},
+        ["success"] = {}
+    }
     --- Builds the Job History metadata table.
     local function buildJobHistory(res)
         local jobName = res.job
-        local output = {
-            ["error"] = {},
-            ["success"] = {}
-        }
         local ercnt = 0
         if not res[jobName] then res[jobName] = {} end
         if jobName == "unemployed" then
@@ -569,31 +569,10 @@ local function submitApplication(res)
     end
     player.Functions.AddToJobHistory(jhData.job,jobHistory)
     player = QBCore.Functions.GetPlayer(src)
+    data.player = player
     return data
 end
 exports("submitApplication",submitApplication)
---- multiJob Processing
-local function processMultiJobs(res)
---[[
-    ["newGradeLevelName"] = jobInfo.grades[jobData.newGradeLevel].name
-    if res.quit then
-        cjhData.status = "quit"
-        cjhData.details[cjhData.index.details] = "Quit their job."
-        cjhData.quitcount += 1
-        cjhData.index.details += 1
-        data.msg = "You quit From " .. jobData.currentJob
-    else
-        data.error[ercnt] = {
-            ["subject"] = "Exploit Attempt: submitApplication",
-            ["msg"] = string.format("%s attempted to exploit the fire feature", manager.PlayerData.license),
-            ["color"] = "exploit",
-            ["logName"] = "qbjobs",
-            ["log"] = true,
-            ["console"] = true
-        }
-    end
-]]--
-end
 --- Send jobs to city hall
 local function sendToCityHall()
     local isManaged, toCH
@@ -1600,22 +1579,112 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSocietyActions"
 end)
 --- Processes multiJob menu items
 QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(source,cb,res)
-    QBCore.Debug(res)
     local src = source
     local player = QBCore.Functions.GetPlayer(src)
+    local playerJob = player.PlayerData.job
+    local playerJobs = player.PlayerData.metadata.jobs
+    local job = playerJobs[res.job]
+    local jobCheck = function(data)
+        if not playerJobs[data.job] then
+            output.error[ercnt] = {
+                ["subject"] = "Does Not Work Here!",
+                ["msg"] = string.format("player does not exist in processMultiJob Callback! #msg001"),
+                ["jsMsg"] = "Player Does Not Exist!",
+                ["color"] = "error",
+                ["logName"] = "qbjobs",
+                ["src"] = src,
+                ["log"] = true,
+                ["console"] = true
+            }
+            errorHandler(output.error)
+            cb(output)
+            return false
+        end
+        return true
+    end
+    local function activate(data)
+        if not jobCheck(data) then return false end
+        local output = {
+            ["error"] = {},
+            ["success"] = {}
+        }
+        local ercnt = 0
+        player.Functions.SetActiveJob(job)
+        return output
+    end
+    local function quit(data)
+        if not jobCheck(data) then return false end
+        local output = {
+            ["src"] = src,
+            ["citid"] = data.citid,
+            ["job"] = data.job,
+            [data.job] = {
+                ["status"] = "quit",
+                ["details"] = {[1] = "Resigned"},
+                ["quitcount"] = 1
+            },
+            ["error"] = {},
+            ["success"] = {}
+        }
+        local ercnt = 0
+        local jobHistory = processJobHistory(output)
+        player.Functions.AddToJobHistory(data.job,jobHistory)
+        if data.job == playerJob.name then player.Functions.SetJob("unemployed", "0") end
+        player.Functions.RemoveFromJobs(res.job)
+        output.success[ercnt] = {
+            ["subject"] = "User Resigned",
+            ["msg"] = string.format("%s resigned from %s",player.PlayerData.citizenid,playerJob.name),
+            ["jsMsg"] = "User Resigned!",
+            ["color"] = "success",
+            ["logName"] = Config.Jobs[playerJob.name].webHooks[playerJob.name],
+            ["src"] = src,
+            ["log"] = true,
+            ["notify"] = true
+        }
+        player.Functions.SetActiveJob(job)
+        return output
+    end
+    local function apply(data)
+        local output = {
+            ["src"] = data.src,
+            ["citid"] = data.citid,
+            ["job"] = data.job,
+            ["grade"] = 0,
+            ["error"] = {},
+            ["success"] = {}
+        }
+        output = submitApplication(output)
+        return output
+    end
     local output = {
-        ["src"] = src,
-        ["job"] = player.PlayerData.job.name,
-        ["grade"] = 0,
-        ["error"] = {}
+        ["error"] = {},
+        ["success"] = {}
     }
     local ercnt = 0
-    if res.job then
-        if not QBCore.Functions.PrepForSQL(src,res.job,"^%a+$") then
+    local action = {
+        ["activate"] = {["func"] = activate},
+        ["quit"] = {["func"] = quit},
+        ["apply"] = {["func"] = apply},
+    }
+    if not QBCore.Functions.PrepForSQL(src,res.action,"^%a+$") then
+        output.error[ercnt] = {
+            ["subject"] = "Action is Invalid",
+            ["msg"] = string.format("Action is invalid multi-job menu used by: %s",player.PlayerData.license),
+            ["jsMsg"] = "Action is Invalid",
+            ["color"] = "error",
+            ["logName"] = "qbjobs",
+            ["src"] = src,
+            ["log"] = true,
+            ["console"] = true
+        }
+        cb(output)
+        return output
+    end
+    if not QBCore.Functions.PrepForSQL(src,res.job,"^%a+$") then
             output.error[ercnt] = {
-                ["subject"] = "Amount is Invalid",
-                ["msg"] = string.format("Amount is invalid boss menu used by: %s",player.PlayerData.license),
-                ["jsMsg"] = "Amount is Invalid",
+                ["subject"] = "Job is Invalid",
+                ["msg"] = string.format("Job is invalid multiJob menu used by: %s",player.PlayerData.license),
+                ["jsMsg"] = "Job is Invalid",
                 ["color"] = "error",
                 ["logName"] = "qbjobs",
                 ["src"] = src,
@@ -1624,15 +1693,14 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(sourc
             }
             cb(output)
             return output
-        end
-        output.job = res.job
---        output = submitApplication(output)
     end
-    if not output or output.error and next(output.error) then
-        cb(output)
-        return output
-    end
-    cb("ok")
+    output.job = res.job
+    output.src = src
+    output.citid = player.PlayerData.citizenid
+    output = action[res.action].func(output)
+    cb(output)
+    QBCore = exports['qb-core']:GetCoreObject()
+    kickOff()
     return output
 end)
 -- Commands

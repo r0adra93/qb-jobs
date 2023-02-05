@@ -3,6 +3,9 @@ local QBCore = exports['qb-core']:GetCoreObject()
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.trucker = {
     ["label"] = "Truck Driver",
+    ["webHooks"] = {
+        ["trucker"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+    },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
     ["menu"] = {

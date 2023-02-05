@@ -220,7 +220,7 @@ local function toggleDuty()
     end
     return true
 end
-local getMultiJobMenu = function()
+local getMultiJobMenuButtons = function()
     local jobHistory = player.metadata.jobhistory
     local status = "available"
     local output = {
@@ -228,7 +228,8 @@ local getMultiJobMenu = function()
             ["hired"] = {},
             ["available"] = {}
         },
-        ["icons"] = Config.menu.icons
+        ["icons"] = Config.menu.icons,
+        ["header"] = Config.menu.headerMultiJob
     }
     for k in pairs(Config.Jobs) do
         if jobHistory[k] then status = jobHistory[k].status end
@@ -248,7 +249,10 @@ local getMultiJobMenu = function()
         end
         output.jobs.available.unemployed = nil
     end
-    QBCore.Debug(output)
+    return output
+end
+local getMultiJobMenu = function()
+    local output = getMultiJobMenuButtons()
     SendNUIMessage({
         action = "multiJob",
         btnList = output
@@ -626,6 +630,29 @@ RegisterNUICallback('managementSocietyActions', function(res,cb)
         processButtonList(res1)
         data.btnList = mgrBtnList
         cb(data)
+    end,res)
+end)
+--- multi-job menu actions processor
+RegisterNUICallback('processMultiJob', function(res,cb)
+    local output = {
+        ["btnList"] = {},
+        ["error"] = {},
+        ["success"] = {}
+    }
+    local ercnt = 0
+    QBCore.Functions.TriggerCallback('qb-jobs:server:processMultiJob',function(res1)
+        if res1 and res1.error and next(res1.error) then
+            cb(res1)
+            return res1
+        end
+        QBCore = exports['qb-core']:GetCoreObject()
+        setCurrentJob()
+        wrapUp()
+        kickOff()
+        Wait(0) -- this is needed for the playerData to popluate
+        output.btnList = getMultiJobMenuButtons()
+        cb(output)
+        return output
     end,res)
 end)
 -- Commands

@@ -219,27 +219,25 @@ const processMainMenu = () => {
         case "multiJob":
             let status = "";
             if (!jQuery.isEmptyObject(btnList.jobs.hired)) {
-                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.hiredOn}"></i>Hired Onto</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
+                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain whiteBG" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.hiredOn}"></i>Hired Onto</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons"><table class="mainMenuContentContainer">`;
                 btnCnt++;
                 for (const [key, value] of Object.entries(btnList.jobs.hired)) {
-                    status = `<button class="mainMenuContentButtonActivate actionButton" data-type="multiJob" data-btype="available" data-job="${value.name}"><i class="${btnList.icons.job}"></i>Activate</button>`
-                    if (value.active === true) {status = `<span class="mainMenuContentActive">Active</span>`}
-                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}">${value.label} ${status} <button data-type="multijob" data-btype="quit" data-job="${value.name}"><i class="${btnList.icons.quit}"></i>Quit</button></div>`;
-                    btnCnt++
+                    status = `<button class="mainMenuContentButtonActivate actionButton" data-action="multiJob" data-btype="activate" data-job="${value.name}"><i class="${btnList.icons.activate}"></i>Activate</button>`
+                    if (value.active === true) {status = `<button class="mainMenuContentActive"><i class="${btnList.icons.active}"></i>Active</span>`}
+                    mainMenuNavButtons += `<tr class="mainMenuNavSubButtonItem" id="${key}"><td>${status}<br /><button class="mainMenuContentButtonQuit actionButton" data-action="multiJob" data-type="multijob" data-btype="quit" data-job="${value.name}"><i class="${btnList.icons.quit}"></i>Quit</button></td><td>${value.label}</td></tr>`;
                 };
-                mainMenuNavButtons += "</div></div>";
+                mainMenuNavButtons += "</table></div></div>";
             }
             status = "";
             if (!jQuery.isEmptyObject(btnList.jobs.available)) {
-                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.hired}"></i>Available Jobs</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
+                mainMenuNavButtons += `<div class="mainMenuContentItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain whiteBG" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.available}"></i>Available Jobs</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons"><table class="mainMenuContentContainer">`;
                 btnCnt++;
                 for (const [key, value] of Object.entries(btnList.jobs.available)) {
-                    status = `<button class="mainMenuContentButtonActivate actionButton" data-type="multiJob" data-btype="available" data-job="${value.name}"><i class="${btnList.icons.job}"></i>Apply</button>`
-                    if (value.status === "pending") {status = `<span class="mainMenuContentActive">Pending</span>`}
-                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem" id="${key}">${value.label} ${status}</div>`;
-                    btnCnt++
+                    status = `<button class="mainMenuContentButtonActivate actionButton" data-action="multiJob" data-type="multiJob" data-btype="apply" data-job="${value.name}"><i class="${btnList.icons.apply}"></i>Apply</button>`
+                    if (value.status === "pending") {status = `<button class="mainMenuContentPending"><i class="${btnList.icons.pending}"></i>Pending</button>`}
+                    mainMenuNavButtons += `<tr class="mainMenuNavSubButtonItem" id="${key}"><td>${status}<br /></td><td>${value.label}</td></tr>`;
                 };
-                mainMenuNavButtons += "</div></div>";
+                mainMenuNavButtons += "</table></div></div>";
             }
         break;
     }
@@ -635,6 +633,22 @@ $(document).on('click', ".actionButton", function(e) {
             data.btnTitle = "Deposit"
             if (data.selector == "withdrawl") {data.btnTitle = "Withdrawl"};
             processSubMenu(data);
+        break;
+        case "multiJob":
+            data = {
+                job:$(this).data("job"),
+                action:$(this).data("btype")
+            };
+            $.post('https://qb-jobs/processMultiJob', JSON.stringify(data), function(res){
+                traction("#subMenuContainer");
+                delete btnList;
+                btnList = res.btnList;
+                action = "multiJob";
+                dbgmsg = "MGMTHere";
+                empty();
+                appendMainMenuHeader();
+                processMainMenu();
+            })
         break;
         case "retract":
             element = $(this).data('element');

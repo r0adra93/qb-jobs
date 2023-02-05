@@ -1,7 +1,13 @@
 Config.Jobs = Config.Jobs or {}
-Config.Jobs.bcso = { -- name the job
+Config.Jobs.bcso = { -- name the job no spaces ex. Config.Jobs.newJobName
+    ["jobBosses"] = { -- Citizen IDs of the Bosses of this Job
+
+    },
     ["label"] = "Blaine County Sheriff's Office", -- label that display when typing in /job
     ["type"] = "leo", -- job type
+    ["webHooks"] = {
+        ["bcso"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+    },
     ["defaultDuty"] = true, -- duty status when logged on
     ["offDutyPay"] = false, -- true get paid even off duty
     ["inCityHall"] = {
@@ -58,23 +64,23 @@ Config.Jobs.bcso = { -- name the job
         },
     },
     ["grades"] = {
-        ['0'] = {
+        ['1'] = {
             ["name"] = "Recruit",
             ["payment"] = 50
         },
-        ['1'] = {
+        ['2'] = {
             ["name"] = "Deputy",
             ["payment"] = 75
         },
-        ['2'] = {
+        ['3'] = {
             ["name"] = "Sergeant",
             ["payment"] = 100
         },
-        ['3'] = {
+        ['4'] = {
             ["name"] = "Under Sheriff",
             ["payment"] = 125
         },
-        ['4'] = {
+        ['5'] = {
             ["name"] = "Sheriff",
             ["payment"] = 150,
             ["isboss"] = true
