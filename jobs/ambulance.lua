@@ -90,6 +90,19 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         ["blipScale"] = 1, -- Size of the Blip on the minimap
     },
     ["Locations"] = {
+        ["facilities"] = {
+            {
+                ["label"] = "Hospital - Pillbox",
+                ["public"] = true, -- true station is displayed for all players | false = station is displayed just for the player
+                ["coords"] = vector4(304.27, -600.33, 43.28, 272.249),
+                ["blipName"] = "Hospital",
+                ["blipNumber"] = 61, -- https://docs.fivem.net/docs/game-references/blips/#blips
+                ["blipColor"] = 3, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
+                ["blipDisplay"] = 4, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
+                ["blipScale"] = 0.6, -- set the size of the blip on the full size map
+                ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
+            }
+        },
         ["duty"] = { -- duty station for going on and off duty
             {
                 ["Label"] = "Hospital Timeclock", -- Label of the timeclock
@@ -133,7 +146,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             }
         },
         ["garages"] = {
-            {
+            [1] = {
                 ["label"] = "Hospital Garage - Pillbox",
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
@@ -186,7 +199,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipScale"] = 0.6, -- set the size of the blip on the full size map
                 ["blipShortRange"] = true -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
             },
-            {
+            [2] = {
                 ["label"] = "Hospital Garage - Paleto Bay",
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
@@ -235,7 +248,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipScale"] = 0.6, -- set the size of the blip on the full size map
                 ["blipShortRange"] = true -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
             },
-            {
+            [3] = {
                 ["label"] = "Hospital Hanger LosSantos Airport",
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
@@ -292,7 +305,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipScale"] = 0.6,
                 ["blipShortRange"] = true
             },
-            {
+            [4] = {
                 ["label"] = "Hospital Hanger Grapeseed",
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
@@ -325,7 +338,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipScale"] = 0.6,
                 ["blipShortRange"] = true
             },
-            {
+            [5] = {
                 ["label"] = "Hospital Hanger Sandy Shores",
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
@@ -362,7 +375,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipScale"] = 0.6,
                 ["blipShortRange"] = true
             },
-            {
+            [6] = {
                 ["label"] = "Hospital Boatlaunch Alamo Sea",
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
@@ -395,7 +408,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipScale"] = 0.6,
                 ["blipShortRange"] = true
             },
-            {
+            [7] = {
                 ["label"] = "Hospital Boatlaunch Los Santos",
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
@@ -432,7 +445,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipScale"] = 0.6,
                 ["blipShortRange"] = true
             },
-            {
+            [8] = {
                 ["label"] = "Hospital Boatlaunch Paleto Cove",
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
@@ -466,6 +479,27 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipShortRange"] = true
             }
         },
+        ["shops"] = { -- Used to be called Armory but is better used as a shop
+            {
+                ["label"] = "Hospital Supplies - Pillbox",
+                ["ped"] = {
+                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(309.76, -603.13, 43.29, 77),
+                    ["targetIcon"] = "fa-solid fa-shop", -- Font Awesome Icon https://fontawesome.com/icons
+                    ["drawDistance"] = 2.0,
+                    ["zoneOptions"] = {
+                        ["length"] = "2",
+                        ["width"] = "2"
+                    }
+                },
+                ["blipName"] = "Hospital Supplies",
+                ["blipNumber"] = 187,
+                ["blipColor"] = 81,
+                ["blipDisplay"] = 5,
+                ["blipScale"] = 0.4,
+                ["blipShortRange"] = true
+            }
+        },
         ["stashes"] = { -- player's personal locker area
             {
                 ["label"] = "Hospital Locker - Pillbox",
@@ -480,27 +514,6 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                     }
                 },
                 ["blipName"] = "Medical Locker",
-                ["blipNumber"] = 187,
-                ["blipColor"] = 81,
-                ["blipDisplay"] = 5,
-                ["blipScale"] = 0.4,
-                ["blipShortRange"] = true
-            }
-        },
-        ["armories"] = { -- can be used as a supply closet not just weapons
-            {
-                ["label"] = "Hospital Supplies - Pillbox",
-                ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
-                    ["coords"] = vector4(309.76, -603.13, 43.29, 77),
-                    ["targetIcon"] = "fa-solid fa-shop", -- Font Awesome Icon https://fontawesome.com/icons
-                    ["drawDistance"] = 2.0,
-                    ["zoneOptions"] = {
-                        ["length"] = "2",
-                        ["width"] = "2"
-                    }
-                },
-                ["blipName"] = "Hospital Supplies",
                 ["blipNumber"] = 187,
                 ["blipColor"] = 81,
                 ["blipDisplay"] = 5,
@@ -529,17 +542,25 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["blipShortRange"] = true,
             }
         },
-        ["stations"] = {
+        ["lockers"] = { -- Locker shared with all members in job (great for evidence locker or patient belongings locker)
             {
-                ["label"] = "Hospital - Pillbox",
-                ["public"] = true, -- true station is displayed for all players | false = station is displayed just for the player
-                ["coords"] = vector4(304.27, -600.33, 43.28, 272.249),
-                ["blipName"] = "Hospital",
-                ["blipNumber"] = 61, -- https://docs.fivem.net/docs/game-references/blips/#blips
-                ["blipColor"] = 3, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
-                ["blipDisplay"] = 4, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
-                ["blipScale"] = 0.6, -- set the size of the blip on the full size map
-                ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
+                ["label"] = "Patient Belongings - Pillbox",
+                ["ped"] = {
+                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(319.7, -573.66, 43.32, 246.02),
+                    ["targetIcon"] = "fa-solid fa-file-shield", -- Font Awesome Icon https://fontawesome.com/icons
+                    ["drawDistance"] = 2.0,
+                    ["zoneOptions"] = {
+                        ["length"] = "2",
+                        ["width"] = "2"
+                    }
+                },
+                ["blipName"] = "Patient Belongings",
+                ["blipNumber"] = 134,
+                ["blipColor"] = 81,
+                ["blipDisplay"] = 5,
+                ["blipScale"] = 0.4,
+                ["blipShortRange"] = true
             }
         },
         ["outfits"] = {
@@ -637,7 +658,47 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["parkingPrice"] = 125, -- price to check out owned vehicle
                 ["purchasePrice"] = 150000, -- price to own vehicle
                 ["icon"] = "fa-solid fa-truck-medical", -- https://fontawesome.com/icons
-                ["authGrades"] = {1,2,3,4,5,6} -- Authorized Grades for Vehicle
+                ["authGrades"] = {1,2,3,4,5,6}, -- Authorized Grades for Vehicle
+                ["settings"] = {
+                    {
+                        ["grades"] = {1,2,3},
+                        ["livery"] = 2, -- First Livery Starts At 0
+                        ["extras"] = {
+                            [1] = 1, -- 0 = Show | 1 = Hide
+                            [2] = 0,
+                            [3] = 0,
+                            [4] = 0,
+                            [5] = 0,
+                            [6] = 0,
+                            [7] = 0,
+                            [8] = 0,
+                            [9] = 0,
+                            [10] = 0,
+                            [11] = 0,
+                            [12] = 0,
+                            [13] = 0
+                        }
+                    },
+                    {
+                        ["grades"] = {4,5,6},
+                        ["livery"] = 1, -- First Livery Starts At 0
+                        ["extras"] = {
+                            [1] = 0, -- 0 = Show | 1 = Hide
+                            [2] = 0,
+                            [3] = 0,
+                            [4] = 0,
+                            [5] = 0,
+                            [6] = 0,
+                            [7] = 0,
+                            [8] = 0,
+                            [9] = 0,
+                            [10] = 0,
+                            [11] = 0,
+                            [12] = 0,
+                            [13] = 0
+                        }
+                    }
+                }
             },
             ["polmav"] = {
                 ["label"] = "Air Ambulance",
@@ -646,72 +707,30 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["parkingPrice"] = 125,
                 ["purchasePrice"] = 3000000,
                 ["icon"] = "fa-solid fa-helicopter",
-                ["authGrades"] = {1,2,3,4,5,6}
-            }
-        },
-        ["settings"] = {
-            ["ambulance"] = { -- Spawn name
-                {
-                    ["grades"] = {0,1,2,3},
-                    ["livery"] = 2, -- First Livery Starts At 0
-                    ["extras"] = {
-                        [1] = 1, -- 0 = Show | 1 = Hide
-                        [2] = 0,
-                        [3] = 0,
-                        [4] = 0,
-                        [5] = 0,
-                        [6] = 0,
-                        [7] = 0,
-                        [8] = 0,
-                        [9] = 0,
-                        [10] = 0,
-                        [11] = 0,
-                        [12] = 0,
-                        [13] = 0
+                ["authGrades"] = {1,2,3,4,5,6},
+                ["settings"] = {
+                    {
+                        ["grades"] = {0,1,2,3,4,5,6},
+                        ["extras"] = {
+                            [1] = 0,
+                            [2] = 0,
+                            [3] = 0,
+                            [4] = 0,
+                            [5] = 0,
+                            [6] = 0,
+                            [7] = 0,
+                            [8] = 0,
+                            [9] = 0,
+                            [10] = 0,
+                            [11] = 0,
+                            [12] = 0,
+                            [13] = 0
+                        },
+                        ["livery"] = 1
                     }
-                },
-                {
-                    ["grades"] = {4,5,6},
-                    ["livery"] = 1, -- First Livery Starts At 0
-                    ["extras"] = {
-                        [1] = 1, -- 0 = Show | 1 = Hide
-                        [2] = 0,
-                        [3] = 0,
-                        [4] = 0,
-                        [5] = 0,
-                        [6] = 0,
-                        [7] = 0,
-                        [8] = 0,
-                        [9] = 0,
-                        [10] = 0,
-                        [11] = 0,
-                        [12] = 0,
-                        [13] = 0
-                    }
-                },
-            },
-            ["polmav"] = {
-                {
-                    ["grades"] = {0,1,2,3,4,5,6},
-                    ["extras"] = {
-                        [1] = 0,
-                        [2] = 0,
-                        [3] = 0,
-                        [4] = 0,
-                        [5] = 0,
-                        [6] = 0,
-                        [7] = 0,
-                        [8] = 0,
-                        [9] = 0,
-                        [10] = 0,
-                        [11] = 0,
-                        [12] = 0,
-                        [13] = 0
-                    },
-                    ["livery"] = 1
                 }
             }
-        },
+        }
     },
     ["MotorworksConfig"] = {
         ["settings"] = {
@@ -755,8 +774,6 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         }
     },
     ["Items"] = {
-        ["armoryLabel"] = "Medical Supply Cabinet", -- name of armory
-        ["slots"] = 30, -- how many slots for armory
         ["items"] = {
             {
                 ["name"] = "radio", -- item name from items.lua
@@ -765,8 +782,8 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["info"] = {}, -- information about the item from items.lua
                 ["type"] = "item", -- item or weapon reference items.lua
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"}, -- vehicle, boat, plane, and/or helicopter
-                ["locations"] = {'armory','glovebox'}, -- armory, glovebox and/or trunk
-                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+                ["locations"] = {'shop','glovebox'}, -- shop, glovebox and/or trunk
+                ["authGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "bandage",
@@ -775,8 +792,8 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["info"] = {},
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
-                ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+                ["locations"] = {'shop','trunk'},
+                ["authGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "painkillers",
@@ -785,8 +802,8 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["info"] = {},
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
-                ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+                ["locations"] = {'shop','trunk'},
+                ["authGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "firstaid",
@@ -795,8 +812,8 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["info"] = {},
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
-                ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+                ["locations"] = {'shop','trunk'},
+                ["authGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "weapon_flashlight",
@@ -805,8 +822,8 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["info"] = {},
                 ["type"] = "weapon",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
-                ["locations"] = {'armory','glovebox'},
-                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+                ["locations"] = {'shop','glovebox'},
+                ["authGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "weapon_fireextinguisher",
@@ -815,8 +832,8 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["info"] = {},
                 ["type"] = "weapon",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
-                ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+                ["locations"] = {'shop','trunk'},
+                ["authGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "heavyarmor",
@@ -825,8 +842,24 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["info"] = {},
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
-                ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+                ["locations"] = {'shop','trunk'},
+                ["authGrades"] = {1,2,3,4,5,6}
+            }
+        },
+        ["shop"] = {
+            ["shopLabel"] =  "Medical Supply Cabinet", -- name of shop
+            ["slots"] = 30, -- how many slots for shop
+        },
+        ["locker"] = {
+            ["options"] = {
+                ["maxweight"] = 4000000,
+                ["slots"] = 300
+            }
+        },
+        ["trash"] = {
+            ["options"] = {
+                ["maxweight"] = 4000000,
+                ["slots"] = 300
             }
         }
     },

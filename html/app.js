@@ -135,33 +135,34 @@ const processMainMenu = () => {
     let title = null;
     switch(action) {
         case "garage":
-            if (btnList.ownedVehicles) {
+            if (!jQuery.isEmptyObject(btnList.ownedVehicles)) {
                 mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.ownGarage}"></i>My Garage</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
                 for (const [key] of Object.entries(btnList.ownedVehicles)) {
-                    mainMenuNavButtons += `<div class="mainMenuSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-selgar="ownGarage" data-vehtype="${key}" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-action="listVeh" data-selgar="ownGarage" data-vehtype="${key}" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
                 btnCnt++;
             }
+            if (!jQuery.isEmptyObject(btnList.vehicles))
             mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.jobGarage}"></i>Motorpool</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
             for (const [key] of Object.entries(btnList.vehicles)) {
-                mainMenuNavButtons += `<div class="mainMenuSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-selgar="motorpool" data-vehtype="${key}" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
+                mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-action="listVeh" data-selgar="motorpool" data-vehtype="${key}" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
                 btnCnt++
             };
             mainMenuNavButtons += `</div></div>`;
             btnCnt++;
-            if (btnList.allowPurchase) {
-                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.jobStore}"></i>Vehicle Shop</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons"></button></div>`;
+            if (btnList.allowPurchase && !jQuery.isEmptyObject(btnList.vehiclesForSale)) {
+                mainMenuNavButtons += `<div class="mainMenuNavButtonItem"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-action="navButton" data-targetID="empty" data-target="TempMain" data-effect="upDown" data-element="#nav${btnCnt}"><i class="${btnList.icons.jobStore}"></i>Vehicle Shop</button><div id="nav${btnCnt}" class="mainMenuNavSubButtons">`;
                 for (const [key] of Object.entries(btnList.vehiclesForSale)) {
-                    mainMenuNavButtons += `<div class="mainMenuSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-selgar="jobStore" data-vehtype="${key}" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
+                    mainMenuNavButtons += `<div class="mainMenuNavSubButtonItem"><button class="mainMenuNavSubButton actionButton" data-btnid="mainMenuNavSubButton" data-action="listVeh" data-selgar="jobStore" data-vehtype="${key}" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons[key]}"></i>${key}</button></div>`;
                     btnCnt++
                 };
                 mainMenuNavButtons += "</div></div>";
                 btnCnt++;
             }
             if(!jQuery.isEmptyObject(btnList.returnVehicle)){
-                mainMenuNavButtons += `<div class="mainMenuNavButtons"><div class="mainMenuButtonItem" id="btnReturnVehicle"><button class="TempMain actionButton" data-btnid="mainMenuNavButton" data-id="nav${btnCnt}" data-vehtype="returnVehicle" data-selgar="returnVehicle" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.returnVehicle}"></i>Return Vehicles</button></div></div>`;
+                mainMenuNavButtons += `<div class="mainMenuNavButtons"><div class="mainMenuButtonItem" id="btnReturnVehicle"><button class="mainMenuNavButton actionButton" data-btnid="mainMenuNavButton" data-id="nav${btnCnt}" data-action="listVeh" data-vehtype="returnVehicle" data-selgar="returnVehicle" data-effect="leftRight" data-element="#subMenuContainer" data-target="sub" data-targetid="${btnCnt}"><i class="${btnList.icons.returnVehicle}"></i>Return Vehicles</button></div></div>`;
                 btnCnt++
                 btnCnt++;
             }
@@ -276,25 +277,29 @@ const processSubMenu = (data) => {
             }
             subMenuNavButtons += `<div class="subMenuNavButtons">`;
             for (const [key,value] of Object.entries(vehicles[data.vehType])) {
-                if (data.selGar == "returnVehicle") {
-                    subMenuNavButtons += `<div class="subMenuNavButtonItem"><button id="${key}" class="subMenuNavButton" data-btnid="subMenuNavButton" data-plate="${key}"><i class="${btnList.icons.returnVehicle}"></i>${value.vehicle}<br />${key}</button></div>`;
-                } else if (data.selGar == "ownGarage") {
-                    let btnhide = "";
-                    if(btnList.returnVehicle[value.plate]){
-                        btnhide = `style="display:none;"`;
-                    }
-                    if(value.parkingPrice){element = `<br />${value.plate}<br /><u><strong>Parking Fee</strong></u><br />$${value.parkingPrice}`}
-                    subMenuNavButtons += `<div class="subMenuNavButtonItem" id="btn${value.plate}" ${btnhide}><button id="${value.plate}" class="subMenuNavButton" data-btnid="subMenuNavButton" data-plate="${value.plate}" data-selgar="${data.selGar}" data-vehicle="${value.spawn}"><i class="${value.icon}"></i>${value.label}${element}</button></div>`;
-                } else {
-                    if (data.selGar == "jobStore") {
-                        if(value.purchasePrice){element = `<br /><u><strong>Purchase Price</strong></u><br />$${value.purchasePrice}`}
-                    }
-                    else if (data.selGar == "motorpool") {
+                switch(data.selGar){
+                    case "returnVehicle":
+                        subMenuNavButtons += `<div class="subMenuNavButtonItem"><button id="${key}" class="subMenuNavButton actionButton" data-btnid="subMenuNavButton"  data-action="delVeh" data-plate="${key}"><i class="${btnList.icons.returnVehicle}"></i>${value.vehicle}<br />${key}</button></div>`;
+                    break;
+                    case "ownGarage":
+                        let btnhide = "";
+                        if(btnList.returnVehicle[value.plate]){
+                            btnhide = `style="display:none;"`;
+                        }
+                        if(value.parkingPrice){element = `<br />${value.plate}<br /><u><strong>Parking Fee</strong></u><br />$${value.parkingPrice}`}
+                        subMenuNavButtons += `<div class="subMenuNavButtonItem" id="btn${value.plate}" ${btnhide}><button id="${value.plate}" class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-action="selVeh" data-plate="${value.plate}" data-selgar="${data.selGar}" data-vehicle="${value.spawn}"><i class="${value.icon}"></i>${value.label}${element}</button></div>`;
+                    break;
+                    default:
                         element = "";
-                        if(value.depositPrice){element += `<br /><u><strong>Refundable Deposit</strong></u><br />$${value.depositPrice}`}
-                        if(value.rentPrice){element += `<br /><u><strong>Rental Price</strong></u><br />$${value.rentPrice}`}
-                    }
-                    subMenuNavButtons += `<div class="subMenuNavButtonItem"><li><button id="${key}" class="subMenuNavButton" data-btnid="subMenuNavButton" data-selgar="${data.selGar}" data-vehicle="${value.spawn}"><i class="${value.icon}"></i>${value.label}${value.element}</button></div>`;
+                        if (data.selGar == "jobStore") {
+                            if(value.purchasePrice){element = `<br /><u><strong>Purchase Price</strong></u><br />$${value.purchasePrice}`}
+                        }
+                        else if (data.selGar == "motorpool") {
+                            if(value.depositPrice){element += `<br /><u><strong>Refundable Deposit</strong></u><br />$${value.depositPrice}`}
+                            if(value.rentPrice){element += `<br /><u><strong>Rental Price</strong></u><br />$${value.rentPrice}`}
+                        }
+                        subMenuNavButtons += `<div class="subMenuNavButtonItem"><li><button id="${key}" class="subMenuNavButton actionButton" data-btnid="subMenuNavButton" data-action="selVeh" data-selgar="${data.selGar}" data-vehicle="${value.spawn}"><i class="${value.icon}"></i>${value.label}${element}</button></div>`;
+                    break;
                 }
             };
             subMenuNavButtons += "</div>"
@@ -550,7 +555,7 @@ $(document).ready(function(){
 /* Button Controls */
 $(document).on('click', ".actionButton", function(e) {
     e.preventDefault();
-    let data;
+    let data = {};
     let btnid = $(this).data('btnid');
     let effect = $(this).data('effect');
     let target = $(this).data('target');
@@ -596,7 +601,7 @@ $(document).on('click', ".actionButton", function(e) {
             data.garage = btnList.garage;
             data.vehicle = $(this).data('vehicle');
             data.selgar = $(this).data('selgar');
-            if (data.garage === "ownGarage") {data.plate = $(this).data('plate');}
+            if (data.selgar === "ownGarage") {data.plate = $(this).data('plate');}
             $.post('https://qb-jobs/selectedVehicle', JSON.stringify(data))
             close();
         break
@@ -608,16 +613,16 @@ $(document).on('click', ".actionButton", function(e) {
             processSubMenu(data);
         break;
         case "delVeh":
-            if(btnList.returnVehicle[data.plate].selGar == "ownGarage") {
-                $(`.btn${data.plate}`).show();
+            let plate = $(this).data('plate');
+            if(btnList.returnVehicle[plate].selGar == "ownGarage") {
+                $(`.btn${plate}`).show();
             }
-            $.post('https://qb-jobs/delVeh', JSON.stringify(data.plate), function(result) {
+            $.post('https://qb-jobs/delVeh', JSON.stringify(plate), function(result) {
                 delete btnList.returnVehicle;
                 btnList.returnVehicle = result;
-                $(`#${data.plate}`).remove();
+                $(`#${plate}`).remove();
                 if ($.isEmptyObject(btnList.returnVehicle)){
-                    tractMenuWindow("#subMenuContainer",false,false);
-                    tractMenuWindow("#contentMenuContainer",false,false);
+                    traction("#subMenuContainer",false,false);
                     $("#btnReturnVehicle").remove();
                 }
             }, "json");

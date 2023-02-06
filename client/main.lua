@@ -35,7 +35,7 @@ local function buildJobsList()
 end
 --- deletes spawned vehicles and refunds deposits
 local function deleteVehicleProcess(plate)
-    local data = {};
+    local data = {}
     data.plate = plate
     data.vehicle = vehiclesAssigned[plate].vehicle
     data.netid = vehiclesAssigned[plate].netid
@@ -56,7 +56,7 @@ end
 --- receives the vehicle list from server and opens the menu
 local function receiveGaragedVehicles(data)
     QBCore.Functions.TriggerCallback('qb-jobs:server:sendGaragedVehicles',function(result)
-        if Config.Jobs[playerJob.name].VehicleConfig.assignVehicles and next(vehiclesAssigned) then
+        if Config.Jobs[playerJob.name].Vehicles.config.assignVehicles and next(vehiclesAssigned) then
             deleteVehicleProcess()
         end
         result.returnVehicle = vehiclesAssigned;
@@ -120,7 +120,11 @@ local function openMotorworks(res)
 end
 --- checks out vehicle from the motorpool
 local function takeOutVehicle(result)
-    if not Config.Jobs[playerJob.name].Vehicles[result[2]] then
+    local spawn = result.vehicle
+    local garage = result.garage
+    local selGar = result.selgar
+    local grade = tonumber(playerJob.grade.level)
+    if not Config.Jobs[playerJob.name].Vehicles.vehicles[spawn] then
         QBCore.Functions.Notify(Lang:t("denied.noVehicle"))
         return false
     end
@@ -138,14 +142,14 @@ local function takeOutVehicle(result)
         end
         local coords
         local data = {
-            ["garage"] = result[garage],
-            ["vehicle"] = result[vehicle],
-            ["selGar"] = result[selGar]
+            ["garage"] = garage,
+            ["vehicle"] = spawn,
+            ["selGar"] = selGar
         }
-        local cbData = { ["selGar"] = data.selGar }
-        if result[4] then cbData["plate"] = result[4] end
-        for _,v in pairs(Config.Jobs[playerJob.name].Locations.garages[data.garage].spawnPoint) do
-            if v.type == Config.Jobs[playerJob.name].Vehicles[result[2]].type and not IsAnyVehicleNearPoint(vector3(v.coords.x,v.coords.y,v.coords.z), 2.5) then
+        local cbData = { ["selGar"] = selGar }
+        if result.plate then cbData["plate"] = result.plate end
+        for _,v in pairs(Config.Jobs[playerJob.name].Locations.garages[garage].spawnPoint) do
+            if v.type == Config.Jobs[playerJob.name].Vehicles.vehicles[spawn].type and not IsAnyVehicleNearPoint(vector3(v.coords.x,v.coords.y,v.coords.z), 2.5) then
                 coords = v.coords
                 break
             end
@@ -165,14 +169,14 @@ local function takeOutVehicle(result)
                     SetVehicleFixed(data.netid)
                     SetEntityAsMissionEntity(data.netid, true, true)
                     SetVehicleDoorsLocked(data.netid, 2)
-                    if Config.Jobs[playerJob.name].VehicleSettings[data.vehicle] then
-                        vehExtras = Config.Jobs[playerJob.name].VehicleSettings[data.vehicle].extras
-                        if vehExtras and vehExtras.grades[playerJob.grades.level] then
-                            vehicleExtras(data.netid, vehExtras)
-                            --QBCore.Shared.SetDefaultVehicleExtras(data.netid, Config.Jobs[playerJob.name].VehicleSettings[data.vehicle].extras)
-                        end
-                        if Config.Jobs[playerJob.name].VehicleSettings[data.vehicle].livery then
-                            SetVehicleLivery(data.netid, Config.Jobs[playerJob.name].VehicleSettings[data.vehicle].livery)
+                    grade = 1
+                    for _,v in pairs(Config.Jobs[playerJob.name].Vehicles.vehicles[spawn].settings) do
+                        for _,v1 in pairs(v.grades) do
+                            v1 = tonumber(v1)
+                            if v1 == grade then
+                                vehicleExtras(data.netid, v.extras) -- the qbcore native is broken! This Works!
+                                SetVehicleLivery(data.netid, v.livery)
+                            end
                         end
                     end
                     if properties then QBCore.Functions.SetVehicleProperties(data.netid, vehicleProps) end
@@ -259,8 +263,77 @@ local getMultiJobMenu = function()
     })
     SetNuiFocus(true,true)
 end
+--- handles all inventory related functions
+local callInventory = function(invType,invHeader,itemsList)
+    TriggerServerEvent("inventory:server:OpenInventory", invType, invHeader, itemsList)
+    if invType == "stash" then TriggerEvent("inventory:client:SetCurrentStash", invHeader) end
+end
+local function callStash()
+    local invType = "stash"
+    local invHeader = string.format("%s_%s_%s",playerJob.name,Lang:t('headings.stash'),player.citizenid)
+    local itemsList = nil
+    callInventory(invType,invHeader,itemsList)
+end
+local function callTrash()
+    local invType = "stash"
+    local invHeader = string.format("%s_%s",playerJob.name,Lang:t('headings.trash'))
+    local itemsList = Config.Jobs[playerJob.name].Items.trash.options
+    callInventory(invType,invHeader,itemsList)
+end
+local function callLocker()
+    local invType, itemsList
+    local invHeader = Lang:t('headings.locker')
+    local drawer = exports['qb-input']:ShowInput({
+        header = invHeader,
+        submitText = "open",
+        inputs = {
+            {
+                type = 'number',
+                isRequired = true,
+                name = 'slot',
+                text = Lang:t('info.lockerSlot')
+            }
+        }
+    })
+    if drawer and drawer.slot then
+        invType = "stash"
+        invHeader = string.format("%s%s",invHeader,drawer.slot)
+        itemsList = Config.Jobs[playerJob.name].Items.trash.options
+    end
+    callInventory(invType,invHeader,itemsList)
+end
+local function callShop()
+    local index = 1
+    local grade = tonumber(playerJob.grade.level)
+    local itemsList = {
+        label = Config.Jobs[playerJob.name].Items.shop.shopLabel,
+        slots = Config.Jobs[playerJob.name].Items.shop.slots,
+        items = {}
+    }
+    local invType = "shop"
+    local invHeader = string.format("%s_Shop",playerJob.name)
+    for _, shopItem in pairs(Config.Jobs[playerJob.name].Items.items) do
+        for _,v in pairs(shopItem.locations) do
+            if v == "shop" then
+                for _,v1 in pairs(shopItem.authGrades) do
+                    if v1 == grade then
+                        itemsList.items[index] = shopItem
+                        itemsList.items[index].slot = index
+                        index += 1
+                    end
+                end
+            end
+        end
+    end
+    for k, _ in pairs(Config.Jobs[playerJob.name].Items.items) do
+        if k < 6 then
+            Config.Jobs[playerJob.name].Items.items[k].info.serie = tostring(QBCore.Shared.RandomInt(2) .. QBCore.Shared.RandomStr(3) .. QBCore.Shared.RandomInt(1) .. QBCore.Shared.RandomStr(2) .. QBCore.Shared.RandomInt(3) .. QBCore.Shared.RandomStr(4))
+        end
+    end
+    callInventory(invType,invHeader,itemsList)
+end
 --- Listens for actions to interact with job peds
-local function Listen4Control(data)
+local Listen4Control = function(data)
     ControlListen = true
     CreateThread(function()
         while ControlListen do
@@ -275,7 +348,7 @@ local function Listen4Control(data)
     end)
 end
 --- spawns the peds for all the job locations
-local function spawnPeds()
+local spawnPeds = function()
     while not playerJob do setCurrentJob() Wait(5000) end
     if not Config.Jobs[playerJob.name].Locations then return end
     local current
@@ -301,18 +374,23 @@ local function spawnPeds()
             ["duty"] = false
         },
         ["stashes"] = {
-            ["svrEvent"] = "qb-jobs:server:openStash",
-            ["label"] = Lang:t('info.stash_enter'),
-            ["duty"] = false
-        },
-        ["armories"] = {
-            ["svrEvent"] = "qb-jobs:server:openArmory",
-            ["label"] = Lang:t('info.enter_armory'),
+            ["fn"] = callStash,
+            ["label"] = Lang:t('info.enter_stash'),
             ["duty"] = false
         },
         ["trash"] = {
-            ["svrEvent"] = "qb-jobs:server:openTrash",
-            ["label"] = Lang:t('info.trash_enter'),
+            ["fn"] = callTrash,
+            ["label"] = Lang:t('info.enter_trash'),
+            ["duty"] = false
+        },
+        ["lockers"] = {
+            ["fn"] = callLocker,
+            ["label"] = Lang:t('info.enter_locker'),
+            ["duty"] = false
+        },
+        ["shops"] = {
+            ["fn"] = callShop,
+            ["label"] = Lang:t('info.enter_shop'),
             ["duty"] = false
         },
         ["outfits"] = {
@@ -349,6 +427,9 @@ local function spawnPeds()
                 current.clntSvr = pedSet.clntSvr
                 pedsSpawned = true
                 if pedSet then
+                    for k2,v2 in pairs(pedSet[k]) do
+                        current[k2] = v2
+                    end
                     if Config.useTarget then
                             exports['qb-target']:AddTargetEntity(ped, {
                                 options = {
@@ -373,7 +454,7 @@ local function spawnPeds()
                                     minZ = current.coords.z - 1,
                                     maxZ = current.coords.z + 1,
                                     debugPoly = Config.debugPoly,
-                                    data = pedSet[k]
+                                    data = current
                                 }
                             )
                             polyLocList[#polyLocList+1] = zones[index.zones]
@@ -400,7 +481,7 @@ local function spawnPeds()
     end
 end
 --- destroys all spawned job peds
-local function killPeds()
+local killPeds = function()
     if pedList then
         for _,v in pairs(pedList) do
             DeleteEntity(v)
@@ -414,7 +495,7 @@ local function killPeds()
     pedsSpawned = false
 end
 --- configures all the map blip locations
-local function setBlip(conf)
+local setBlip = function(conf)
     local blip = AddBlipForCoord(conf.coords.x, conf.coords.y, conf.coords.z)
     SetBlipSprite(blip, conf.blipNumber)
     SetBlipAsShortRange(blip, conf.blipNumber)
@@ -427,7 +508,7 @@ local function setBlip(conf)
     blipList[blip] = blip
 end
 --- deletes all map blip locations
-local function removeBlips()
+local removeBlips = function()
     for k in pairs(blipList) do
         RemoveBlip(k)
     end
@@ -485,8 +566,8 @@ end
 --- creates minimap locations for current job
 local function setLocations()
     for k,v in pairs(Config.Jobs) do
-        if v.Locations and v.Locations.stations then
-            for _,v1 in pairs(v.Locations.stations) do
+        if v.Locations and v.Locations.facilities then
+            for _,v1 in pairs(v.Locations.facilities) do
                 if k == playerJob.name or v.type == playerJob.type or v1.public then setBlip(v1) end
             end
         end
@@ -660,4 +741,4 @@ end)
 RegisterCommand("jobs", function()
     getMultiJobMenu()
 end, false)
-RegisterKeyMapping("jobs","MultiJob Menu","keyboard","j")
+RegisterKeyMapping("jobs","MultiJob Menu","keyboard",Config.multiJobKey)

@@ -1,7 +1,8 @@
 Config = {
     ["useTarget"] = GetConvar('UseTarget', 'false') == 'true',
     ["Jobs"] = {},
-    ["duty"] = true, -- true = all players can use /duty | false = only admins can use /duty
+    ["multiJobKey"] = "j", -- choose key to activate multi-job menu
+    ["duty"] = "user", -- user, admin, god
     ["debugPoly"] = false, -- true = shows polyZone Aeas | false = hides polyZone areas
     ["fuel"] = "LegacyFuel",
     ["keys"] = "qb-vehiclekeys:server:AcquireVehicleKeys",

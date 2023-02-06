@@ -59,11 +59,6 @@ local comma_value = function(amount)
     end
     return Config.currencySymbol .. amount
 end
---- Remove Decimal
-local removeDecimal = function(amount)
-    amount = string.format("%.0f",amount)
-    return amount
-end
 --- Error / Message Handler
 local errorHandler = function(error)
     local pcolor = "^1"
@@ -1169,7 +1164,7 @@ RegisterServerEvent('qb-jobs:server:addVehItems', function(data)
                 local vehType = false
                 local authGrade = false
                 for _,v1 in pairs(v.vehType) do
-                    if v1 == Config.Jobs[playerJob.name].Vehicles[data.vehicle].type then
+                    if v1 == Config.Jobs[playerJob.name].Vehicles.vehicles[data.vehicle].type then
                         vehType = true
                     end
                 end
@@ -1210,8 +1205,8 @@ RegisterServerEvent('qb-jobs:server:addVehItems', function(data)
         exports['qb-inventory']:addGloveboxItems(data.plate, gloveboxItems)
     end
 end)
---- Event to open the armory by eventually calling an export
-RegisterServerEvent('qb-jobs:server:openArmory', function()
+--- Event to open the shop by eventually calling an export
+RegisterServerEvent('qb-jobs:server:openShop', function()
     local src = source
     local player = QBCore.Functions.GetPlayer(src)
     if not player then return false end
@@ -1219,7 +1214,7 @@ RegisterServerEvent('qb-jobs:server:openArmory', function()
     populateJobs(src) -- ensures client has latest QBCore.Shared.Jobs table.
     local index = 1
     local inv = {
-        label = Config.Jobs[playerJob.name].Items.armoryLabel,
+        label = Config.Jobs[playerJob.name].Items.shopLabel,
         slots = 30,
         items = {}
     }
@@ -1227,7 +1222,7 @@ RegisterServerEvent('qb-jobs:server:openArmory', function()
     for key = 1, #items do
         for key2 = 1, #items[key].authorizedJobGrades do
             for key3 = 1, #items[key].locations do
-                if items[key].locations[key3] == "armory" and items[key].authorizedJobGrades[key2] == playerJob.grade.level then
+                if items[key].locations[key3] == "shop" and items[key].authorizedJobGrades[key2] == playerJob.grade.level then
                     if items[key].type == "weapon" then items[key].info.serie = tostring(QBCore.Shared.RandomInt(2) .. QBCore.Shared.RandomStr(3) .. QBCore.Shared.RandomInt(1) .. QBCore.Shared.RandomStr(2) .. QBCore.Shared.RandomInt(3) .. QBCore.Shared.RandomStr(4)) end
                     inv.items[index] = items[key]
                     inv.items[index].slot = index
@@ -1236,7 +1231,7 @@ RegisterServerEvent('qb-jobs:server:openArmory', function()
             end
         end
     end
-    exports['qb-inventory']:OpenInventory("shop", playerJob.name, inv, src)
+    TriggerEvent("inventory:server:OpenInventory","shop", playerJob.name, inv)
 end)
 --- Event to open the stashes by calling an export
 RegisterServerEvent("qb-jobs:server:openStash", function()
@@ -1244,8 +1239,9 @@ RegisterServerEvent("qb-jobs:server:openStash", function()
     local player = QBCore.Functions.GetPlayer(src)
     if not player then return false end
     local playerJob = player.PlayerData.job
-    exports['qb-inventory']:OpenInventory("stash", playerJob.name..Lang:t('headings.stash')..player.PlayerData.citizenid, false, source)
-    TriggerClientEvent("inventory:client:SetCurrentStash", playerJob.name..Lang:t('headings.stash')..player.PlayerData.citizenid)
+    local stashHeading = string.format("%s%s",playerJob.name,player.PlayerData.citizenid)
+    exports['qb-inventory']:OpenInventory("stash", stashHeading, false, source)
+    TriggerClientEvent("inventory:client:SetCurrentStash", stashHeading)
 end)
 --- Event to open the trash by calling an export
 RegisterServerEvent('qb-jobs:server:openTrash', function()
@@ -1254,11 +1250,12 @@ RegisterServerEvent('qb-jobs:server:openTrash', function()
     if not player then return false end
     local playerJob = player.PlayerData.job
     local options = {
-        maxweight = 4000000,
-        slots = 300
+        ["maxweight"] = 4000000,
+        ["slots"] = 300
     }
-    exports['qb-inventory']:OpenInventory("stash", playerJob.name..Lang:t('headings.trash')..player.PlayerData.citizenid, options, source)
-    TriggerClientEvent("inventory:client:SetCurrentStash", playerJob.name..Lang:t('headings.trash')..player.PlayerData.citizenid)
+    local stashHeading = string.format("%s-%s-%s",playerJob.name,Lang:t('headings.trash'),player.PlayerData.citizenid)
+    exports['qb-inventory']:OpenInventory("stash", stashHeading, options, source)
+    TriggerClientEvent("inventory:client:SetCurrentStash", stashHeading)
 end)
 --- Initializes job meta data for players (especially useful when new jobs are added)
 RegisterServerEvent('qb-jobs:server:buildJobHistory', function()
@@ -1283,20 +1280,26 @@ RegisterServerEvent('qb-jobs:server:addVehicle', function()
 end)
 -- Deletes Vehicle from the server
 RegisterServerEvent("qb-jobs:server:deleteVehicleProcess", function(result)
-    local player = QBCore.Functions.GetPlayer(source)
-    if not player then return false end
+    local src = source
+    local player = QBCore.Functions.GetPlayer(src)
+    local playerJob = player.PlayerData.job
     local citid = player.PlayerData.citizenid
-    if vehTrack[citid] and vehTrack[citid][result.plate] and vehTrack[citid][result.plate].selGar == "motorpool" and DoesEntityExist(NetworkGetEntityFromNetworkId(vehTrack[citid][result.plate].veh)) then
-        if not result.noRefund and player.Functions.AddMoney("cash", Config.Jobs[playerJob.name].Vehicles[result.vehicle].depositPrice, playerJob.name .. Lang:t("success.depositFeesPaid", {value = Config.Jobs[playerJob.name].Vehicles[result.vehicle].depositPrice})) then
-            TriggerClientEvent('QBCore:Notify', source, Lang:t("success.depositReturned", {value = Config.Jobs[playerJob.name].Vehicles[result.vehicle].depositPrice}), "success")
-            TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'Refund Deposit Success', 'green', string.format('%s received a refund of %s for returned vehicle!', GetPlayerName(source),Config.Jobs[playerJob.name].Vehicles[result.vehicle].depositPrice))
-            exports['qb-management']:RemoveMoney(playerJob.name, Config.Jobs[playerJob.name].Vehicles[result.vehicle].depositPrice)
-        end
-    else
-        TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'Fake Refund Attempt', 'red', string.format('%s attempted to obtain a refund for returned vehicle!', GetPlayerName(source)))
+    local vehList = Config.Jobs[playerJob.name].Vehicles
+    if not vehTrack[citid][result.plate].selGar == "motorpool" and not DoesEntityExist(NetworkGetEntityFromNetworkId(vehTrack[citid][result.plate].veh)) then
+        TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'Fake Refund Attempt', 'red', string.format('%s attempted to obtain a refund for returned vehicle!', GetPlayerName(src)))
+        return false
+    end
+    if vehTrack[citid][result.plate].selGar == "motorpool" and vehList.config.depositFees and not result.noRefund and player.Functions.AddMoney("cash", vehList.vehicles[result.vehicle].depositPrice, playerJob.name .. Lang:t("success.depositFeesPaid", {value = vehList.vehicles[result.vehicle].depositPrice})) then
+        TriggerClientEvent('QBCore:Notify', src, Lang:t("success.depositReturned", {value = vehList.vehicles[result.vehicle].depositPrice}), "success")
+        TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'Refund Deposit Success', 'green', string.format('%s received a refund of %s for returned vehicle!', GetPlayerName(src),vehList.vehicles[result.vehicle].depositPrice))
+        exports['qb-management']:RemoveMoney(playerJob.name, vehList.vehicles[result.vehicle].depositPrice)
     end
     vehCount[playerJob.name] -= 1
     vehTrack[citid][result.plate] = nil
+end)
+--- Error Event Handler
+RegisterServerEvent("qb-jobs:server:errorHandler", function(error)
+    errorHandler(error)
 end)
 -- Callbacks
 --- Verifies the vehicle count
@@ -1306,7 +1309,7 @@ QBCore.Functions.CreateCallback("qb-jobs:server:verifyMaxVehicles", function(sou
     local player = QBCore.Functions.GetPlayer(src)
     if not player then cb(false) end
     local playerJob = player.PlayerData.job
-    if Config.Jobs[playerJob.name].VehicleConfig.maxVehicles > 0 and Config.Jobs[playerJob.name].VehicleConfig.maxVehicles <= vehCount[playerJob.name] then
+    if Config.Jobs[playerJob.name].Vehicles.config.maxVehicles > 0 and Config.Jobs[playerJob.name].Vehicles.config.maxVehicles <= vehCount[playerJob.name] then
         QBCore.Functions.Notify(Lang:t("info.vehicleLimitReached"))
         test = false
     end
@@ -1314,41 +1317,52 @@ QBCore.Functions.CreateCallback("qb-jobs:server:verifyMaxVehicles", function(sou
 end)
 --- Processes Vehicles to be issued
 QBCore.Functions.CreateCallback("qb-jobs:server:spawnVehicleProcessor", function(source,cb,result)
-    local player = QBCore.Functions.GetPlayer(source)
+    local src = source
+    local player = QBCore.Functions.GetPlayer(src)
     if not player then return false end
     local playerJob = player.PlayerData.job
-    local vehicle = result.vehicle
-    local selGar = result.selGar
+    local vehList = Config.Jobs[playerJob.name].Vehicles
     local total = 0
     local message = {}
-    local jobStore
-    result.source = source
-    result.player = player
-    if selGar == "ownGarage" then
-        if Config.Jobs[playerJob.name].VehicleConfig.ownedParkingFee and Config.Jobs[playerJob.name].Vehicles[vehicle].parkingPrice then
-            total += Config.Jobs[playerJob.name].Vehicles[vehicle].parkingPrice
-            message.msg = Lang:t("success.parkingFeesPaid",{value = Config.Jobs[playerJob.name].Vehicles[vehicle].parkingPrice})
+    local function ownGarage()
+        if vehList.config.ownedParkingFee and vehList.vehicles[result.vehicle].parkingPrice then
+            total += vehList.vehicles[result.vehicle].parkingPrice
+            message.msg = Lang:t("success.parkingFeesPaid",{value = vehList.vehicles[result.vehicle].parkingPrice})
         end
-    elseif selGar == "jobStore" then
-        jobStore = exports['qb-vehicleshop']:BuyJobsVehicle(result)
-        if not jobStore  then cb(false) end
-    elseif selGar == "motorpool" then
-        if Config.Jobs[playerJob.name].VehicleConfig.rentalFees and Config.Jobs[playerJob.name].Vehicles[vehicle].rentPrice then
-            total += Config.Jobs[playerJob.name].Vehicles[vehicle].rentPrice
-            message.rent = Lang:t("success.rentalFeesPaid",{value = Config.Jobs[playerJob.name].Vehicles[vehicle].rentPrice})
+    end
+    local function jobStore()
+        local output = {
+            ["src"] = src,
+            ["vehicle"] = result.vehicle,
+            ["plate"] = result.plate,
+        }
+        exports['qb-vehicleshop']:BuyJobsVehicle(output)
+    end
+    local function motorpool()
+        if vehList.config.rentalFees and vehList.vehicles[result.vehicle].rentPrice then
+            total += vehList.vehicles[result.vehicle].rentPrice
+            message.rent = Lang:t("success.rentalFeesPaid",{value = vehList.vehicles[result.vehicle].rentPrice})
         end
-        if Config.Jobs[playerJob.name].VehicleConfig.depositFees and Config.Jobs[playerJob.name].Vehicles[vehicle].depositPrice then
-            total += Config.Jobs[playerJob.name].Vehicles[vehicle].depositPrice
-            message.deposit = Lang:t("success.depositFeesPaid",{value = Config.Jobs[playerJob.name].Vehicles[vehicle].depositPrice})
+        if vehList.config.depositFees and vehList.vehicles[result.vehicle].depositPrice then
+            total += vehList.vehicles[result.vehicle].depositPrice
+            message.deposit = Lang:t("success.depositFeesPaid",{value = vehList.vehicles[result.vehicle].depositPrice})
         end
         if message.rent and message.deposit then message.msg = message.rent .. " " .. message.deposit
         elseif message.rent then message.msg = message.rent
         elseif message.deposit then message.msg = message.deposit end
-    else
+    end
+    local function default()
         TriggerClientEvent('QBCore:Notify', source, Lang.t("denied.invalidGarage"), "denied")
         TriggerEvent('qb-log:server:CreateLog', 'qbjobs', 'Intrusion Attempted', 'red', string.format('%s attempted to obtain a vehicle!', GetPlayerName(source)))
         return false
     end
+    local selGar = {
+        ["ownGarage"] = ownGarage,
+        ["jobStore"] = jobStore,
+        ["motorpool"] = motorpool,
+        ["default"] = default,
+    }
+    selGar[result.selGar]()
     if total > 0 then
         if not player.Functions.RemoveMoney("bank", total, message.msg) then
             if not player.Functions.RemoveMoney("cash", total, message.msg) then
@@ -1363,8 +1377,8 @@ QBCore.Functions.CreateCallback("qb-jobs:server:spawnVehicleProcessor", function
     vehTrack[player.PlayerData.citizenid][result.plate] = {
         ["veh"] = result.veh,
         ["netid"] = result.netid,
-        ["vehicle"] = vehicle,
-        ["selGar"] = selGar
+        ["vehicle"] = result.vehicle,
+        ["selGar"] = result.selGar
     }
     cb(true)
 end)
@@ -1375,7 +1389,7 @@ QBCore.Functions.CreateCallback("qb-jobs:server:vehiclePlateCheck", function(sou
     local playerJob = player.PlayerData.job
     local plate, vehProps, ppl, sql, queryResult
     local pplMax = 4
-    res.platePrefix = Config.Jobs[playerJob.name].VehicleConfig.plate
+    res.platePrefix = Config.Jobs[playerJob.name].Vehicles.config.plate
     ppl = string.len(res.platePrefix)
     if ppl > pplMax then
         res.platePrefix = string.sub(res.platePrefix,1,pplMax)
@@ -1402,6 +1416,7 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(s
     local player = QBCore.Functions.GetPlayer(source)
     if not player then return false end
     local playerJob = player.PlayerData.job
+    local grade = tonumber(playerJob.grade.level)
     local vehShort, queryResult, sql
     local vehList = {
         ["vehicles"] = {},
@@ -1423,40 +1438,42 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(s
     for _,v in pairs(Config.Jobs[playerJob.name].Locations.garages[data].spawnPoint) do
         typeList[v.type] = true
     end
-    for k,v in pairs(Config.Jobs[playerJob.name].Vehicles) do
-        if(v.authGrades[playerJob.grade.level] and typeList[v.type]) then
-            vehList.vehicles[v.type] = {
-                [index[v.type]] = {
-                    ["spawn"] = k,
-                    ["label"] = v.label,
-                    ["icon"] = v.icon,
-                }
-            }
-            if Config.Jobs[playerJob.name].VehicleConfig.depositFees then vehList.vehicles[v.type][index[v.type]].depositPrice = v.depositPrice  end
-            if Config.Jobs[playerJob.name].VehicleConfig.rentalFees then vehList.vehicles[v.type][index[v.type]].rentPrice = v.rentPrice  end
-            if v.purchasePrice and Config.Jobs[playerJob.name].VehicleConfig.allowPurchase then
-                vehList.vehicles[v.type][index[v.type]].purchasePrice = v.purchasePrice
-                vehList.vehiclesForSale[v.type] = {
+    for k,v in pairs(Config.Jobs[playerJob.name].Vehicles.vehicles) do
+        for _,v1 in pairs(v.authGrades) do
+            if(v1 == grade and typeList[v.type]) then
+                vehList.vehicles[v.type] = {
                     [index[v.type]] = {
                         ["spawn"] = k,
                         ["label"] = v.label,
                         ["icon"] = v.icon,
-                        ["purchasePrice"] = v.purchasePrice
                     }
                 }
+                if Config.Jobs[playerJob.name].Vehicles.config.depositFees then vehList.vehicles[v.type][index[v.type]].depositPrice = v.depositPrice  end
+                if Config.Jobs[playerJob.name].Vehicles.config.rentalFees then vehList.vehicles[v.type][index[v.type]].rentPrice = v.rentPrice  end
+                if v.purchasePrice and Config.Jobs[playerJob.name].Vehicles.config.allowPurchase then
+                    vehList.vehicles[v.type][index[v.type]].purchasePrice = v.purchasePrice
+                    vehList.vehiclesForSale[v.type] = {
+                        [index[v.type]] = {
+                            ["spawn"] = k,
+                            ["label"] = v.label,
+                            ["icon"] = v.icon,
+                            ["purchasePrice"] = v.purchasePrice
+                        }
+                    }
+                end
+                if v.parkingPrice and Config.Jobs[playerJob.name].Vehicles.config.allowPurchase and Config.Jobs[playerJob.name].Vehicles.config.ownedParkingFee then
+                    vehList.vehicles[v.type][index[v.type]].parkingPrice = v.parkingPrice
+                    vehList.vehiclesForSale[v.type][index[v.type]].parkingPrice = v.parkingPrice
+                end
+                index[v.type] += 1
             end
-            if v.parkingPrice and Config.Jobs[playerJob.name].VehicleConfig.allowPurchase and Config.Jobs[playerJob.name].VehicleConfig.ownedParkingFee then
-                vehList.vehicles[v.type][index[v.type]].parkingPrice = v.parkingPrice
-                vehList.vehiclesForSale[v.type][index[v.type]].parkingPrice = v.parkingPrice
-            end
-            index[v.type] += 1
         end
     end
     index.boat = 1
     index.helicopter = 1
     index.plane = 1
     index.vehicle = 1
-    if Config.Jobs[playerJob.name].VehicleConfig.ownedVehicles then
+    if Config.Jobs[playerJob.name].Vehicles.config.ownedVehicles then
         vehList.allowPurchase = true
     end
     sql = {
@@ -1464,19 +1481,24 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(s
         ["from"] = "qb-jobs/server/main.lua > callback > sendGaragedVehicles"
     }
     queryResult = sqlHandler(sql)
-    if queryResult.error and next(queryResult.error) then return queryResult end
+    if queryResult.error and next(queryResult.error) then
+        cb(queryResult)
+        return queryResult
+    end
     for _, v in pairs(queryResult) do
-        vehShort = Config.Jobs[playerJob.name].Vehicles[v.vehicle]
-        if(vehShort.authGrades[playerJob.grade.level] and typeList[vehShort.type]) then
-            if not vehList.ownedVehicles[vehShort.type] then vehList.ownedVehicles[vehShort.type] = {} end
-            vehList.ownedVehicles[vehShort.type][index[vehShort.type]] = {
-                ["plate"] = v.plate,
+        vehShort = Config.Jobs[playerJob.name].Vehicles.vehicles[v.vehicle]
+        for _,v1 in pairs(vehShort.authGrades) do
+            if(v1 == grade and typeList[vehShort.type]) then
+                if not vehList.ownedVehicles[vehShort.type] then vehList.ownedVehicles[vehShort.type] = {} end
+                vehList.ownedVehicles[vehShort.type][index[vehShort.type]] = {
+                    ["plate"] = v.plate,
                 ["spawn"] = v.vehicle,
-                ["label"] = Config.Jobs[playerJob.name].Vehicles[v.vehicle].label,
-                ["icon"] = Config.Jobs[playerJob.name].Vehicles[v.vehicle].icon
-            }
-            if(vehShort.parkingPrice) then vehList.ownedVehicles[vehShort.type][index[vehShort.type]].parkingPrice = vehShort.parkingPrice end
-            index[vehShort.type] += 1
+                    ["label"] = Config.Jobs[playerJob.name].Vehicles.vehicles[v.vehicle].label,
+                    ["icon"] = Config.Jobs[playerJob.name].Vehicles.vehicles[v.vehicle].icon
+                }
+                if(vehShort.parkingPrice) then vehList.ownedVehicles[vehShort.type][index[vehShort.type]].parkingPrice = vehShort.parkingPrice end
+                index[vehShort.type] += 1
+            end
         end
     end
     cb(vehList)
@@ -1705,11 +1727,12 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(sourc
 end)
 -- Commands
 --- Creates the /duty command to go on and off duty
-QBCore.Commands.Add("duty", Lang:t("commands.duty"), {}, false, function()
+QBCore.Commands.Add("duty", Lang:t("commands.duty"), {}, false, function(source)
     local src = source
     TriggerClientEvent('qb-jobs:client:toggleDuty',src)
-end)
+end,QBCore.duty)
 --- Creates the /jobs command to open the multi-jobs menu.
-QBCore.Commands.Add("jobs", Lang:t("commands.duty"), {}, false, function()
-    TriggerClientEvent('qb-jobs:client:multiJobMenu',-1)
+QBCore.Commands.Add("jobs", Lang:t("commands.duty"), {}, false, function(source)
+    local src = source
+    TriggerClientEvent('qb-jobs:client:multiJobMenu',src)
 end)

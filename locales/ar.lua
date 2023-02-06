@@ -30,11 +30,11 @@ local Translations = {
         jobs_duty_station = "Set Duty Status" -- English Change
     },
     headings = {
-        stash = '_Stash', -- English Change
-        trash = '_Trash', -- English Change
-        armory = '_Armory', -- English Change
-        outfit = '_Outfit', -- English Change
-        management = '_Management', -- English Change
+        stash = 'Stash', -- English Change
+        trash = 'Trash', -- English Change
+        armory = 'Armory', -- English Change
+        outfit = 'Outfit', -- English Change
+        management = 'Management', -- English Change
         garages = ' Vehicle Selector' -- English Change
     },
     email = {
