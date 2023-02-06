@@ -2,7 +2,7 @@ fx_version 'cerulean'
 game 'gta5'
 
 description 'QB-Jobs'
-version '0.0.6'
+version '0.0.25'
 
 ui_page 'html/index.html'
 
