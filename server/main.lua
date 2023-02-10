@@ -593,6 +593,7 @@ local function sendToCustoms()
 end
 --- Generates list to pupulate the boss menu
 local function buildManagementData(src)
+    local personal, jhList, sql, queryResult
     local player = QBCore.Functions.GetPlayer(src)
     local output = {
         ["error"] = {},
@@ -605,7 +606,42 @@ local function buildManagementData(src)
     local jobCheck = {}
     local plist = {}
     local societyAccounts = exports["qb-banking"]:sendSocietyAccounts(src,jobName)
-    local personal, jhList, sql, queryResult
+    local pending = function(v,k1)
+        mgrBtnList.jobs[k1].applicants[v.citid] = {}
+        mgrBtnList.jobs[k1].applicants[v.citid].personal = personal
+        mgrBtnList.jobs[k1].applicants[v.citid].jobHistory = jhList
+        if v.metadata.rapsheet then mgrBtnList.jobs[k1].applicants[v.citid].rapSheet = v.metadata.rapsheet end
+    end
+    local hired = function(v,k1)
+        if k1 == playerJob.name and v.metadata.jobs and v.metadata.jobs[k1] then
+            personal.position = v.metadata.jobs[k1].grade
+            personal.payRate = v.metadata.jobs[k1].payment
+        end
+        mgrBtnList.jobs[k1].employees[v.citid] = {}
+        mgrBtnList.jobs[k1].employees[v.citid].personal = personal
+        mgrBtnList.jobs[k1].employees[v.citid].jobHistory = jhList
+        if v.metadata.rapsheet then mgrBtnList.jobs[k1].employees[v.citid].rapSheet = v.metadata.rapsheet end
+    end
+    local quit = function(v,k1)
+        mgrBtnList.jobs[k1].pastEmployees[v.citid] = {}
+        mgrBtnList.jobs[k1].pastEmployees[v.citid].personal = personal
+        mgrBtnList.jobs[k1].pastEmployees[v.citid].jobHistory = jhList
+        if v.metadata.rapsheet then mgrBtnList.jobs[k1].pastEmployees[v.citid].rapSheet = v.metadata.rapsheet end
+    end
+    local denied = function(v,k1)
+        mgrBtnList.jobs[k1].deniedApplicants[v.citid] = {}
+        mgrBtnList.jobs[k1].deniedApplicants[v.citid].personal = personal
+        mgrBtnList.jobs[k1].deniedApplicants[v.citid].jobHistory = jhList
+        if v.metadata.rapsheet then mgrBtnList.jobs[k1].deniedApplicants[v.citid].rapSheet = v.metadata.rapsheet end
+    end
+    local status = {
+        ["pending"] = {["func"] = pending},
+        ["hired"] = {["func"] = hired},
+        ["quit"] = {["func"] = quit},
+        ["fired"] = {["func"] = quit},
+        ["blacklisted"] = {["func"] = quit},
+        ["denied"] = {["func"] = denied}
+    }
     sql = {
         ["query"] = string.format("SELECT `citizenid` AS 'citid', `charinfo`, `metadata`, `license` FROM `players` WHERE JSON_VALUE(`metadata`, '$.jobhistory.%s.status') != 'available'",playerJob.name),
         ["from"] = "qb-jobs/server/main.lua > function > buildManagementData"
@@ -677,31 +713,8 @@ local function buildManagementData(src)
                             }
                         }
                     end
-                    if v1.status == "pending" then
-                        mgrBtnList.jobs[k1].applicants[v.citid] = {}
-                        mgrBtnList.jobs[k1].applicants[v.citid].personal = personal
-                        mgrBtnList.jobs[k1].applicants[v.citid].jobHistory = jhList
-                        if v.metadata.rapsheet then mgrBtnList.jobs[k1].applicants[v.citid].rapSheet = v.metadata.rapsheet end
-                    elseif v1.status == "hired" then
-                        if k1 == playerJob.name and v.metadata.jobs and v.metadata.jobs[k1] then
-                            personal.position = v.metadata.jobs[k1].grade
-                            personal.payRate = v.metadata.jobs[k1].payment
-                        end
-                        mgrBtnList.jobs[k1].employees[v.citid] = {}
-                        mgrBtnList.jobs[k1].employees[v.citid].personal = personal
-                        mgrBtnList.jobs[k1].employees[v.citid].jobHistory = jhList
-                        if v.metadata.rapsheet then mgrBtnList.jobs[k1].employees[v.citid].rapSheet = v.metadata.rapsheet end
-                    elseif v1.status == "quit" or v1.status == "fired" or v1.status == "blacklisted" then
-                        mgrBtnList.jobs[k1].pastEmployees[v.citid] = {}
-                        mgrBtnList.jobs[k1].pastEmployees[v.citid].personal = personal
-                        mgrBtnList.jobs[k1].pastEmployees[v.citid].jobHistory = jhList
-                        if v.metadata.rapsheet then mgrBtnList.jobs[k1].pastEmployees[v.citid].rapSheet = v.metadata.rapsheet end
-                    elseif v1.status == "denied" then
-                        mgrBtnList.jobs[k1].deniedApplicants[v.citid] = {}
-                        mgrBtnList.jobs[k1].deniedApplicants[v.citid].personal = personal
-                        mgrBtnList.jobs[k1].deniedApplicants[v.citid].jobHistory = jhList
-                        if v.metadata.rapsheet then mgrBtnList.jobs[k1].deniedApplicants[v.citid].rapSheet = v.metadata.rapsheet end
-                    end
+                    QBCore.Debug(v1.status)
+                    if v1.status and v1.status ~= "available" then status[v1.status].func(v,k1) end
                 end
             end
         end
@@ -1663,6 +1676,8 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(sourc
             ["log"] = true,
             ["notify"] = true
         }
+        player = QBCore.Functions.GetPlayer(src)
+        job = player.PlayerData.job
         player.Functions.SetActiveJob(job)
         return output
     end

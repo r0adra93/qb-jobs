@@ -22,6 +22,8 @@ local jobsList = {}
 -- Functions
 --- sets the player's player and playerJob tables
 local function setCurrentJob()
+    player = nil
+    playerJob = nil
     player = QBCore.Functions.GetPlayerData()
     playerJob = player.job
     return true
@@ -402,7 +404,8 @@ local spawnPeds = function()
             ["fn"] = openMotorworks,
             ["label"] = Lang:t('info.enter_motorworks'),
             ["duty"] = false
-        }
+        },
+        ["turf"] = {["label"] = Lang:t('info.enter_motorworks')}
     }
     for k,v in pairs(Config.Jobs[playerJob.name].Locations) do
         for k1,v1 in pairs(v) do
@@ -728,7 +731,9 @@ RegisterNUICallback('processMultiJob', function(res,cb)
         end
         QBCore = exports['qb-core']:GetCoreObject()
         setCurrentJob()
+        Wait(0)
         wrapUp()
+        Wait(0)
         kickOff()
         Wait(0) -- this is needed for the playerData to popluate
         output.btnList = getMultiJobMenuButtons()
