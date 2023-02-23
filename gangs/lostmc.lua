@@ -1,14 +1,14 @@
-Config.Jobs = Config.Jobs or {}
-Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
-    ["jobGang"] = "job",
+Config.Gangs = Config.Gangs or {}
+Config.Gangs.lostmc = { -- name the job no spaces ex. Config.Gangs.newJobName
+    ["jobGang"] = "Gangs", -- set to Jobs or Gangs
     ["jobBosses"] = { -- Citizen IDs of the Bosses of this Job
         ["ALA01454"] = "ALA01454"
     },
     ["webHooks"] = {
-        ["ambulance"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["lostmc"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
     },
-    ["label"] = "Medical Services", -- label that display when typing in /job
-    ["type"] = "ems", -- job type -- leave set to ems as it's part of the ambulancejob
+    ["label"] = "The Lost MC", -- label that display when typing in /job
+    ["type"] = "gang", -- job type -- leave set to ems as it's part of the ambulancejob
     ["defaultDuty"] = true, -- duty status when logged on
     ["offDutyPay"] = false, -- true get paid even off duty
     ["listInCityHall"] = true, -- true the job is sent to city hall | false the job is not in city hall
@@ -23,21 +23,21 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["boat"] = "fa-solid fa-ship",
 --            ["close"] = "fa-regular fa-circle-xmark",
             ["close"] = "fa-solid fa-x",
-            ["currentJob"] = "fa-solid fa-kit-medical",
+            ["currentGang"] = "fa-solid fa-vest-patches",
             ["demote"] = "fa-regular fa-thumbs-down",
             ["deniedApplicant"] = "fa-solid fa-user-slash",
             ["deniedApplicants"] = "fa-solid fa-users-slash",
             ["deny"] = "fa-regular fa-circle-xmark",
-            ["employee"] = "fa-solid fa-user",
-            ["employees"] = "fa-solid fa-users",
+            ["member"] = "fa-solid fa-user",
+            ["members"] = "fa-solid fa-users",
             ["fire"] = "fa-solid fa-ban",
             ["helicopter"] = "fa-solid fa-helicopter",
             ["jobGarage"] = "fa-solid fa-square-parking",
             ["jobHistory"] = "fa-regular fa-address-card",
             ["jobStore"] = "fa-solid fa-store",
             ["ownGarage"] = "fa-solid fa-warehouse",
-            ["pastEmployee"] = "fa-solid fa-user-slash",
-            ["pastEmployees"] = "fa-solid fa-users-slash",
+            ["pastMember"] = "fa-solid fa-user-slash",
+            ["pastMembers"] = "fa-solid fa-users-slash",
             ["pay"] = "fa-solid fa-hand-holding-dollar",
             ["personal"] = "fa-solid fa-person-circle-exclamation",
             ["plane"] = "fa-solid fa-plane",
@@ -50,35 +50,27 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["society"] = "fa-solid fa-money-bill-1-wave",
             ["societyDeposit"] = "fa-solid fa-right-to-bracket",
             ["societyWithdrawl"] = "fa-solid fa-right-from-bracket",
-            ["vehicle"] = "fa-solid fa-truck-medical",
+            ["vehicle"] = "fa-solid fa-motorcycle",
             ["quit"] = "fa-regular fa-circle-xmark"
+        },
+        ["text"] = {
+            ["members"] = "Members",
+            ["pastMembers"] = "Past Members"
         }
     },
     ["grades"] = {
---        [0] = {["name"] = "No Grades", ["payment"] = 30}, -- Reserved Do Not Touch
-        ["1"] = { -- job grade starts at 1 (0 is Reserved)
+--        [0] = {["name"] = "No Grades"}, -- Reserved Do Not Touch
+        ["1"] = { -- gang grade starts at 1 (0 is Reserved)
             ["name"] = 'Recruit', -- job title
-            ["payment"] = 180 -- starting salary at this grade
         },
         ["2"] = {
-            ["name"] = 'Paramedic',
-            ["payment"] = 274
+            ["name"] = 'Enforcer',
         },
         ["3"] = {
-            ["name"] = 'Nurse',
-            ["payment"] = 447
+            ["name"] = 'Shot Caller',
         },
         ["4"] = {
-            ["name"] = 'Doctor',
-            ["payment"] = 1472
-        },
-        ["5"] = {
-            ["name"] = 'Surgeon',
-            ["payment"] = 1750
-        },
-        ["6"] = {
-            ["name"] = 'Chief of Staff',
-            ["payment"] = 1924
+            ["name"] = 'Boss',
         }
     },
     ["DutyBlips"] = { -- Blips used to show player's location on map
@@ -91,45 +83,24 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
     },
     ["Locations"] = {
         ["facilities"] = {
-            {
-                ["label"] = "Hospital - Pillbox",
+            [1] = {
+                ["label"] = "Lost MC Base",
                 ["public"] = true, -- true station is displayed for all players | false = station is displayed just for the player
-                ["coords"] = vector4(291.6, -582.76, 43.17, 68.64),
-                ["blipName"] = "Hospital",
-                ["blipNumber"] = 61, -- https://docs.fivem.net/docs/game-references/blips/#blips
-                ["blipColor"] = 81, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
+                ["coords"] = vector4(961.14, -138.92, 74.46, 162.25),
+                ["blipName"] = "LostMC",
+                ["blipNumber"] = 229, -- https://docs.fivem.net/docs/game-references/blips/#blips
+                ["blipColor"] = 56, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
                 ["blipDisplay"] = 4, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
                 ["blipScale"] = 0.6, -- set the size of the blip on the full size map
                 ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
             }
         },
-        ["duty"] = { -- duty station for going on and off duty
-            {
-                ["Label"] = "Hospital Timeclock", -- Label of the timeclock
-                ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
-                    ["coords"] = vector4(326.72, -583.02, 43.32, 345.98),
-                    ["targetIcon"] = "fas fa-sign-in-alt", -- Font Awesome Icon https://fontawesome.com/icons
-                    ["drawDistance"] = 2.0,
-                    ["zoneOptions"] = {
-                        ["length"] = "4",
-                        ["width"] = "2"
-                    }
-                },
-                ["blipName"] = "Hospital Timeclock",
-                ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
-                ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
-                ["blipDisplay"] = 5, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
-                ["blipScale"] = 0.4, -- set the size of the blip on the full size map
-                ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
-            }
-        },
         ["management"] = { -- location of boss' management station
-            {
-                ["Label"] = "Medical Management",
+            [1] = {
+                ["Label"] = "Management",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
-                    ["coords"] = vector4(324.33, -582.2, 43.32, 345.98),
+                    ["model"] = "g_f_y_lost_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(977.1, -105.3, 74.85, 38.71),
                     ["targetIcon"] = "fa-solid fa-bars-progress", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -137,9 +108,9 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                         ["width"] = "2"
                     }
                 },
-                ["blipName"] = "Medical Management",
+                ["blipName"] = "Lost MC Management",
                 ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
-                ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
+                ["blipColor"] = 56, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
                 ["blipDisplay"] = 5, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
                 ["blipScale"] = 0.4, -- set the size of the blip on the full size map
                 ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
@@ -147,10 +118,10 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         },
         ["garages"] = {
             [1] = {
-                ["label"] = "Hospital Garage - Pillbox",
+                ["label"] = "Garage",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
-                    ["coords"] = vector4(305.0, -598.41, 43.29, 77),
+                    ["model"] = "g_m_y_lost_03", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(959.83, -120.76, 74.96, 138.18),
                     ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -160,99 +131,46 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 },
                 ["spawnPoint"] = {
                     {
-                        ["coords"] = vector4(292.02, -569.36, 42.91, 56.58), -- spawn vehicle locations
+                        ["coords"] = vector4(961.39, -137.74, 74.46, 147.16), -- spawn vehicle locations
                         ["type"] = "vehicle" -- vehicle, boat, plane, helicopter
                     },
                     {
-                        ["coords"] = vector4(296.72, -575.61, 42.92, 11.67),
+                        ["coords"] = vector4(964.86, -133.03, 74.4, 150.07),
                         ["type"] = "vehicle"
                     },
                     {
-                        ["coords"] = vector4(296.32, -583.68, 42.92, 340.94),
+                        ["coords"] = vector4(968.2, -127.53, 74.39, 141.54),
                         ["type"] = "vehicle"
                     },
                     {
-                        ["coords"] = vector4(293.56, -591.24, 42.86, 341.41),
+                        ["coords"] = vector4(972.38, -122.62, 74.35, 139.35),
                         ["type"] = "vehicle"
                     },
                     {
-                        ["coords"] = vector4(290.63, -599.41, 42.91, 335.64),
+                        ["coords"] = vector4(976.2, -118.25, 74.3, 138.69),
                         ["type"] = "vehicle"
                     },
                     {
-                        ["coords"] = vector4(285.67, -605.84, 42.93, 301.75),
+                        ["coords"] = vector4(980.1, -114.19, 74.23, 134.19),
                         ["type"] = "vehicle"
                     },
                     {
-                        ["coords"] = vector4(277.29, -608.74, 42.76, 277.89),
+                        ["coords"] = vector4(984.12, -110.07, 74.29, 132.41),
                         ["type"] = "vehicle"
-                    },
-                    {
-                        ["coords"] = vector4(352.27, -587.93, 74.17, 91.02),
-                        ["type"] = "helicopter"
                     }
                 },
-                ["blipName"] = "Hospital Garage",
+                ["blipName"] = "Lost MC Garage",
                 ["blipNumber"] = 357, -- https://docs.fivem.net/docs/game-references/blips/#blips
-                ["blipColor"] = 81, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
+                ["blipColor"] = 56, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
                 ["blipDisplay"] = 4, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
                 ["blipScale"] = 0.6, -- set the size of the blip on the full size map
                 ["blipShortRange"] = true -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
             },
             [2] = {
-                ["label"] = "Hospital Garage - Paleto Bay",
+                ["label"] = "LostMC LosSantos Airport",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01",
-                    ["coords"] = vector4(-251.38, 6338.43, 32.49, 37.65),
-                    ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
-                    ["drawDistance"] = 2.0,
-                    ["zoneOptions"] = {
-                        ["length"] = "2",
-                        ["width"] = "2"
-                    }
-                },
-                ["spawnPoint"] = {
-                    [0] = {
-                        ["coords"] = vector4(-257.96, 6347.63, 32.2, 269.57), -- spawn vehicle locations
-                        ["type"] = "vehicle" -- vehicle, boat, plane, helicopter
-                    },
-                    [1] = {
-                        ["coords"] = vector4(-261.48, 6344.16, 32.2, 268.59),
-                        ["type"] = "vehicle"
-                    },
-                    [2] = {
-                        ["coords"] = vector4(-264.61, 6340.94, 32.2, 271.83),
-                        ["type"] = "vehicle"
-                    },
-                    [3] = {
-                        ["coords"] = vector4(-268.09, 6337.3, 32.2, 268.01),
-                        ["type"] = "vehicle"
-                    },
-                    [4] = {
-                        ["coords"] = vector4(-271.67, 6333.82, 32.2, 269.64),
-                        ["type"] = "vehicle"
-                    },
-                    [5] = {
-                        ["coords"] = vector4(-274.83, 6330.76, 32.2, 271.92),
-                        ["type"] = "vehicle"
-                    },
-                    [6] = {
-                        ["coords"] = vector4(-277.81, 6327.54, 32.2, 263.53),
-                        ["type"] = "vehicle"
-                    }
-                },
-                ["blipName"] = "Hospital Garage",
-                ["blipNumber"] = 357, -- https://docs.fivem.net/docs/game-references/blips/#blips
-                ["blipColor"] = 81, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
-                ["blipDisplay"] = 4, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
-                ["blipScale"] = 0.6, -- set the size of the blip on the full size map
-                ["blipShortRange"] = true -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
-            },
-            [3] = {
-                ["label"] = "Hospital Hanger LosSantos Airport",
-                ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01",
-                    ["coords"] = vector4(-1232.29, -2809.43, 13.95, 222.26),
+                    ["model"] = "g_m_y_lost_03",
+                    ["coords"] = vector4(-1199.99, -2793.35, 13.95, 349.23),
                     ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -300,16 +218,16 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 },
                 ["blipName"] = "Hospital Hanger",
                 ["blipNumber"] = 359,
-                ["blipColor"] = 81,
+                ["blipColor"] = 56,
                 ["blipDisplay"] = 4,
                 ["blipScale"] = 0.6,
                 ["blipShortRange"] = true
             },
-            [4] = {
-                ["label"] = "Hospital Hanger Grapeseed",
+            [3] = {
+                ["label"] = "LostMC Hanger Grapeseed",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01",
-                    ["coords"] = vector4(2120.9, 4784.06, 40.97, 297.55),
+                    ["model"] = "g_m_y_lost_03",
+                    ["coords"] = vector4(2142.41, 4834.57, 41.64, 243.01),
                     ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -333,16 +251,16 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 },
                 ["blipName"] = "Hospital Hanger",
                 ["blipNumber"] = 359,
-                ["blipColor"] = 81,
+                ["blipColor"] = 56,
                 ["blipDisplay"] = 4,
                 ["blipScale"] = 0.6,
                 ["blipShortRange"] = true
             },
-            [5] = {
-                ["label"] = "Hospital Hanger Sandy Shores",
+            [4] = {
+                ["label"] = "LostMC Hanger Sandy Shores",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01",
-                    ["coords"] = vector4(1720.09, 3287.05, 41.53, 185.75),
+                    ["model"] = "g_m_y_lost_03",
+                    ["coords"] = vector4(1692.33, 3294.71, 41.15, 265.55),
                     ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -370,16 +288,16 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 },
                 ["blipName"] = "Hospital Hanger",
                 ["blipNumber"] = 359,
-                ["blipColor"] = 81,
+                ["blipColor"] = 56,
                 ["blipDisplay"] = 4,
                 ["blipScale"] = 0.6,
                 ["blipShortRange"] = true
             },
-            [6] = {
-                ["label"] = "Hospital Boatlaunch Alamo Sea",
+            [5] = {
+                ["label"] = "LostMC Boatlaunch Alamo Sea",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01",
-                    ["coords"] = vector4(1302.96, 4226.23, 33.91, 353.23),
+                    ["model"] = "g_m_y_lost_03",
+                    ["coords"] = vector4(1327.04, 4228.76, 35.02, 95.4),
                     ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -403,16 +321,16 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 },
                 ["blipName"] = "Hospital Boatlaunch",
                 ["blipNumber"] = 356,
-                ["blipColor"] = 81,
+                ["blipColor"] = 56,
                 ["blipDisplay"] = 4,
                 ["blipScale"] = 0.6,
                 ["blipShortRange"] = true
             },
-            [7] = {
-                ["label"] = "Hospital Boatlaunch Los Santos",
+            [6] = {
+                ["label"] = "LostMC Boatlaunch Los Santos",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01",
-                    ["coords"] = vector4(-704.31, -1398.54, 5.5, 148.33),
+                    ["model"] = "g_m_y_lost_03",
+                    ["coords"] = vector4(-784.32, -1465.93, 5.0, 62.39),
                     ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -422,19 +340,19 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 },
                 ["spawnPoint"] = {
                     {
-                        ["coords"] = vector4(-735.44, -1381.83, 0.57, 140.19),
+                        ["coords"] = vector4(-805.02, -1493.07, 0.3, 107.79),
                         ["type"] = "boat"
                     },
                     {
-                        ["coords"] = vector4(-728.53, -1373.52, 0.57, 138.43),
+                        ["coords"] = vector4(-803.5, -1499.63, 0.31, 108.79),
                         ["type"] = "boat"
                     },
                     {
-                        ["coords"] = vector4(-722.01, -1365.18, 0.55, 142.39),
+                        ["coords"] = vector4(-800.99, -1509.95, 0.3, 109.2),
                         ["type"] = "boat"
                     },
                     {
-                        ["coords"] = vector4(-714.36, -1357.03, 0.57, 140.85),
+                        ["coords"] = vector4(-798.55, -1515.55, 0.3, 109.35),
                         ["type"] = "boat"
                     },
                     {
@@ -480,16 +398,16 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 },
                 ["blipName"] = "Hospital Boatlaunch",
                 ["blipNumber"] = 356,
-                ["blipColor"] = 81,
+                ["blipColor"] = 56,
                 ["blipDisplay"] = 4,
                 ["blipScale"] = 0.6,
                 ["blipShortRange"] = true
             },
-            [8] = {
-                ["label"] = "Hospital Boatlaunch Paleto Cove",
+            [7] = {
+                ["label"] = "LostMC Boatlaunch Paleto Cove",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01",
-                    ["coords"] = vector4(-1598.24, 5188.34, 4.31, 306.23),
+                    ["model"] = "g_m_y_lost_03",
+                    ["coords"] = vector4(-1600.84, 5204.38, 4.31, 32.23),
                     ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -511,41 +429,41 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                         ["type"] = "vehicle"
                     }
                 },
-                ["blipName"] = "Hospital Boatlaunch",
+                ["blipName"] = "LostMC Boatlaunch",
                 ["blipNumber"] = 356,
-                ["blipColor"] = 81,
+                ["blipColor"] = 56,
                 ["blipDisplay"] = 4,
                 ["blipScale"] = 0.6,
                 ["blipShortRange"] = true
             }
         },
         ["shops"] = { -- Used to be called Armory but is better used as a shop
-            {
-                ["label"] = "Hospital Supplies - Pillbox",
+            [1] = {
+                ["label"] = "Supplier",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
-                    ["coords"] = vector4(309.76, -603.13, 43.29, 77),
+                    ["model"] = "g_m_y_lost_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(987.97, -94.93, 74.85, 227.27),
                     ["targetIcon"] = "fa-solid fa-shop", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
-                        ["length"] = "2",
+                        ["length"] = "4",
                         ["width"] = "2"
                     }
                 },
-                ["blipName"] = "Hospital Supplies",
+                ["blipName"] = "Lost MC Supplier",
                 ["blipNumber"] = 187,
-                ["blipColor"] = 81,
+                ["blipColor"] = 56,
                 ["blipDisplay"] = 5,
                 ["blipScale"] = 0.4,
                 ["blipShortRange"] = true
             }
         },
         ["stashes"] = { -- player's personal locker area
-            {
-                ["label"] = "Hospital Locker - Pillbox",
+            [1] = {
+                ["label"] = "Personal Stash",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
-                    ["coords"] = vector4(316.97, -583.32, 43.28, 251.62),
+                    ["model"] = "g_m_y_lost_02", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(984.82, -89.94, 74.85, 193.08),
                     ["targetIcon"] = "fa-solid fa-boxes-stacked", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -553,20 +471,20 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                         ["width"] = "2"
                     }
                 },
-                ["blipName"] = "Medical Locker",
+                ["blipName"] = "Lost MC Personal Stash",
                 ["blipNumber"] = 187,
-                ["blipColor"] = 81,
+                ["blipColor"] = 56,
                 ["blipDisplay"] = 5,
                 ["blipScale"] = 0.4,
                 ["blipShortRange"] = true
             }
         },
         ["trash"] = {
-            {
-                ["label"] = "Hospital Trash - Pillbox",
+            [1] = {
+                ["label"] = "Cleaning Lady",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
-                    ["coords"] = vector4(301.44, -580.94, 43.29, 188.55),
+                    ["model"] = "g_f_y_lost_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(980.33, -92.9, 74.85, 179.2),
                     ["targetIcon"] = "fa-regular fa-trash-can", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -574,9 +492,9 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                         ["width"] = "2"
                     }
                 },
-                ["blipName"] = "Hospital Trash",
+                ["blipName"] = "Lost MC Trash",
                 ["blipNumber"] = 728,
-                ["blipColor"] = 81,
+                ["blipColor"] = 56,
                 ["blipDisplay"] = 5,
                 ["blipScale"] = 0.4,
                 ["blipShortRange"] = true,
@@ -584,10 +502,10 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         },
         ["lockers"] = { -- Locker shared with all members in job (great for evidence locker or patient belongings locker)
             {
-                ["label"] = "Patient Belongings - Pillbox",
+                ["label"] = "Group Loot",
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
-                    ["coords"] = vector4(319.7, -573.66, 43.32, 246.02),
+                    ["model"] = "g_m_y_lost_02", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(974.4, -95.76, 74.85, 249.45),
                     ["targetIcon"] = "fa-solid fa-file-shield", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -595,9 +513,9 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                         ["width"] = "2"
                     }
                 },
-                ["blipName"] = "Patient Belongings",
+                ["blipName"] = "Lost MC Loot",
                 ["blipNumber"] = 134,
-                ["blipColor"] = 81,
+                ["blipColor"] = 56,
                 ["blipDisplay"] = 5,
                 ["blipScale"] = 0.4,
                 ["blipShortRange"] = true
@@ -605,11 +523,11 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         },
         ["outfits"] = {
             {
-                ["jobType"] = "ems",
-                ["isGang"] = false,
+                ["jobType"] = "gang",
+                ["isGang"] = true,
                 ["ped"] = {
-                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
-                    ["coords"] = vector4(342.72, -586.45, 43.32, 346.32),
+                    ["model"] = "g_f_y_lost_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(983.98, -97.82, 74.85, 202.39),
                     ["targetIcon"] = "fa-solid fa-shirt", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -619,10 +537,10 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 },
                 ["width"] = 2,
                 ["length"] = 2,
-                ["cameraLocation"] = vector4(342.72, -586.45, 43.32, 346.32),
-                ["blipName"] = "Medical Clothing",
+                ["cameraLocation"] = vector4(985.38, -97.54, 74.85, 179.97),
+                ["blipName"] = "Lost MC Colors",
                 ["blipNumber"] = 366,
-                ["blipColor"] = 81,
+                ["blipColor"] = 56,
                 ["blipDisplay"] = 5,
                 ["blipScale"] = 0.4,
                 ["blipShortRange"] = true
@@ -679,7 +597,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
     },
     ["Vehicles"] = {
         ["config"] = {
-            ["plate"] = "EMS", -- 4 Chars Max -- License Plate Prefix
+            ["plate"] = "MC", -- 4 Chars Max -- License Plate Prefix
             ["maxVehicles"] = 10, -- 0 = unlimited
             ["assignVehicles"] = false, -- true = the player may only have one vehicle | false = the player may have more than one vehicle.
             ["depositFees"] = true, -- true = refundable deposit due at checkout | false = no refundable deposit due at checkout
@@ -690,40 +608,21 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["societyPurchase"] = true, -- true = the job pays the vehicle fees | false = player pays fees to the job
         },
         ["vehicles"] = {
-            ["ambulance"] = { -- Spawn Code
-                ["label"] = "Ambulance", -- Label for Spawner
+            ["bati"] = { -- Spawn Code
+                ["label"] = "bati", -- Label for Spawner
                 ["type"] = "vehicle", -- vehicle, boat, plane, helicopter
                 ["depositPrice"] = 250, -- price of the vehicle deposit
                 ["rentPrice"] = 250, -- price of the rental
                 ["parkingPrice"] = 125, -- price to check out owned vehicle
-                ["purchasePrice"] = 150000, -- price to own vehicle
+                ["purchasePrice"] = 4500, -- price to own vehicle
                 ["icon"] = "fa-solid fa-truck-medical", -- https://fontawesome.com/icons
-                ["authGrades"] = {1,2,3,4,5,6}, -- Authorized Grades for Vehicle
+                ["authGrades"] = {1,2,3,4}, -- Authorized Grades for Vehicle
                 ["settings"] = {
                     {
-                        ["grades"] = {1,2,3},
-                        ["livery"] = 2, -- First Livery Starts At 0
+                        ["grades"] = {1,2,3,4},
+                        ["livery"] = 0, -- First Livery Starts At 0
                         ["extras"] = {
                             [1] = 1, -- 0 = Show | 1 = Hide
-                            [2] = 0,
-                            [3] = 0,
-                            [4] = 0,
-                            [5] = 0,
-                            [6] = 0,
-                            [7] = 0,
-                            [8] = 0,
-                            [9] = 0,
-                            [10] = 0,
-                            [11] = 0,
-                            [12] = 0,
-                            [13] = 0
-                        }
-                    },
-                    {
-                        ["grades"] = {4,5,6},
-                        ["livery"] = 1, -- First Livery Starts At 0
-                        ["extras"] = {
-                            [1] = 0, -- 0 = Show | 1 = Hide
                             [2] = 0,
                             [3] = 0,
                             [4] = 0,
@@ -740,17 +639,17 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                     }
                 }
             },
-            ["polmav"] = {
-                ["label"] = "Air Ambulance",
+            ["frogger"] = {
+                ["label"] = "Frogger",
                 ["type"] = "helicopter",
                 ["rentPrice"] = 250,
                 ["parkingPrice"] = 125,
                 ["purchasePrice"] = 3000000,
                 ["icon"] = "fa-solid fa-helicopter",
-                ["authGrades"] = {1,2,3,4,5,6},
+                ["authGrades"] = {1,2,3,4},
                 ["settings"] = {
                     {
-                        ["grades"] = {1,2,3,4,5,6},
+                        ["grades"] = {1,2,3,4},
                         ["extras"] = {
                             [1] = 0,
                             [2] = 0,
@@ -770,17 +669,17 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                     }
                 }
             },
-            ["suntrap"] = {
-                ["label"] = "Suntrap",
+            ["longfin"] = {
+                ["label"] = "Longfin",
                 ["type"] = "boat",
                 ["rentPrice"] = 250,
                 ["parkingPrice"] = 125,
                 ["purchasePrice"] = 1593750,
                 ["icon"] = "fa-solid fa-ship",
-                ["authGrades"] = {1,2,3,4,5,6},
+                ["authGrades"] = {1,2,3,4},
                 ["settings"] = {
                     {
-                        ["grades"] = {1,2,3,4,5,6},
+                        ["grades"] = {1,2,3,4},
                         ["extras"] = {
                             [1] = 0,
                             [2] = 0,
@@ -800,17 +699,17 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                     }
                 }
             },
-            ["nimbus"] = {
-                ["label"] = "Nimbus",
+            ["alphaz1"] = {
+                ["label"] = "alphaz1",
                 ["type"] = "plane",
                 ["rentPrice"] = 250,
                 ["parkingPrice"] = 125,
                 ["purchasePrice"] = 1593750,
                 ["icon"] = "fa-solid fa-ship",
-                ["authGrades"] = {1,2,3,4,5,6},
+                ["authGrades"] = {1,2,3,4},
                 ["settings"] = {
                     {
-                        ["grades"] = {1,2,3,4,5,6},
+                        ["grades"] = {1,2,3,4},
                         ["extras"] = {
                             [1] = 0,
                             [2] = 0,

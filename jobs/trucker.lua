@@ -1,7 +1,7 @@
 --[[ Once hired the job will be assigned based on reputation ranking within the job. The higher the ranking the higher the promosion.]]--
-local QBCore = exports['qb-core']:GetCoreObject()
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.trucker = {
+    ["jobGang"] = "job",
     ["label"] = "Truck Driver",
     ["webHooks"] = {
         ["trucker"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"

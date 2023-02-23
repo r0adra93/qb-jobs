@@ -1,9 +1,10 @@
 Config = {
     ["useTarget"] = GetConvar('UseTarget', 'false') == 'true',
     ["Jobs"] = {},
+    ["Gangs"] = {},
     ["multiJobKey"] = "j", -- choose key to activate multi-job menu
     ["duty"] = "user", -- user, admin, god
-    ["debugPoly"] = false, -- true = shows polyZone Aeas | false = hides polyZone areas
+    ["debugPoly"] = true, -- true = shows polyZone Aeas | false = hides polyZone areas
     ["fuel"] = "LegacyFuel",
     ["keys"] = "qb-vehiclekeys:server:AcquireVehicleKeys",
     ["hideAvailableJobs"] = true, -- true = does not display unworked jobs | false = displays unworked jobs.

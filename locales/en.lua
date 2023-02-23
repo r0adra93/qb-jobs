@@ -54,8 +54,28 @@ local Translations = {
         mr = 'Mr',
         mrs = 'Mrs',
     },
-    commands = {
+    command = {
         duty = 'Set Duty On or Off',
+        job = { help = 'Check Your Job' },
+        jobs = "Open Multi Job Menu",
+        setjob = {
+            help = 'Set A Players Job (Admin Only)',
+            params = {
+                id = { name = 'id', help = 'Player ID' },
+                job = { name = 'job', help = 'Job name' },
+                grade = { name = 'grade', help = 'Job grade' },
+            },
+        },
+        gang = { help = 'Check Your Gang' },
+        gangs = "Open Multi Job Menu",
+        setgang = {
+            help = 'Set A Players Gang (Admin Only)',
+            params = {
+                id = { name = 'id', help = 'Player ID' },
+                gang = { name = 'gang', help = 'Gang name' },
+                grade = { name = 'grade', help = 'Gang grade' },
+            },
+        },
     },
     denied = {
         noVehicle = "Vehicle Spawn is Missing",

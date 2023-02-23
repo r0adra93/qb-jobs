@@ -1,5 +1,6 @@
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.police = { -- name the job
+    ["jobGang"] = "job",
     ["label"] = "Law Enforcement", -- label that display when typing in /job
     ["webHooks"] = {
         ["police"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"

@@ -1,5 +1,6 @@
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.bcso = { -- name the job no spaces ex. Config.Jobs.newJobName
+    ["jobGang"] = "job",
     ["jobBosses"] = { -- Citizen IDs of the Bosses of this Job
 
     },
