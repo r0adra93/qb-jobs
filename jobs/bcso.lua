@@ -6,7 +6,7 @@ Config.Jobs.bcso = { -- name the job no spaces ex. Config.Jobs.newJobName
     ["label"] = "Blaine County Sheriff's Office", -- label that display when typing in /job
     ["type"] = "leo", -- job type
     ["webHooks"] = {
-        ["bcso"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["bcso"] = "https://discord.com/api/webhooks/..."
     },
     ["defaultDuty"] = true, -- duty status when logged on
     ["offDutyPay"] = false, -- true get paid even off duty
