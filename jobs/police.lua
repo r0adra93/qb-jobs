@@ -2,7 +2,7 @@ Config.Jobs = Config.Jobs or {}
 Config.Jobs.police = { -- name the job
     ["label"] = "Law Enforcement", -- label that display when typing in /job
     ["webHooks"] = {
-        ["police"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["police"] = "https://discord.com/api/webhooks/..."
     },
     ["type"] = "leo", -- job type
     ["defaultDuty"] = true, -- duty status when logged on
