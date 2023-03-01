@@ -3,7 +3,7 @@ Config.Jobs = Config.Jobs or {}
 Config.Jobs.tow = {
     ["label"] = "Tow Truck Operator",
     ["webHooks"] = {
-        ["tow"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["tow"] = "https://discord.com/api/webhooks/..."
     },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
