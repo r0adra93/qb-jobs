@@ -2,7 +2,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.vineyard = {
     ["webHooks"] = {
-        ["vineyard"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["vineyard"] = "https://discord.com/api/webhooks/..."
     },
     ["label"] = "Vineyard",
     ["defaultDuty"] = true,
