@@ -4,7 +4,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         ["ALA01454"] = "ALA01454"
     },
     ["webHooks"] = {
-        ["ambulance"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["ambulance"] = "https://discord.com/api/webhooks/..."
     },
     ["label"] = "Medical Services", -- label that display when typing in /job
     ["type"] = "ems", -- job type -- leave set to ems as it's part of the ambulancejob
