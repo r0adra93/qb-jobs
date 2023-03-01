@@ -1,43 +1,47 @@
-local QBCore = exports['qb-core']:GetCoreObject()
 Config.Jobs = Config.Jobs or {}
 Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
+    ["jobBosses"] = { -- Citizen IDs of the Bosses of this Job
+        ["SPC88576"] = true,
+        ["HPZ73542"] = true
+    },
     ["label"] = "Medical Services", -- label that display when typing in /job
     ["type"] = "ems", -- job type -- leave set to ems as it's part of the ambulancejob
     ["defaultDuty"] = true, -- duty status when logged on
     ["offDutyPay"] = false, -- true get paid even off duty
-    ["inCityHall"] = false, -- true lists job inside city hall
+    ["listInCityHall"] = true, -- true the job is sent to city hall | false the job is not in city hall
     ["grades"] = {
-        [0] = {["name"] = "No Grades", ["payment"] = 30}, -- Reserved Do Not Touch
-        [1] = { -- job grade starts at 1 (0 is Reserved)
+--        [0] = {["name"] = "No Grades", ["payment"] = 30}, -- Reserved Do Not Touch
+        ["1"] = { -- job grade starts at 1 (0 is Reserved)
             ["name"] = 'Recruit', -- job title
             ["payment"] = 180 -- starting salary at this grade
         },
-        [2] = {
+        ["2"] = {
             ["name"] = 'Paramedic',
-            ["payment"] = 240
+            ["payment"] = 274
         },
-        [3] = {
+        ["3"] = {
             ["name"] = 'Nurse',
-            ["payment"] = 273
+            ["payment"] = 447
         },
-        [4] = {
+        ["4"] = {
             ["name"] = 'Doctor',
-            ["payment"] = 684
+            ["payment"] = 1472
         },
-        [5] = {
+        ["5"] = {
             ["name"] = 'Surgeon',
-            ["payment"] = 2191
+            ["payment"] = 1750
         },
-        [6] = {
+        ["6"] = {
             ["name"] = 'Chief of Staff',
-            ["payment"] = 2739,
+            ["payment"] = 1924,
             ["isboss"] = true
         }
     },
     ["DutyBlips"] = { -- Blips used to show player's location on map
         ["enable"] = true, -- Enables the Duty Blip
         ["type"] = "public", -- Service = Only for service members to view or Public for all people to view
-        ["blipSprite"] = 1, -- https://docs.fivem.net/docs/game-references/blips/#blips
+        ["blipSpriteOnFoot"] = 1, -- blip sprite while in player is outside vehicle | https://docs.fivem.net/docs/game-references/blips/#blips
+        ["blipSpriteInVehicle"] = 812, -- blip sprite while in player is in vehicle | https://docs.fivem.net/docs/game-references/blips/#blips
         ["blipSpriteColor"] = 5, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
         ["blipScale"] = 1, -- Size of the Blip on the minimap
     },
@@ -587,87 +591,91 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             }
         },
     },
-    ["VehicleConfig"] = {
-        ["plate"] = "EMS", -- 4 Chars Max -- License Plate Prefix
-        ["maxVehicles"] = 10, -- 0 = unlimited
-        ["assignVehicles"] = false, -- true = the player may only have one vehicle | false = the player may have more than one vehicle.
-        ["depositFees"] = true, -- true = refundable deposit due at checkout | false = no refundable deposit due at checkout
-        ["rentalFees"] = true, -- true = player is charged rent for vehicle | false = player is not charged rent for vehicle
-        ["ownedVehicles"] = true, -- true = player can own the vehicle | false = player can not own the vehicle
-        ["ownedParkingFee"] = true, -- true = players are charged when checking out vehicle | false = players are not charged when checking out vehicle
-        ["allowPurchase"] = true, -- true = players pay a fee to own vehicle | false = players are not charged a fee to own a vehicle
-        ["societyPurchase"] = true, -- true = the job pays the vehicle fees | false = player pays fees to the job
-        ["icons"] = {
-            ["boat"] = "fa-solid fa-ship",
-            ["helicopter"] = "fa-solid fa-helicopter",
-            ["plane"] = "fa-solid fa-plane",
-            ["vehicle"] = "fa-solid fa-truck-medical",
-            ["ownGarage"] = "fa-solid fa-warehouse",
-            ["jobGarage"] = "fa-solid fa-square-parking",
-            ["jobStore"] = "fa-solid fa-store",
-            ["returnVehicle"] = "fa-solid fa-rotate-left",
-            ["close"] = "fa-regular fa-circle-xmark",
-            ["retract"] = "fa-solid fa-angles-left"
-        }
-    },
     ["Vehicles"] = {
-        ["ambulance"] = { -- Spawn Code
-            ["label"] = "Ambulance", -- Label for Spawner
-            ["type"] = "vehicle", -- vehicle, boat, plane, helicopter
-            ["depositPrice"] = 250, -- price of the vehicle deposit
-            ["rentPrice"] = 250, -- price of the rental
-            ["parkingPrice"] = 125, -- price to check out owned vehicle
-            ["purchasePrice"] = 150000, -- price to own vehicle
-            ["icon"] = "fa-solid fa-truck-medical", -- https://fontawesome.com/icons
-            ["authGrades"] = {0,1,2,3,4,5} -- Authorized Grades for Vehicle
+        ["config"] = {
+            ["plate"] = "EMS", -- 4 Chars Max -- License Plate Prefix
+            ["maxVehicles"] = 10, -- 0 = unlimited
+            ["assignVehicles"] = false, -- true = the player may only have one vehicle | false = the player may have more than one vehicle.
+            ["depositFees"] = true, -- true = refundable deposit due at checkout | false = no refundable deposit due at checkout
+            ["rentalFees"] = true, -- true = player is charged rent for vehicle | false = player is not charged rent for vehicle
+            ["ownedVehicles"] = true, -- true = player can own the vehicle | false = player can not own the vehicle
+            ["ownedParkingFee"] = true, -- true = players are charged when checking out vehicle | false = players are not charged when checking out vehicle
+            ["allowPurchase"] = true, -- true = players pay a fee to own vehicle | false = players are not charged a fee to own a vehicle
+            ["societyPurchase"] = true, -- true = the job pays the vehicle fees | false = player pays fees to the job
+            ["icons"] = {
+                ["boat"] = "fa-solid fa-ship",
+                ["helicopter"] = "fa-solid fa-helicopter",
+                ["plane"] = "fa-solid fa-plane",
+                ["vehicle"] = "fa-solid fa-truck-medical",
+                ["ownGarage"] = "fa-solid fa-warehouse",
+                ["jobGarage"] = "fa-solid fa-square-parking",
+                ["jobStore"] = "fa-solid fa-store",
+                ["returnVehicle"] = "fa-solid fa-rotate-left",
+                ["close"] = "fa-regular fa-circle-xmark",
+                ["retract"] = "fa-solid fa-angles-left"
+            }
         },
-        ["polmav"] = {
-            ["label"] = "Air Ambulance",
-            ["type"] = "helicopter",
-            ["rentPrice"] = 250,
-            ["parkingPrice"] = 125,
-            ["purchasePrice"] = 3000000,
-            ["icon"] = "fa-solid fa-helicopter",
-            ["authGrades"] = {0,1,2,3,4,5}
-        }
-    },
-    ["VehicleSettings"] = {
-        ["ambulance"] = { -- Spawn name
-            ["extras"] = {
-                [1] = 1, -- 0 = On | 1 = Off
-                [2] = 0,
-                [3] = 0,
-                [4] = 0,
-                [5] = 0,
-                [6] = 0,
-                [7] = 0,
-                [8] = 0,
-                [9] = 0,
-                [10] = 0,
-                [11] = 0,
-                [12] = 0,
-                [13] = 0
+        ["vehicles"] = {
+            ["ambulance"] = { -- Spawn Code
+                ["label"] = "Ambulance", -- Label for Spawner
+                ["type"] = "vehicle", -- vehicle, boat, plane, helicopter
+                ["depositPrice"] = 250, -- price of the vehicle deposit
+                ["rentPrice"] = 250, -- price of the rental
+                ["parkingPrice"] = 125, -- price to check out owned vehicle
+                ["purchasePrice"] = 150000, -- price to own vehicle
+                ["icon"] = "fa-solid fa-truck-medical", -- https://fontawesome.com/icons
+                ["authGrades"] = {1,2,3,4,5,6} -- Authorized Grades for Vehicle
             },
-            ["livery"] = 2 -- First Livery Starts At 0
+            ["polmav"] = {
+                ["label"] = "Air Ambulance",
+                ["type"] = "helicopter",
+                ["rentPrice"] = 250,
+                ["parkingPrice"] = 125,
+                ["purchasePrice"] = 3000000,
+                ["icon"] = "fa-solid fa-helicopter",
+                ["authGrades"] = {1,2,3,4,5,6}
+            }
         },
-        ["polmav"] = {
-            ["extras"] = {
-                [1] = 0,
-                [2] = 0,
-                [3] = 0,
-                [4] = 0,
-                [5] = 0,
-                [6] = 0,
-                [7] = 0,
-                [8] = 0,
-                [9] = 0,
-                [10] = 0,
-                [11] = 0,
-                [12] = 0,
-                [13] = 0
+        ["settings"] = {
+            ["ambulance"] = { -- Spawn name
+                ["extras"] = {
+                    ["grades"] = {0,1,2,3,4,5,6},
+                    [1] = 1, -- 0 = On | 1 = Off
+                    [2] = 0,
+                    [3] = 0,
+                    [4] = 0,
+                    [5] = 0,
+                    [6] = 0,
+                    [7] = 0,
+                    [8] = 0,
+                    [9] = 0,
+                    [10] = 0,
+                    [11] = 0,
+                    [12] = 0,
+                    [13] = 0
+                },
+                ["livery"] = 2 -- First Livery Starts At 0
             },
-            ["livery"] = 1
-        }
+            ["polmav"] = {
+                ["extras"] = {
+                    ["grades"] = {0,1,2,3,4,5,6},
+                    [1] = 0,
+                    [2] = 0,
+                    [3] = 0,
+                    [4] = 0,
+                    [5] = 0,
+                    [6] = 0,
+                    [7] = 0,
+                    [8] = 0,
+                    [9] = 0,
+                    [10] = 0,
+                    [11] = 0,
+                    [12] = 0,
+                    [13] = 0
+                },
+                ["livery"] = 1
+            }
+        },
     },
     ["MotorworksConfig"] = {
         ["settings"] = {
@@ -722,7 +730,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "item", -- item or weapon reference items.lua
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"}, -- vehicle, boat, plane, and/or helicopter
                 ["locations"] = {'armory','glovebox'}, -- armory, glovebox and/or trunk
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "bandage",
@@ -732,7 +740,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "painkillers",
@@ -742,7 +750,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "firstaid",
@@ -752,7 +760,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "weapon_flashlight",
@@ -762,7 +770,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "weapon",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','glovebox'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "weapon_fireextinguisher",
@@ -772,7 +780,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "weapon",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             },
             {
                 ["name"] = "heavyarmor",
@@ -782,7 +790,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
                 ["type"] = "item",
                 ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
                 ["locations"] = {'armory','trunk'},
-                ["authorizedJobGrades"] = {0,1,2,3,4,5}
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
             }
         }
     },
@@ -790,7 +798,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         ['male'] = { -- Gender
             {
                 ["outfitLabel"] = 'T-Shirt', -- Label of Outfit
-                ["authGrades"] = {0,1,2,3,4,5}, -- Authorized Grades
+                ["authGrades"] = {1,2,3,4,5,6}, -- Authorized Grades
                 ["outfitData"] = {
                     ['arms'] = {item = 85, texture = 0}, -- Arms
                     ['t-shirt'] = {item = 129, texture = 0}, -- T-Shirt
@@ -809,7 +817,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             },
             {
                 ["outfitLabel"] = 'Polo',
-                ["authGrades"] = {2,3,4,5},
+                ["authGrades"] = {3,4,5,6},
                 ["outfitData"] = {
                     ['arms'] = {item = 90, texture = 0},
                     ['t-shirt'] = {item = 15, texture = 0},
@@ -828,7 +836,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             },
             {
                 ["outfitLabel"] = 'Doctor',
-                ["authGrades"] = {3,4,5},
+                ["authGrades"] = {4,5,6},
                 ["outfitData"] = {
                     ['arms'] = {item = 93, texture = 0},
                     ['t-shirt'] = {item = 32, texture = 3},
@@ -849,7 +857,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
         ['female'] = { -- Gender
             {
                 ["outfitLabel"] = 'T-Shirt', -- Label of Outfit
-                ["authGrades"] = {0,1,2,3,4,5}, -- Authorized Grades
+                ["authGrades"] = {1,2,3,4,5,6}, -- Authorized Grades
                 ["outfitData"] = {
                     ['arms'] = {item = 109, texture = 0}, -- Arms
                     ['t-shirt'] = {item = 159, texture = 0}, -- T-Shirt
@@ -868,7 +876,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             },
             {
                 outfitLabel = 'Polo',
-                ["authGrades"] = {2,3,4,5},
+                ["authGrades"] = {3,4,5,6},
                 outfitData = {
                     ['arms'] = {item = 105, texture = 0}, -- Arms
                     ['t-shirt'] = {item = 13, texture = 0}, -- T-Shirt
@@ -887,7 +895,7 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             },
             {
                 outfitLabel = 'Doctor',
-                ["authGrades"] = {3,4,5},
+                ["authGrades"] = {4,5,6},
                 outfitData = {
                     ['arms'] = {item = 105, texture = 0}, -- Arms
                     ['t-shirt'] = {item = 39, texture = 3}, -- T-Shirt
@@ -906,7 +914,78 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             }
         }
     },
-    ["uiColors"] = { -- set colors for the menu system
+    ["management"] = {
+        ["hideUnWorkedJobs"] = true, -- true = does not display unworked jobs | false = displays unworked jobs.
+        ["status"] = {
+            ["pending"] = "Pending", -- this is the pending status
+            ["hired"] = "Hired", -- this is the hired status
+            ["fired"] = "Fired", -- this is the fired status
+            ["quit"] = "Quit", -- this is the quit status
+            ["blacklisted"] = "Black Listed", -- this is the black listed status
+        },
+        ["icons"] = {
+            ["applicants"] = "fa-solid fa-users-rectangle",
+            ["applicant"] = "fa-solid fa-user",
+            ["employees"] = "fa-solid fa-users",
+            ["employee"] = "fa-solid fa-user",
+            ["pastEmployees"] = "fa-solid fa-users-slash",
+            ["pastEmployee"] = "fa-solid fa-user-slash",
+            ["deniedApplicants"] = "fa-solid fa-users-slash",
+            ["deniedApplicant"] = "fa-solid fa-user-slash",
+            ["jobHistory"] = "fa-regular fa-address-card",
+            ["rapSheet"] = "fa-solid fa-handcuffs",
+            ["personal"] = "fa-solid fa-person-circle-exclamation",
+            ["approve"] = "fa-regular fa-circle-check",
+            ["deny"] = "fa-regular fa-circle-xmark",
+            ["fire"] = "fa-solid fa-ban",
+            ["promote"] = "fa-regular fa-thumbs-up",
+            ["demote"] = "fa-regular fa-thumbs-down",
+            ["pay"] = "fa-solid fa-hand-holding-dollar",
+            ["retract"] = "fa-solid fa-angles-left",
+            ["close"] = "fa-solid fa-x"
+        },
+        ["awards"] = {
+            {
+                ["title"] = "Award of Excellence",
+                ["description"] = "Awarded for going above and beyond service to patients.",
+            },
+            {
+                ["title"] = "Honorable Action",
+                ["description"] = "Awarded for saving a life with risk to life and limb. While on duty or off duty."
+            },
+            {
+                ["title"] = "Meritous Action",
+                ["description"] = "Awarded for saving a life while off duty. Not looking away when others could be of service."
+            },
+            {
+                ["title"] = "Medical Heart Award",
+                ["description"] = "Awarded for being wounded on the mean streets of San Andreas."
+            }
+        },
+        ["reprimands"] = {
+            {
+                ["title"] = "Malpractice",
+                ["description"] = "Making a mistake while treating a patient"
+            },
+            {
+                ["title"] = "Insubordination",
+                ["description"] = "Failure to follow directions."
+            },
+            {
+                ["title"] = "Unsafe Behavior",
+                ["description"] = "Failure to follow safety guidelines."
+            },
+            {
+                ["title"] = "No Call / No Show",
+                ["description"] = "Fails to call out & fails to show up."
+            },
+            {
+                ["title"] = "Other",
+                ["description"] = "Any reason that necessitates a write up."
+            }
+        }
+    },
+--[[    ["uiColors"] = { -- set colors for the menu system
     -- Main Menu Header --
         {
             ["element"] = "h1",
@@ -1061,5 +1140,5 @@ Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["property"] = "color",
             ["value"] = "#DC143C" -- Color in Hex see https://www.color-hex.com/
         }
-    }
+    } --]]
 }

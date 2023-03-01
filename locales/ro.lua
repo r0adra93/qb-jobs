@@ -6,6 +6,8 @@ local Translations = {
     error = {},
     success = {},
     info = {
+        new_job_app = "Your application has been submitted for %{job}",
+        new_job = 'Congratulations with your new job! (%{job})',
         on_duty = '[E] - Intra in tura',
         off_duty = '[E] - Iesi din tura',
         onoff_duty = '~g~Intra~s~/~r~Iesi~s~ din tura',
@@ -39,6 +41,13 @@ local Translations = {
         outfit = '_Outfit', -- English Change
         management = '_Management', -- English Change
         garages = ' Vehicle Selector' -- English Change
+    },
+    email = {
+        jobAppSender = "%{job}",
+        jobAppSub = "Thank you for applying to %(job).",
+        jobAppMsg = "Hello %{gender} %{lastname}<br /><br />%{job} has received your application.<br /><br />The boss is looking into your request and will reach out to you for an interview at their earliest convienance.<br /><br />Once again, thank you for your application.",
+        mr = 'Mr',
+        mrs = 'Mrs',
     },
     commands = {
         duty = 'Set Duty On or Off', -- English Change
