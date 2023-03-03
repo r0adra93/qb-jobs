@@ -1,14 +1,15 @@
-Config.Gangs = Config.Gangs or {}
-Config.Gangs.cartel = { -- name the job no spaces ex. Config.Gangs.newJobName
-    ["jobGang"] = "gang",
-    ["jobBosses"] = { -- Citizen IDs of the Bosses of this Job
-        ["AAAA0000"] = "AAAA0000"
+Config.Jobs = Config.Jobs or {}
+Config.Jobs.ambulance = { -- name the job no spaces ex. Config.Jobs.newJobName
+    ["jobGang"] = "job",
+    ["bosses"] = { -- Citizen IDs of the Bosses of this Job
+        ["ALA01454"] = "ALA01454",
+        ["LIY58503"] = "LIY58503"
     },
     ["webHooks"] = {
-        ["cartel"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["ambulance"] = ""
     },
-    ["label"] = "Cartel", -- label that display when typing in /job
-    ["type"] = "gang", -- job type -- leave set to ems as it's part of the ambulancejob
+    ["label"] = "Medical Services", -- label that display when typing in /job
+    ["type"] = "ems", -- job type -- leave set to ems as it's part of the ambulancejob
     ["defaultDuty"] = true, -- duty status when logged on
     ["offDutyPay"] = false, -- true get paid even off duty
     ["listInCityHall"] = true, -- true the job is sent to city hall | false the job is not in city hall
@@ -55,18 +56,30 @@ Config.Gangs.cartel = { -- name the job no spaces ex. Config.Gangs.newJobName
         }
     },
     ["grades"] = {
---        [0] = {["name"] = "No Grades"}, -- Reserved Do Not Touch
-        ["1"] = { -- gang grade starts at 1 (0 is Reserved)
+--        [0] = {["name"] = "No Grades", ["payment"] = 30}, -- Reserved Do Not Touch
+        ["1"] = { -- job grade starts at 1 (0 is Reserved)
             ["name"] = 'Recruit', -- job title
+            ["payment"] = 180 -- starting salary at this grade
         },
         ["2"] = {
-            ["name"] = 'Enforcer',
+            ["name"] = 'Paramedic',
+            ["payment"] = 274
         },
         ["3"] = {
-            ["name"] = 'Shot Caller',
+            ["name"] = 'Nurse',
+            ["payment"] = 447
         },
         ["4"] = {
-            ["name"] = 'Boss',
+            ["name"] = 'Doctor',
+            ["payment"] = 1472
+        },
+        ["5"] = {
+            ["name"] = 'Surgeon',
+            ["payment"] = 1750
+        },
+        ["6"] = {
+            ["name"] = 'Chief of Staff',
+            ["payment"] = 1924
         }
     },
     ["DutyBlips"] = { -- Blips used to show player's location on map
@@ -82,10 +95,10 @@ Config.Gangs.cartel = { -- name the job no spaces ex. Config.Gangs.newJobName
             {
                 ["label"] = "Hospital - Pillbox",
                 ["public"] = true, -- true station is displayed for all players | false = station is displayed just for the player
-                ["coords"] = vector4(304.27, -600.33, 43.28, 272.249),
+                ["coords"] = vector4(291.6, -582.76, 43.17, 68.64),
                 ["blipName"] = "Hospital",
                 ["blipNumber"] = 61, -- https://docs.fivem.net/docs/game-references/blips/#blips
-                ["blipColor"] = 3, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
+                ["blipColor"] = 81, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
                 ["blipDisplay"] = 4, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
                 ["blipScale"] = 0.6, -- set the size of the blip on the full size map
                 ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
@@ -400,7 +413,7 @@ Config.Gangs.cartel = { -- name the job no spaces ex. Config.Gangs.newJobName
                 ["label"] = "Hospital Boatlaunch Los Santos",
                 ["ped"] = {
                     ["model"] = "s_f_y_scrubs_01",
-                    ["coords"] = vector4(-784.0, -1356.02, 5.15, 236.42),
+                    ["coords"] = vector4(-704.31, -1398.54, 5.5, 148.33),
                     ["targetIcon"] = "fa-solid fa-warehouse", -- Font Awesome Icon https://fontawesome.com/icons
                     ["drawDistance"] = 2.0,
                     ["zoneOptions"] = {
@@ -410,20 +423,60 @@ Config.Gangs.cartel = { -- name the job no spaces ex. Config.Gangs.newJobName
                 },
                 ["spawnPoint"] = {
                     {
-                        ["coords"] = vector4(-761.98, -1373.05, 0.1, 231.48),
+                        ["coords"] = vector4(-735.44, -1381.83, 0.57, 140.19),
                         ["type"] = "boat"
                     },
                     {
-                        ["coords"] = vector4(-802.86, -1321.46, 4.77, 171),
+                        ["coords"] = vector4(-728.53, -1373.52, 0.57, 138.43),
+                        ["type"] = "boat"
+                    },
+                    {
+                        ["coords"] = vector4(-722.01, -1365.18, 0.55, 142.39),
+                        ["type"] = "boat"
+                    },
+                    {
+                        ["coords"] = vector4(-714.36, -1357.03, 0.57, 140.85),
+                        ["type"] = "boat"
+                    },
+                    {
+                        ["coords"] = vector4(-681.51, -1399.62, 4.77, 86.00),
                         ["type"] = "vehicle"
                     },
                     {
-                        ["coords"] = vector4(-805.91, -1321.46, 4.77, 171),
+                        ["coords"] = vector4(-681.51, -1403.71, 4.77, 86.00),
                         ["type"] = "vehicle"
                     },
                     {
-                        ["coords"] = vector4(-809.42, -1321.46, 4.77, 171),
+                        ["coords"] = vector4(-681.51, -1407.9, 4.77, 86.00),
                         ["type"] = "vehicle"
+                    },
+                    {
+                        ["coords"] = vector4(-681.51, -1412.13, 4.77, 86.00),
+                        ["type"] = "vehicle"
+                    },
+                    {
+                        ["coords"] = vector4(-681.51, -1416.12, 4.77, 86.00),
+                        ["type"] = "vehicle"
+                    },
+                    {
+                        ["coords"] = vector4(-724.83, -1443.45, 5.39, 147.9),
+                        ["type"] = "helicopter"
+                    },
+                    {
+                        ["coords"] = vector4(-699.91, -1448.09, 4.72, 51.08),
+                        ["type"] = "helicopter"
+                    },
+                    {
+                        ["coords"] = vector4(-763.09, -1452.8, 4.72, 229.94),
+                        ["type"] = "helicopter"
+                    },
+                    {
+                        ["coords"] = vector4(-746.55, -1433.34, 4.71, 229.47),
+                        ["type"] = "helicopter"
+                    },
+                    {
+                        ["coords"] = vector4(-745.11, -1468.38, 4.71, 319.6),
+                        ["type"] = "helicopter"
                     }
                 },
                 ["blipName"] = "Hospital Boatlaunch",
@@ -576,7 +629,6 @@ Config.Gangs.cartel = { -- name the job no spaces ex. Config.Gangs.newJobName
                 ["blipShortRange"] = true
             }
         },
---[[ Only until the new one is built
         ["motorworks"] = { -- location of the motorworks job garage
             {
                 ["jobType"] = "ems",
@@ -622,8 +674,7 @@ Config.Gangs.cartel = { -- name the job no spaces ex. Config.Gangs.newJobName
                 ["blipScale"] = 0.4, -- set the size of the blip on the full size map
                 ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
             }
-        },
-]]--
+        }
     },
     ["Vehicles"] = {
         ["config"] = {
@@ -698,7 +749,7 @@ Config.Gangs.cartel = { -- name the job no spaces ex. Config.Gangs.newJobName
                 ["authGrades"] = {1,2,3,4,5,6},
                 ["settings"] = {
                     {
-                        ["grades"] = {0,1,2,3,4,5,6},
+                        ["grades"] = {1,2,3,4,5,6},
                         ["extras"] = {
                             [1] = 0,
                             [2] = 0,
@@ -715,6 +766,66 @@ Config.Gangs.cartel = { -- name the job no spaces ex. Config.Gangs.newJobName
                             [13] = 0
                         },
                         ["livery"] = 1
+                    }
+                }
+            },
+            ["suntrap"] = {
+                ["label"] = "Suntrap",
+                ["type"] = "boat",
+                ["rentPrice"] = 250,
+                ["parkingPrice"] = 125,
+                ["purchasePrice"] = 1593750,
+                ["icon"] = "fa-solid fa-ship",
+                ["authGrades"] = {1,2,3,4,5,6},
+                ["settings"] = {
+                    {
+                        ["grades"] = {1,2,3,4,5,6},
+                        ["extras"] = {
+                            [1] = 0,
+                            [2] = 0,
+                            [3] = 0,
+                            [4] = 0,
+                            [5] = 0,
+                            [6] = 0,
+                            [7] = 0,
+                            [8] = 0,
+                            [9] = 0,
+                            [10] = 0,
+                            [11] = 0,
+                            [12] = 0,
+                            [13] = 0
+                        },
+                        ["livery"] = 0
+                    }
+                }
+            },
+            ["nimbus"] = {
+                ["label"] = "Nimbus",
+                ["type"] = "plane",
+                ["rentPrice"] = 250,
+                ["parkingPrice"] = 125,
+                ["purchasePrice"] = 1593750,
+                ["icon"] = "fa-solid fa-ship",
+                ["authGrades"] = {1,2,3,4,5,6},
+                ["settings"] = {
+                    {
+                        ["grades"] = {1,2,3,4,5,6},
+                        ["extras"] = {
+                            [1] = 0,
+                            [2] = 0,
+                            [3] = 0,
+                            [4] = 0,
+                            [5] = 0,
+                            [6] = 0,
+                            [7] = 0,
+                            [8] = 0,
+                            [9] = 0,
+                            [10] = 0,
+                            [11] = 0,
+                            [12] = 0,
+                            [13] = 0
+                        },
+                        ["livery"] = 0
                     }
                 }
             }
@@ -977,7 +1088,7 @@ Config.Gangs.cartel = { -- name the job no spaces ex. Config.Gangs.newJobName
             ["hired"] = "Hired", -- this is the hired status
             ["fired"] = "Fired", -- this is the fired status
             ["quit"] = "Quit", -- this is the quit status
-            ["blacklisted"] = "Black Listed", -- this is the black listed status
+            ["blacklisted"] = "Blacklisted", -- this is the black listed status
         },
         ["awards"] = {
             {

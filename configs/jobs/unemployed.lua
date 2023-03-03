@@ -1,8 +1,9 @@
-Config.Gangs = Config.Gangs or {}
-Config.Gangs.none = {
-    ["label"] = "no gang",
+Config.Jobs = Config.Jobs or {}
+Config.Jobs.unemployed = {
+    ["jobGang"] = "job",
+    ["label"] = "Civilian",
     ["webHooks"] = {
-        ["noGang"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["unemployed"] = ""
     },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
@@ -51,7 +52,8 @@ Config.Gangs.none = {
     },
     ["grades"] = {
         ["0"] = {
-            ["name"] = "Unaffiliated"
+            ["name"] = "freelancer",
+            ["payment"] = 50
         }
     }
 }

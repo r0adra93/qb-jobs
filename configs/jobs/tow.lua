@@ -1,10 +1,10 @@
 Config.Jobs = Config.Jobs or {}
-Config.Jobs.vineyard = {
+Config.Jobs.tow = {
     ["jobGang"] = "job",
+    ["label"] = "Tow Truck Operator",
     ["webHooks"] = {
-        ["vineyard"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["tow"] = ""
     },
-    ["label"] = "Vineyard",
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
     ["inCityHall"] = {
@@ -51,18 +51,19 @@ Config.Jobs.vineyard = {
         },
     },
 
+    ["plate"] = "TOWU", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
         ['1'] = {
-            ["name"] = "Picker",
-            ["payment"] = 50
+            ["name"] = "Driver",
+            ["payment"] = 75
         }
     },
     ["Locations"] = {
         ["duty"] = {
             [1] = {
-                ["Label"] = "Vineyard Timeclock",
+                ["Label"] = "Tow Timeclock",
                 ["coords"] = vector3(-323.39, -129.6, 39.01),
-                ["blipName"] = "Vineyard Timeclock",
+                ["blipName"] = "Tow Timeclock",
                 ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
                 ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
                 ["blipDisplay"] = 9, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
@@ -87,6 +88,6 @@ Config.Jobs.vineyard = {
                     ["ents"] = true -- true marker appears over entities | false marker is hidden when entities are around
                 }
             }
-        }
+        },
     }
 }

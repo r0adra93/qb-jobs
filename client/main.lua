@@ -2,7 +2,7 @@
 --- populates QBCore table
 QBCore = exports['qb-core']:GetCoreObject()
 --- names variables and tables to be used throughout the script
-local player,playerJob,playerGang,playerHistory,jgType,DutyBlips,pedsSpawned,locationsSet,vehExtras
+local player,playerJob,playerGang,playerHistory,playerJsGs,jobGangType,DutyBlips,pedsSpawned,locationsSet,vehExtras
 --- list of vehicles assigned to the player
 local vehiclesAssigned = {}
 --- list of peds that are spawned for an active job
@@ -19,20 +19,28 @@ local polyLocList = {}
 local locCombo = {}
 --- list of Jobs key = job name | value = job label
 local jobsList = {}
+--- list of Gangs key = gang name | value = gang label
+local gangsList = {}
 -- Functions
 --- switches between job or gang
 local selectJobGang = function()
+    local sysconf = {
+        ["showGangsHistory"] = Config.showGangsHistory
+    }
     local output = {
         ["Jobs"] = {
-            ["conf"] = Config[jgType][playerJob.name],
+            ["conf"] = Config[jobGangType][playerJob.name],
+            ["sysconf"] = sysconf,
             ["jg"] = playerJob,
             ["pd"] = {
                 ["type"] = "job",
                 ["types"] = "jobs",
+                ["jobGangType"] = "Jobs",
                 ["history"] = "jobhistory",
                 ["current"] = "currentJob",
                 ["currentName"] = "currentJobName",
                 ["label"] = "employees",
+                ["labelSingular"] = "employee",
                 ["pastLabel"] = "pastEmployees",
                 ["prev"] = "prevJob",
                 ["set"] = "SetJob",
@@ -44,15 +52,18 @@ local selectJobGang = function()
             }
         },
         ["Gangs"] = {
-            ["conf"] = Config[jgType][playerGang.name],
+            ["conf"] = Config[jobGangType][playerGang.name],
+            ["sysconf"] = sysconf,
             ["jg"] = playerGang,
             ["pd"] =  {
                 ["type"] = "gang",
                 ["types"] = "gangs",
+                ["jobGangType"] = "Gangs",
                 ["history"] = "ganghistory",
                 ["current"] = "currentGang",
                 ["currentName"] = "currentGangName",
                 ["label"] = "members",
+                ["labelSingular"] = "member",
                 ["pastLabel"] = "pastMembers",
                 ["prev"] = "prevGang",
                 ["set"] = "SetGang",
@@ -64,7 +75,7 @@ local selectJobGang = function()
             }
         }
     }
-    return output[jgType]
+    return output[jobGangType]
 end
 --- sets the player's player and playerJob tables
 local setCurrentPlayerVars = function()
@@ -78,13 +89,19 @@ local setCurrentPlayerVars = function()
         ["job"] = player.metadata.jobhistory,
         ["gang"] = player.metadata.ganghistory
     }
+    playerJsGs = {
+        ["jobs"] = player.metadata.jobs,
+        ["gangs"] = player.metadata.gangs
+    }
     return true
 end
-exports('CurrentJob',CurrentJob)
 --- sets the jobsList
-local buildJobsList = function()
+local buildJobsGangsList = function()
     for k,v in pairs(Config.Jobs) do
         jobsList[k] = v.label
+    end
+    for k,v in pairs(Config.Gangs) do
+        gangsList[k] = v.label
     end
 end
 --- deletes spawned vehicles and refunds deposits
@@ -94,7 +111,7 @@ local deleteVehicleProcess = function(plate)
     data.vehicle = vehiclesAssigned[plate].vehicle
     data.netid = vehiclesAssigned[plate].netid
     data.veh = vehiclesAssigned[plate].veh
-    TriggerServerEvent('qb-jobs:server:deleteVehicleProcess', data,jgType)
+    TriggerServerEvent('qb-jobs:server:deleteVehicleProcess', data,jobGangType)
     DeleteVehicle(data.netid)
     vehiclesAssigned[data.plate] = nil
     QBCore.Functions.Notify(Lang:t("info.keysReturned"))
@@ -109,9 +126,9 @@ local clearVehicles = function()
 end
 --- receives the vehicle list from server and opens the menu
 local receiveGaragedVehicles = function(data)
-    jgType = data.jgType
+    jobGangType = data.jobGangType
     QBCore.Functions.TriggerCallback('qb-jobs:server:sendGaragedVehicles',function(result)
-        if Config[jgType][playerJob.name].Vehicles.config.assignVehicles and next(vehiclesAssigned) then
+        if Config[jobGangType][playerJob.name].Vehicles.config.assignVehicles and next(vehiclesAssigned) then
             deleteVehicleProcess()
         end
         result.returnVehicle = vehiclesAssigned;
@@ -121,26 +138,30 @@ local receiveGaragedVehicles = function(data)
             btnList = result
         })
         SetNuiFocus(true,true)
-    end, data.id, jgType)
+    end, data.id, jobGangType)
 end
 --- creates the button list for the boss menu
 local processButtonList = function(res)
+    setCurrentPlayerVars()
     local cdata = selectJobGang()
     local pd = cdata.pd
+    local jg = cdata.jg
     local mgrBtnList = {
         ["header"] = cdata.conf.label .. Lang:t('headings.management'),
-        [pd.current] = pd.name,
-        [pd.currentName] = cdata.conf.label,
+        ["sysconf"] = cdata.sysconf,
+        ["jg"] = jg.name,
+        ["jgName"] = cdata.conf.label,
         ["icons"] = cdata.conf.menu.icons,
         ["status"] = cdata.conf.management.status,
         ["awards"] = cdata.conf.management.awards,
         ["reprimands"] = cdata.conf.management.reprimands,
         ["jobsList"] = jobsList,
-        ["pd"] = cdata.pd,
+        ["gangsList"] = gangsList,
+        ["pd"] = pd,
         ["text"] = cdata.conf.menu.text
     }
     if cdata.conf.uiColors then mgrBtnList.uiColors = cdata.conf.uiColors end
-    for k,v in pairs(res) do
+    for k, v in pairs(res) do
         mgrBtnList[k] = v
     end
     return mgrBtnList
@@ -148,7 +169,7 @@ end
 --- receives data for the boss menu from the server and opens the boss menu
 local receiveManagementData = function(data)
     local mgrBtnList
-    jgType = data.jgType
+    jobGangType = data.jobGangType
     QBCore.Functions.TriggerCallback('qb-jobs:server:sendManagementData',function(res)
         mgrBtnList = processButtonList(res)
         SendNUIMessage({
@@ -156,7 +177,7 @@ local receiveManagementData = function(data)
             btnList = mgrBtnList
         })
         SetNuiFocus(true,true)
-    end, data.id, jgType)
+    end, data.id, jobGangType)
 end
 --- Opens clothing menu
 local openOutfits = function()
@@ -247,7 +268,7 @@ local takeOutVehicle = function(result)
                         local tseData = {}
                         tseData.vehicle = data.vehicle
                         tseData.plate = data.plate
-                        TriggerServerEvent('qb-jobs:server:addVehItems',tseData,jgType)
+                        TriggerServerEvent('qb-jobs:server:addVehItems',tseData,jobGangType)
                     end
                     vehiclesAssigned[data.plate] = {
                         ["netid"] = data.netid,
@@ -267,12 +288,12 @@ local takeOutVehicle = function(result)
                             deleteVehicleProcess(data)
                             return
                         end
-                    end,data,jgType)
+                    end,data,jobGangType)
                 end, data.vehicle, coords, false)
-                TriggerServerEvent('qb-jobs:server:addVehicle',jgType)
+                TriggerServerEvent('qb-jobs:server:addVehicle',jobGangType)
             end
-        end,cbData,jgType)
-    end,jgType)
+        end,cbData,jobGangType)
+    end,jobGangType)
 end
 --- toggles duty status
 local toggleDuty = function()
@@ -286,7 +307,9 @@ local toggleDuty = function()
     end
     return true
 end
+--- generates multiJobMenuButtons
 local getMultiJobMenuButtons = function()
+    setCurrentPlayerVars()
     local buildOutput = function(conf,type,types,invalid)
         local status = "available"
         local output = {
@@ -304,8 +327,11 @@ local getMultiJobMenuButtons = function()
                 output.hired[k] = {
                     ["name"] = k,
                     ["label"] = conf[k].label,
-                    ["status"] = "hired"
+                    ["status"] = "hired",
+                    ["position"] = playerJsGs[types][k].grade.name,
+                    ["currencySymbol"] = Config.currencySymbol
                 }
+                if types == "jobs" then output.hired[k].pay = playerJsGs[types][k].payment end
                 if player[type].name == k then output.hired[k].active = true end
                 output.available[k] = nil
             end
@@ -323,6 +349,7 @@ local getMultiJobMenuButtons = function()
     output.gangs = buildOutput(Config.Gangs,"gang","gangs","none")
     return output
 end
+--- generates the multi job menu
 local getMultiJobMenu = function()
     local output = getMultiJobMenuButtons()
     SendNUIMessage({
@@ -402,13 +429,21 @@ local callShop = function()
 end
 --- Listens for actions to interact with job peds
 local Listen4Control = function(data)
+    local runControl = function()
+        if data.fn then data.fn(data)
+        elseif data.event then TriggerEvent(data.event)
+        elseif data.svrEvent then TriggerServerEvent(data.svrEvent) end
+    end
     ControlListen = true
     CreateThread(function()
         while ControlListen do
             if IsControlJustReleased(0, 38) then
-                if data.fn then data.fn(data)
-                elseif data.event then TriggerEvent(data.event)
-                elseif data.svrEvent then TriggerServerEvent(data.svrEvent) end
+                setCurrentPlayerVars() -- refreshes player data so that a freshly departed player can't bypass the menus
+                if not player.metadata.isdead and not player.metadata.inlaststand then
+                    if data.boss then
+                        if Config[data.jobGangType][data.jg].bosses[player.citizenid] then runControl() end
+                    else runControl() end
+                end
             end
             if multiJobMenu then getMultiJobMenu() end
             Wait(1)
@@ -429,6 +464,18 @@ local spawnPeds = function()
         job = false,
         gang = false
     }
+    local jgPairs = {
+        ["Jobs"] = {
+            ["type"] = "job",
+            ["pjg"] = playerJob,
+            ["duty"] = false -- false - npcs are not accessible while off duty | true - npcs are accssible while off duty
+        },
+        ["Gangs"] = {
+            ["type"] = "gang",
+            ["pjg"] = playerGang,
+            ["duty"] = true -- setting to false will disable all npcs (you don't want this)
+        },
+    }
     local processPedLocs = function(res)
         -- if duty set to false will disable the feature in gangs
         -- set duty to res.duty for false to enable for gangs
@@ -437,55 +484,56 @@ local spawnPeds = function()
                 ["fn"] = toggleDuty,
                 ["label"] = Lang:t('info.onoff_duty'),
                 ["duty"] = true, -- do not change this one
-                ["jgType"] = res.jgType
+                ["jobGangType"] = res.jobGangType
             },
             ["management"] = {
                 ["fn"] = receiveManagementData,
                 ["label"] = Lang:t('info.enter_management'),
                 ["duty"] = true, -- true = enabled while off duty | res.duty = disabled while off duty
-                ["jgType"] = res.jgType
+                ["jobGangType"] = res.jobGangType,
+                ["boss"] = true
             },
             ["garages"] = {
                 ["fn"] = receiveGaragedVehicles,
                 ["label"] = Lang:t('info.enter_garage'),
                 ["duty"] = res.duty,
-                ["jgType"] = res.jgType
+                ["jobGangType"] = res.jobGangType
             },
             ["stashes"] = {
                 ["fn"] = callStash,
                 ["label"] = Lang:t('info.enter_stash'),
                 ["duty"] = res.duty,
-                ["jgType"] = res.jgType
+                ["jobGangType"] = res.jobGangType
             },
             ["trash"] = {
                 ["fn"] = callTrash,
                 ["label"] = Lang:t('info.enter_trash'),
                 ["duty"] = res.duty,
-                ["jgType"] = res.jgType
+                ["jobGangType"] = res.jobGangType
             },
             ["lockers"] = {
                 ["fn"] = callLocker,
                 ["label"] = Lang:t('info.enter_locker'),
                 ["duty"] = res.duty,
-                ["jgType"] = res.jgType
+                ["jobGangType"] = res.jobGangType
             },
             ["shops"] = {
                 ["fn"] = callShop,
                 ["label"] = Lang:t('info.enter_shop'),
                 ["duty"] = res.duty,
-                ["jgType"] = res.jgType
+                ["jobGangType"] = res.jobGangType
             },
             ["outfits"] = {
                 ["fn"] = openOutfits,
                 ["label"] = Lang:t('info.enter_outfit'),
                 ["duty"] = res.duty,
-                ["jgType"] = res.jgType
+                ["jobGangType"] = res.jobGangType
             },
             ["motorworks"] = {
                 ["fn"] = openMotorworks,
                 ["label"] = Lang:t('info.enter_motorworks'),
                 ["duty"] = res.duty,
-                ["jgType"] = res.jgType
+                ["jobGangType"] = res.jobGangType
             },
             ["turf"] = {["label"] = Lang:t('info.enter_motorworks')}
         }
@@ -494,6 +542,7 @@ local spawnPeds = function()
                 if v1.ped then
                     current = v1.ped
                     current.id = k1
+                    current.jg = res.jg
                     current.gang = res.gang
                     current.job = res.job
                     current.model = type(current.model) == 'string' and joaat(current.model) or current.model
@@ -552,18 +601,14 @@ local spawnPeds = function()
             end
         end
     end
-    if Config.Jobs[playerJob.name] and Config.Jobs[playerJob.name].Locations then
-        data.locs = Config.Jobs[playerJob.name].Locations
-        data.job = true
-        data.duty = false -- npcs are not accessible while off duty
-        data.jgType = "Jobs"
-        processPedLocs(data)
-    end
-    if Config.Gangs[playerGang.name] and Config.Gangs[playerGang.name].Locations then
-        data.locs = Config.Gangs[playerGang.name].Locations
-        data.gang = true
-        data.duty = true -- setting to false will disable all npcs (you don't want this)
-        data.jgType = "Gangs"
+    for k, v in pairs(jgPairs) do
+        if Config[k][v.pjg.name].Locations then
+            data.locs = Config[k][v.pjg.name].Locations
+            data[v.type] = true
+            data.duty = v.duty
+            data.jobGangType = k
+            data.jg = v.pjg.name
+        end
         processPedLocs(data)
     end
     if zones then
@@ -710,7 +755,7 @@ local kickOff = function()
         end
         setCustomsLocations()
         onDuty = playerJob.onduty
-        buildJobsList()
+        buildJobsGangsList()
         TriggerServerEvent('qb-jobs:server:initilizeVehicleTracker')
     end)
 end
@@ -817,7 +862,7 @@ RegisterNUICallback('managementSubMenuActions', function(res,cb)
         mgrBtnList = processButtonList(res1)
         data.btnList = mgrBtnList
         cb(data)
-    end,res,jgType)
+    end,res)
 end)
 --- boss menu button society actions processor
 RegisterNUICallback('managementSocietyActions', function(res,cb)
@@ -827,11 +872,10 @@ RegisterNUICallback('managementSocietyActions', function(res,cb)
         mgrBtnList = processButtonList(res1)
         data.btnList = mgrBtnList
         cb(data)
-    end,res,jgType)
+    end,res,jobGangType)
 end)
 --- multi-job menu actions processor
 RegisterNUICallback('processMultiJob', function(res,cb)
-    QBCore.Debug(res)
     local output = {
         ["btnList"] = {},
         ["error"] = {},
@@ -844,9 +888,7 @@ RegisterNUICallback('processMultiJob', function(res,cb)
         end
         QBCore = exports['qb-core']:GetCoreObject()
         setCurrentPlayerVars()
-        Wait(0)
         wrapUp()
-        Wait(0)
         kickOff()
         Wait(0) -- this is needed for the playerData to popluate
         output.btnList = getMultiJobMenuButtons()
@@ -860,3 +902,5 @@ RegisterCommand("jobs", function()
     getMultiJobMenu()
 end, false)
 RegisterKeyMapping("jobs","MultiJob Menu","keyboard",Config.multiJobKey)
+-- Exports
+exports("setCurrentPlayerVars",setCurrentPlayerVars)

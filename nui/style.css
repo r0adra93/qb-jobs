@@ -655,6 +655,7 @@ ul.contentList li:nth-child(odd) {
 .blackListed {
     background-color:var(--black);
     color:var(--white);
+    padding:1vh;
 }
 .blackListed h3 {
     text-align:center;
@@ -677,4 +678,7 @@ button:hover {
 }
 button i {
     padding:0 2vh 0 0;
+}
+.position {
+    color:var(--black);
 }

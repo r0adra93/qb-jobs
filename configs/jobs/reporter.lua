@@ -1,10 +1,9 @@
---Place into into qb-legal keep seperate config from judge--
 Config.Jobs = Config.Jobs or {}
-Config.Jobs.lawyer = {
+Config.Jobs.reporter = {
     ["jobGang"] = "job",
-    ["label"] = "Law Firm",
+    ["label"] = "News Reporter",
     ["webHooks"] = {
-        ["lawyer"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["reporter"] = ""
     },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
@@ -52,36 +51,19 @@ Config.Jobs.lawyer = {
         },
     },
 
-    ["plate"] = "LWRU", -- 4 Chars Max -- License Plate Prefix
+    ["plate"] = "NEWS", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
         ['1'] = {
-            ["name"] = "Associate",
-            ["payment"] = 200
-        },
-        ['2'] = {
-            ["name"] = "Junior Partner",
-            ["payment"] = 225
-        },
-        ['3'] = {
-            ["name"] = "Partner",
-            ["payment"] = 250
-        },
-        ['4'] = {
-            ["name"] = "Managing Partner",
-            ["payment"] = 275
-        },
-        ['5'] = {
-            ["name"] = "Named Partner",
-            ["payment"] = 300,
-            ["isboss"] = true
+            ["name"] = "Journalist",
+            ["payment"] = 50
         }
     },
     ["Locations"] = {
         ["duty"] = {
             [1] = {
-                ["Label"] = "Lawyer Timeclock",
+                ["Label"] = "Reporter Timeclock",
                 ["coords"] = vector3(-323.39, -129.6, 39.01),
-                ["blipName"] = "Lawyer Timeclock",
+                ["blipName"] = "Reporter Timeclock",
                 ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
                 ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
                 ["blipDisplay"] = 9, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
@@ -105,6 +87,7 @@ Config.Jobs.lawyer = {
                     ["rotate"] = true, -- true marker spins | false marker does not spin
                     ["ents"] = true -- true marker appears over entities | false marker is hidden when entities are around
                 }
+
             }
         }
     }

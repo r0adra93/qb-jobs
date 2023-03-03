@@ -1,10 +1,10 @@
 Config.Jobs = Config.Jobs or {}
-Config.Jobs.garbage = {
+Config.Jobs.vineyard = {
     ["jobGang"] = "job",
-    ["label"] = "Sanitation Engineer",
     ["webHooks"] = {
-        ["garbage"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["vineyard"] = ""
     },
+    ["label"] = "Vineyard",
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
     ["inCityHall"] = {
@@ -51,19 +51,18 @@ Config.Jobs.garbage = {
         },
     },
 
-    ["plate"] = "TRSH", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
         ['1'] = {
-            ["name"] = "Collector",
-            ["payment"] = 75
+            ["name"] = "Picker",
+            ["payment"] = 50
         }
     },
     ["Locations"] = {
         ["duty"] = {
             [1] = {
-                ["Label"] = "Garbage Timeclock",
+                ["Label"] = "Vineyard Timeclock",
                 ["coords"] = vector3(-323.39, -129.6, 39.01),
-                ["blipName"] = "Garbage Timeclock",
+                ["blipName"] = "Vineyard Timeclock",
                 ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
                 ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
                 ["blipDisplay"] = 9, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
@@ -88,6 +87,6 @@ Config.Jobs.garbage = {
                     ["ents"] = true -- true marker appears over entities | false marker is hidden when entities are around
                 }
             }
-        },
+        }
     }
 }

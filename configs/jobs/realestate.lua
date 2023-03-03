@@ -1,9 +1,9 @@
 Config.Jobs = Config.Jobs or {}
-Config.Jobs.hotdog = {
+Config.Jobs.realestate = {
     ["jobGang"] = "job",
-    ["label"] = "Hotdog Vendor",
+    ["label"] = "Real Estate",
     ["webHooks"] = {
-        ["hotdog"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["realestate"] = ""
     },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
@@ -51,19 +51,32 @@ Config.Jobs.hotdog = {
         },
     },
 
-    ["plate"] = "DOGS", -- 4 Chars Max -- License Plate Prefix
+    ["plate"] = "H4U", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
         ['1'] = {
-            ["name"] = "Sales",
-            ["payment"] = 50
+            name = 'Residential Sales Agent',
+            payment = 75
+        },
+        ['2'] = {
+            name = 'Commercial Sales Agent',
+            payment = 100
+        },
+        ['3'] = {
+            name = 'Broker Agent',
+            payment = 125
+        },
+        ['4'] = {
+            name = 'Broker',
+            isboss = true,
+            payment = 150
         }
     },
     ["Locations"] = {
         ["duty"] = {
             [1] = {
-                ["Label"] = "Hotdog Timeclock",
+                ["Label"] = "Realestate Timeclock",
                 ["coords"] = vector3(-323.39, -129.6, 39.01),
-                ["blipName"] = "Hotdog Timeclock",
+                ["blipName"] = "Realestate Timeclock",
                 ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
                 ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
                 ["blipDisplay"] = 9, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
@@ -87,6 +100,7 @@ Config.Jobs.hotdog = {
                     ["rotate"] = true, -- true marker spins | false marker does not spin
                     ["ents"] = true -- true marker appears over entities | false marker is hidden when entities are around
                 }
+
             }
         },
     }

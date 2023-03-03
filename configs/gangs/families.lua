@@ -1,13 +1,13 @@
 Config.Gangs = Config.Gangs or {}
-Config.Gangs.triads = { -- name the job no spaces ex. Config.Gangs.newJobName
+Config.Gangs.families = { -- name the job no spaces ex. Config.Gangs.newJobName
     ["jobGang"] = "gang",
-    ["jobBosses"] = { -- Citizen IDs of the Bosses of this Job
+    ["bosses"] = { -- Citizen IDs of the Bosses of this Job
         ["AAAA0000"] = "AAAA0000"
     },
     ["webHooks"] = {
-        ["triads"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["families"] = ""
     },
-    ["label"] = "Triads", -- label that display when typing in /job
+    ["label"] = "Families", -- label that display when typing in /job
     ["type"] = "gang", -- job type -- leave set to ems as it's part of the ambulancejob
     ["defaultDuty"] = true, -- duty status when logged on
     ["offDutyPay"] = false, -- true get paid even off duty

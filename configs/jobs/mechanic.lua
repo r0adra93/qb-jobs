@@ -1,9 +1,9 @@
 Config.Jobs = Config.Jobs or {}
-Config.Jobs.realestate = {
+Config.Jobs.mechanic = {
     ["jobGang"] = "job",
-    ["label"] = "Real Estate",
+    ["label"] = "mechanic",
     ["webHooks"] = {
-        ["realestate"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["mechanic"] = ""
     },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
@@ -51,32 +51,36 @@ Config.Jobs.realestate = {
         },
     },
 
-    ["plate"] = "H4U", -- 4 Chars Max -- License Plate Prefix
+    ["plate"] = "BRKN", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
         ['1'] = {
-            name = 'Residential Sales Agent',
-            payment = 75
+            ["name"] = "Apprentice",
+            ["payment"] = 50
         },
         ['2'] = {
-            name = 'Commercial Sales Agent',
-            payment = 100
+            ["name"] = "Service Tech",
+            ["payment"] = 75
         },
         ['3'] = {
-            name = 'Broker Agent',
-            payment = 125
+            ["name"] = "Mechanic",
+            ["payment"] = 100
         },
         ['4'] = {
-            name = 'Broker',
-            isboss = true,
-            payment = 150
+            ["name"] = "Master Mechanic",
+            ["payment"] = 125
+        },
+        ['5'] = {
+            ["name"] = "Manager",
+            ["payment"] = 150,
+            ["isboss"] = true
         }
     },
     ["Locations"] = {
         ["duty"] = {
             [1] = {
-                ["Label"] = "Realestate Timeclock",
+                ["Label"] = "Mechanic Timeclock",
                 ["coords"] = vector3(-323.39, -129.6, 39.01),
-                ["blipName"] = "Realestate Timeclock",
+                ["blipName"] = "Mechanic Timeclock",
                 ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
                 ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
                 ["blipDisplay"] = 9, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
@@ -103,5 +107,102 @@ Config.Jobs.realestate = {
 
             }
         },
-    }
+        ["armories"] = { -- can be used as a supply closet not just weapons
+            {
+                ["label"] = "Mechanic Supplies - Garage 1",
+                ["ped"] = {
+                    ["model"] = "s_f_y_scrubs_01", -- Model name from https://docs.fivem.net/docs/game-references/ped-models/
+                    ["coords"] = vector4(309.76, -603.13, 43.29, 77),
+                    ["targetIcon"] = "fa-solid fa-shop", -- Font Awesome Icon https://fontawesome.com/icons
+                    ["drawDistance"] = 2.0,
+                    ["zoneOptions"] = {
+                        ["length"] = "2",
+                        ["width"] = "2"
+                    }
+                },
+                ["blipName"] = "Mechanic Supplies",
+                ["blipNumber"] = 187,
+                ["blipColor"] = 81,
+                ["blipDisplay"] = 5,
+                ["blipScale"] = 0.4,
+                ["blipShortRange"] = true
+            }
+        },
+    },
+    ["Items"] = {
+        ["armoryLabel"] = "Medical Supply Cabinet", -- name of armory
+        ["slots"] = 30, -- how many slots for armory
+        ["items"] = {
+            {
+                ["name"] = "radio", -- item name from items.lua
+                ["price"] = 0, -- item price if you wish to charge to take it out
+                ["amount"]  = 1, -- quantity in the location
+                ["info"] = {}, -- information about the item from items.lua
+                ["type"] = "item", -- item or weapon reference items.lua
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"}, -- vehicle, boat, plane, and/or helicopter
+                ["locations"] = {'armory','glovebox'}, -- armory, glovebox and/or trunk
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "bandage",
+                ["price"] = 0,
+                ["amount"]  = 5,
+                ["info"] = {},
+                ["type"] = "item",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','trunk'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "painkillers",
+                ["price"] = 0,
+                ["amount"]  = 10,
+                ["info"] = {},
+                ["type"] = "item",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','trunk'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "firstaid",
+                ["price"] = 0,
+                ["amount"]  = 10,
+                ["info"] = {},
+                ["type"] = "item",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','trunk'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "weapon_flashlight",
+                ["price"] = 0,
+                ["amount"]  = 1,
+                ["info"] = {},
+                ["type"] = "weapon",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','glovebox'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "weapon_fireextinguisher",
+                ["price"] = 0,
+                ["amount"]  = 1,
+                ["info"] = {},
+                ["type"] = "weapon",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','trunk'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            },
+            {
+                ["name"] = "heavyarmor",
+                ["price"] = 0,
+                ["amount"]  = 2,
+                ["info"] = {},
+                ["type"] = "item",
+                ["vehType"] = {"vehicle", "boat", "helicopter", "plane"},
+                ["locations"] = {'armory','trunk'},
+                ["authorizedJobGrades"] = {1,2,3,4,5,6}
+            }
+        }
+    },
 }

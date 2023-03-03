@@ -1,16 +1,12 @@
 Config.Jobs = Config.Jobs or {}
-Config.Jobs.tow = {
+Config.Jobs.taxi = {
     ["jobGang"] = "job",
-    ["label"] = "Tow Truck Operator",
+    ["label"] = "Taxi Driver",
     ["webHooks"] = {
-        ["tow"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["taxi"] = ""
     },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
-    ["inCityHall"] = {
-        ["listInCityHall"] = true, -- true he job is sent to city hall | false the job is not in city hall
-        ["isManaged"] = true -- true the job is sent to the boss of the job | false the job is automatically assigned
-    },
     ["menu"] = {
         ["icons"] = {
             ["applicant"] = "fa-solid fa-user",
@@ -50,20 +46,37 @@ Config.Jobs.tow = {
             ["vehicle"] = "fa-solid fa-truck-medical",
         },
     },
-
-    ["plate"] = "TOWU", -- 4 Chars Max -- License Plate Prefix
+    ["listInCityHall"] = true, -- true he job is sent to city hall | false the job is not in city hall
+    ["plate"] = "TAXI", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
         ['1'] = {
+            ["name"] = "Recruit",
+            ["payment"] = 50
+        },
+        ['2'] = {
             ["name"] = "Driver",
             ["payment"] = 75
+        },
+        ['3'] = {
+            ["name"] = "Event Driver",
+            ["payment"] = 100
+        },
+        ['4'] = {
+            ["name"] = "Sales",
+            ["payment"] = 125
+        },
+        ['5'] = {
+            ["name"] = "Manager",
+            ["payment"] = 150,
+            ["isboss"] = true
         }
     },
     ["Locations"] = {
         ["duty"] = {
             [1] = {
-                ["Label"] = "Tow Timeclock",
+                ["Label"] = "Taxi Timeclock",
                 ["coords"] = vector3(-323.39, -129.6, 39.01),
-                ["blipName"] = "Tow Timeclock",
+                ["blipName"] = "Taxi Timeclock",
                 ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
                 ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
                 ["blipDisplay"] = 9, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
@@ -87,6 +100,7 @@ Config.Jobs.tow = {
                     ["rotate"] = true, -- true marker spins | false marker does not spin
                     ["ents"] = true -- true marker appears over entities | false marker is hidden when entities are around
                 }
+
             }
         },
     }

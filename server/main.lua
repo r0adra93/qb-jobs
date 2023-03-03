@@ -37,7 +37,6 @@ local printColors = {
 local vehCount = {}
 --- Tracks all vehicles spawned by players
 local vehTrack = {}
---- key is the job name and value is the job label
 -- local jobsList = {}
 --- Populates  the server side QBCore.Shared.Jobs table at resource start
 exports['qb-core']:AddJobs(Config.Jobs)
@@ -56,29 +55,27 @@ local comma_value = function(amount)
     return string.format("%s%s", Config.currencySymbol, amount)
 end
 --- Error / Message Handler
-local errorHandler = function(error)
-    local pcolor = "^1"
-    local jsMsg = {}
-    for _,v in pairs(error) do
-        if v.notify then TriggerClientEvent('QBCore:Notify', v.src, v.msg) end
-        if v.log then TriggerEvent('qb-log:server:CreateLog', v.logName, v.subject, printColors[v.color].log, v.msg) end
-        if v.console then
-            if printColors[v.color] then pcolor = printColors[v.color].console end
-            v.msg = pcolor .. v.msg
-            print(v.msg)
-        end
-        if v.kick then DropPlayer(src, v.msg) end
-        if v.ban then exports["qb-core"]:BanPlayer(v.src) end
-        if v.jsMsg then jsMsg[#jsMsg+1] = v.jsMsg end
+local errorHandler = function(data)
+    if not data.color then data.color = "default" end
+    if not data.banExpire then data.banExpire = 2147483647 end
+    if not data.resource then data.resource = "qbCore" end
+    local messageSystems = {
+        ["notify"] = function() TriggerClientEvent('QBCore:Notify', data.src, data.msg) end,
+        ["log"] = function() TriggerEvent('qb-log:server:CreateLog', data.logName, data.subject, QBConfig.PrintNotifyColors[data.color].log, data.msg) end,
+        ["console"] = function()
+            data.msg = string.format("%s%s", QBConfig.PrintNotifyColors[data.color], data.msg)
+            print(msg)
+        end,
+        ["kick"] = function() DropPlayer(data.src, data.msg) end,
+        ["ban"] = function() exports["qb-core"]:BanPlayer(data.src, data.msg, data.banExpire, data.logName) end
+    }
+    for k in pairs(data.sys) do
+        messageSystems[k]()
     end
-    return jsMsg
 end
 --- SQL handler
 local sqlHandler = function(sql)
-    local output = {
-        ["success"] = {},
-        ["error"] = {}
-    }
+    local output = {}
     local queryResult = MySQL.query.await(sql.query,{},function(result)
         if next(result) then
             cb(result)
@@ -87,15 +84,16 @@ local sqlHandler = function(sql)
         end
     end)
     if not queryResult then
-        output.error[0] = {
+        output.error = {
             ["subject"] = "SQL Query Failed",
-            ["msg"] = string.format("SQL Query Failed, from: ?", sql.from),
-            ["jsMsg"] = "SQL Error!",
+            ["msg"] = string.format("SQL Query Failed, from: %s", sql.from),
             ["color"] = "error",
             ["logName"] = "qbjobs",
             ["src"] = src,
-            ["log"] = true,
-            ["console"] = true
+            ["sys"] = {
+                ["log"] = true,
+                ["console"] = true
+            }
         }
         errorHandler(output.error)
         return output
@@ -104,11 +102,11 @@ local sqlHandler = function(sql)
     return output.result
 end
 --- switches between job or gang
-local selectJobGang = function(jgType, playerJob, playerGang)
+local selectJobGang = function(jobGangType, playerJob, playerGang)
     local output = {
         ["Jobs"] = {
-            ["conf"] = Config[jgType][playerJob.name],
-            ["jg"] = playerJob,
+            ["conf"] = Config[jobGangType][playerJob.name],
+            ["jgd"] = playerJob,
             ["pd"] = {
                 ["type"] = "job",
                 ["types"] = "jobs",
@@ -117,7 +115,7 @@ local selectJobGang = function(jgType, playerJob, playerGang)
                 ["currentName"] = "currentJobName",
                 ["label"] = "employees",
                 ["pastLabel"] = "pastEmployees",
-                ["prev"] = "prevJob",
+                ["prev"] = "jgPrev",
                 ["set"] = "SetJob",
                 ["add"] = "AddToJobs",
                 ["addHistory"] = "AddToJobHistory",
@@ -127,8 +125,8 @@ local selectJobGang = function(jgType, playerJob, playerGang)
             }
         },
         ["Gangs"] = {
-            ["conf"] = Config[jgType][playerGang.name],
-            ["jg"] = playerGang,
+            ["conf"] = Config[jobGangType][playerGang.name],
+            ["jgd"] = playerGang,
             ["pd"] =  {
                 ["type"] = "gang",
                 ["types"] = "gangs",
@@ -147,9 +145,8 @@ local selectJobGang = function(jgType, playerJob, playerGang)
             }
         }
     }
-    return output[jgType]
+    return output[jobGangType]
 end
-exports("selectJobGang", selectJobGang)
 --- Populates the server side QBCore.Shared.Jobs table
 local populateJobsNGangs = function(src)
     CreateThread(function()
@@ -165,7 +162,6 @@ local populateJobsNGangs = function(src)
         end
     end)
 end
-exports('populateJobsNGangs', populateJobsNGangs)
 --- Sends webhook from config to qb-smallresources
 local sendWebHooks = function()
     for _,v in pairs(Config.Jobs) do
@@ -180,11 +176,8 @@ local setUnderlingStatus = function(res)
     local citid = res.citid
     local output = {
         ["isOnline"] = true,
-        ["player"] = {},
-        ["error"] = {},
-        ["success"] = {}
+        ["player"] = {}
     }
-    local ercnt = 0
     output.player = QBCore.Functions.GetPlayer(src)
     if not output.player or not next(output.player) then output.player = QBCore.Functions.GetPlayerByCitizenId(citid) end
     if not output.player or not next(output.player) then
@@ -192,15 +185,16 @@ local setUnderlingStatus = function(res)
         output.isOnline = false
     end
     if not output.player or not next(output.player) then
-        output.error[ercnt] = {
+        output.error = {
             ["subject"] = "Player Does Not Exist!",
             ["msg"] = string.format("player does not exist in setUnderlingStatus! #msg001"),
-            ["jsMsg"] = "Player Does Not Exist!",
             ["color"] = "error",
             ["logName"] = "qbjobs",
             ["src"] = src,
-            ["log"] = true,
-            ["console"] = true
+            ["sys"] = {
+                ["log"] = true,
+                ["console"] = true
+            }
         }
         errorHandler(output.error)
         return output
@@ -208,37 +202,32 @@ local setUnderlingStatus = function(res)
     return output
 end
 --- Prepares data for the buildJobHistory function for the current player
-local processHistory = function(hData, jgType)
-    local output = {
-        ["error"] = {},
-        ["success"] = {}
-    }
+local processHistory = function(hData, jobGangType)
+    local output, history
     --- Builds the Job History metadata table.
     local buildHistory = function(res)
         local pd = res.pd
         pd.name = res[pd.type]
         if not res[pd.name] then res[pd.name] = {} end
         if pd.name == "unemployed" or pd.name == "none" then
-            output.error[0] = "failed"
-            return output
+            return nil
         end
-        local jgData, status
+        local jgd, status
         local history = {}
         if res.player.PlayerData.metadata[pd.history] then history = res.player.PlayerData.metadata[pd.history] end
         if history and history[pd.name] and history[pd.name].status then status = history[pd.name].status end
         local hList = {
             ["status"] = "available",
-            ["rehireable"] = true,
-            ["reprimands"] = {},
             ["awards"] = {},
             ["details"] = {},
             ["grades"] = {},
-            ["gradechangecount"] = 0,
+            ["reprimands"] = {},
+            ["applycount"] = 0,
+            ["denycount"] = 0,
             ["firedcount"] = 0,
+            ["gradechangecount"] = 0,
             ["hiredcount"] = 0,
             ["quitcount"] = 0,
-            ["denycount"] = 0,
-            ["applycount"] = 0
         }
         local index = {
             ["reprimands"] = 1,
@@ -246,63 +235,64 @@ local processHistory = function(hData, jgType)
             ["details"] = 1,
             ["grades"] = 1
         }
-        for k in pairs(Config[jgType]) do
+        for k in pairs(Config[jobGangType]) do
             if not history[k] then
                 history[k] = hList
             end
         end
         if history["none"] then history["none"] = nil end
         if history["unemployed"] then history["unemployed"] = nil end
-        jgData = history[pd.name]
+        jgd = history[pd.name]
         for kp, vp in pairs(hList) do
             if type(vp) == "table"  then
                 if res[pd.name][kp] then
-                    if jgData[kp] then
-                        for _ in pairs(jgData[kp]) do
+                    if jgd[kp] then
+                        for _ in pairs(jgd[kp]) do
                             index[kp] += 1
                         end
                     end
                     if index[kp] == 0 then index[kp] = 1 end
                     for _,v in pairs(res[pd.name][kp]) do
-                        jgData[kp][index[kp]] = v
+                        jgd[kp][index[kp]] = v
                         index[kp] += 1
                     end
                 end
             elseif type(vp) == "number" then
                 if not res[pd.name][kp] then res[pd.name][kp] = 0 end
-                jgData[kp] += res[pd.name][kp]
+                jgd[kp] += res[pd.name][kp]
             elseif kp == "status" then
-                if res[pd.name][kp] then jgData[kp] = res[pd.name][kp] end
+                if res[pd.name][kp] then jgd[kp] = res[pd.name][kp] end
             end
         end
-        if pd.name == "none" then jgData = nil end
-        if pd.name == "unemployed" then jgData = nil end
-        return jgData
+        if pd.name == "none" then jgd = nil end
+        if pd.name == "unemployed" then jgd = nil end
+        return jgd
     end
-    local data, history
     if not hData.player then
-        data = setUnderlingStatus(hData)
-        hData.isOnline = data.isOnline
-        hData.player = data.player
+        output = setUnderlingStatus(hData)
+        hData.isOnline = output.isOnline
+        hData.player = output.player
     end
-    if not hData.player then return data end
+    if not hData.player then return output end
     local playerJob = hData.player.PlayerData.job
     local playerGang = hData.player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     local conf = cdata.conf
     local pd = cdata.pd
     hData.pd = pd
     hData.error = {}
     hData.success = {}
-    if not Config[jgType][hData[pd.type]] then
-        output.error[0] = {
+    if not Config[jobGangType][hData[pd.type]] then
+        output.error = {
             ["subject"] = "Job Does Not Exist",
             ["msg"] = "Job Does Not Exist in processHistory, msg001",
             ["color"] = "error",
             ["logName"] = "qbjobs",
             ["src"] = src,
-            ["log"] = true,
-            ["console"] = true
+            ["sys"] = {
+                ["log"] = true,
+                ["console"] = true
+            }
         }
         errorHandler(output.error)
         return output
@@ -310,109 +300,157 @@ local processHistory = function(hData, jgType)
     history = buildHistory(hData)
     return history
 end
-exports("processHistory", processHistory)
 --- Sets the job or gang up for the underling
-local setJobGang = function(res, jgType)
-    local data = setUnderlingStatus(res)
-    if data.error and next(data.error) then return data end
-    local prevJob = res.prevJob:lower() -- Manager's Job
-    local newJob = res.newJob:lower() -- Employee's New Job
+local setJobGang = function(res, jobGangType)
+    local output = setUnderlingStatus(res)
+    if output.error and next(output.error) then return output end
+    local player = output.player
+    local playerJob = player.PlayerData.job
+    local playerGang = player.PlayerData.gang
+    local cdata = selectJobGang(jobGangType, playerJob, playerGang)
+    local conf = cdata.conf
+    local jgd = cdata.jgd
+    local pd = cdata.pd
+    local jgPrev = res.jgPrev:lower() -- Boss Job
+    local jgNew = res.jgNew:lower() -- Staff/Member Job
+    local jg = res.jg:lower() -- Boss Job
     local grade = tostring(res.grade) -- Employee's Grade
-    local job = res.job:lower() -- Manager's Job
     local citid = res.citid -- Employee's Citizen ID
-    local metaData = data.player.PlayerData.metadata
-    data.job = job
-    data[job] = res[job]
-    data.jobs = metaData.jobs
-    data.jobhistory = metaData.jobhistory
-    local jobs = metaData.jobs
+    local metaData = player.PlayerData.metadata
     local src = res.src -- Manager's Source
-    local ercnt = 0
-    local player = data.player
-    local jobGrade, queryResult, sql
+    local queryResult, sql
+    output[pd.type] = jg
+    output[jg] = res[jg]
+    output[pd.types] = metaData[pd.types]
+    output[pd.history] = metaData[pd.history]
     local pD = {
-        ["job"] = {},
+        ["Jobs"] = {
+            ["job"] = {
+                ["name"] = jgNew,
+                ["label"] = Config[jobGangType][jgNew].label,
+                ["onduty"] = Config[jobGangType][jgNew].defaultDuty,
+                ["type"] = Config[jobGangType][jgNew].type,
+                ["grade"] = {
+                    ["name"] = Config[jobGangType][jgNew].grades[grade].name,
+                    ["level"] = tostring(grade),
+                    ["payment"] = Config[jobGangType][jgNew].grades[grade].payment
+                }
+            },
+            ["jobs"] = {
+                [jg] = nil,
+                [jgNew] = jgNew
+            },
+            ["jgData"] = metaData.jobs,
+            ["metadata"] = metaData
+        },
+        ["Gangs"] = {
+            ["gang"] = {
+                ["name"] = jgNew,
+                ["label"] = Config[jobGangType][jgNew].label,
+                ["onduty"] = Config[jobGangType][jgNew].defaultDuty,
+                ["type"] = Config[jobGangType][jgNew].type,
+                ["grade"] = {
+                    ["name"] = Config[jobGangType][jgNew].grades[grade].name,
+                    ["level"] = tostring(grade),
+                }
+            },
+            ["gangs"] = {
+                [jg] = nil,
+                [jgNew] = jgNew
+            },
+            ["jgData"] = metaData.gangs,
+            ["metadata"] = metaData
+        },
         ["citid"] = res.citid
     }
-    local jobHistory = processHistory(data, jgType)
-    if not Config.Jobs[res.job] then
-        data.error[ercnt] = {
+    local jgSel = {
+        ["Jobs"] = {
+            ["job"] = jg,
+            [jg] = res[jg],
+            ["jobs"] = metaData.jobs,
+            ["history"] = metaData.jobhistory,
+            ["grade"] = Config[jobGangType][jgNew].grades[grade]
+        },
+        ["Gangs"] = {
+            ["gang"] = jg,
+            [jg] = res[jg],
+            ["gangs"] = metaData.gangs,
+            ["history"] = metaData.ganghistory,
+            ["grade"] = Config[jobGangType][jgNew].grades[grade]
+        }
+    }
+    local jgs = jgSel[jobGangType]
+    for k, v in pairs(jgs) do
+        output[k] = v
+    end
+    local history = processHistory(output,jobGangType)
+    if not jgs[jg] then
+        output.error = {
             ["subject"] = "Job does not exist!",
-            ["msg"] = string.format("%s attempted to set a job that didn't exist in processHistory msg#003", player.PlayerData.license),
-            ["jsMsg"] = "Job does not exist!",
+            ["msg"] = string.format("%s attempted to set a job that didn't exist in setJobGang msg#003", player.PlayerData.license),
             ["color"] = "error",
             ["logName"] = "qbjobs",
             ["src"] = src,
-            ["log"] = true,
-            ["console"] = true
+            ["sys"] = {
+                ["log"] = true,
+                ["console"] = true
+            }
         }
-        errorHandler(data.error)
-        return data
+        errorHandler(output.error)
+        return output
     end
-    if data.isOnline then
-        player.Functions[pd.set](newJob, grade)
+    if output.isOnline then
+        player.Functions[pd.set](jgNew, grade)
         player = QBCore.Functions.GetPlayerByCitizenId(citid)
-        player.Functions[pd.addHistory](prevJob, jobHistory)
-        player.Functions[pd.add](prevJob, nil)
-        player.Functions[pd.add](player.PlayerData.job.name, player.PlayerData.job)
+        player.Functions[pd.addHistory](jgPrev,history)
+        player.Functions[pd.add](jgPrev, nil)
+        player.Functions[pd.add](player.PlayerData[pd.type].name, player.PlayerData[pd.type])
         player = QBCore.Functions.GetPlayerByCitizenId(citid)
-        data.player = player
+        output.player = player
     else
-        if not jobHistory then jobHistory = {} end
-        if not jobs then jobs = {} end
-        pD.job.name = newJob
-        pD.job.label = Config.Jobs[newJob].label
-        pD.job.onduty = Config.Jobs[newJob].defaultDuty
-        pD.job.type = Config.Jobs[newJob].type
-        jobGrade = Config.Jobs[newJob].grades[grade]
-        pD.job.grade = {}
-        pD.job.grade.name = jobGrade.name
-        pD.job.grade.level = tostring(grade)
-        pD.job.payment = jobGrade.payment
-        jobs[job] = nil
-        jobs[newJob] = pD.job
-        if jobs["unemployed"] then jobs["unemployed"] = nil end
-        pD.metadata = metaData
-        pD.metadata.jobs = jobs
-        pD.metadata.jobhistory[job] = jobHistory
+        pD[jobGangType].metadata[pd.types][jgNew] = nil
+        pD[jobGangType].metadata[pd.types][jgNew] = pD[jobGangType][pd.type]
+        if not jgs.history then jgs.history = {} end
         sql = {
-            ["query"] = string.format("UPDATE `players` SET `job` = '%s',`metadata` = '%s' WHERE `citizenid` = '%s'", json.encode(pD.job),json.encode(pD.metadata),pD.citid),
+            ["query"] = string.format("UPDATE `players` SET `%s` = '%s', `metadata` = '%s' WHERE `citizenid` = '%s'", pd.type, json.encode(pD[jobGangType][pd.type]), json.encode(pD[jobGangType].metadata), pD.citid),
             ["from"] = "qb-jobs/server/main.lua > function > setJob"
         }
         queryResult = sqlHandler(sql)
         if queryResult.error and next(queryResult.error) then return queryResult end
-        data.success[ercnt] = {
+        output.success = {
             ["subject"] = "User Data Saved",
             ["msg"] = string.format("JobHistory Update Success"),
             ["jsMsg"] = "User Saved!",
-            ["color"] = "sucecess",
+            ["color"] = "success",
             ["logName"] = "qbjobs",
             ["src"] = src,
-            ["log"] = true
+            ["sys"] = {
+                ["log"] = true
+            }
         }
-        errorHandler(data.success)
-        data.player = QBCore.Player.GetOfflinePlayer(citid)
+        errorHandler(output.success)
+        output.player = QBCore.Player.GetOfflinePlayer(citid)
     end
-    return data
+    return output
 end
 --- Checks for Duplicate Jobs / Gangs
 local checkUniqueJobGang = function()
     local output = {
-        ["counter"] = {},
-        ["success"] = {},
-        ["error"] = {}
+        ["counter"] = {}
     }
     local countPop = function(conf)
         for k in pairs(conf) do
             if output.counter[k] then
-                output.error[0] = {
+                output.error = {
                     ["subject"] = "Duplicate Job & Gang",
                     ["msg"] = string.format("%s is a dupe! Job & gang names must be unique.", k),
                     ["color"] = "error",
                     ["logName"] = "qbjobs",
                     ["src"] = src,
-                    ["log"] = true,
-                    ["console"] = true
+                    ["sys"] = {
+                        ["log"] = true,
+                        ["console"] = true
+                    }
                 }
                 errorHandler(output.error)
             end
@@ -446,7 +484,7 @@ local updateBlips = function()
     local publicPlayers = {}
     local players = QBCore.Functions.GetQBPlayers()
     for _,v in pairs(players) do
-        if Config.Jobs[v.PlayerData.job.name].DutyBlips then
+        if Config.Jobs[v.PlayerData.job.name] and Config.Jobs[v.PlayerData.job.name].DutyBlips then
             local coords = GetEntityCoords(GetPlayerPed(v.PlayerData.source))
             local heading = GetEntityHeading(GetPlayerPed(v.PlayerData.source))
             if Config.Jobs[v.PlayerData.job.name].DutyBlips.type == "service" and v.PlayerData.job.onduty then
@@ -488,31 +526,28 @@ local sendEmail = function(mail)
     exports["qb-phone"]:sendNewMailToOffline(mail.recCitID, mailData)
 end
 --- Submits Job Applications
-local submitApplication = function(res, jgType)
+local submitApplication = function(res, jobGangType)
     local msg, history
     local src = res.src
     local player = QBCore.Functions.GetPlayer(src)
     local metaData = player.PlayerData.metadata
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     local conf = cdata.conf
     local pd = cdata.pd
     local citid = player.PlayerData.citizenid
     local charInfo = player.PlayerData.charinfo
-    local data = {
-        ["error"] = {},
-        ["success"] = {},
+    local output = {
     }
-    local ercnt = 0
-    local jgData = {
+    local jgd = {
         [pd.type] = res[pd.type]:lower(),
         ["newGradeLevel"] = 0,
         ["newGradeLevelName"] = "No Grades",
         ["history"] = nil
     }
-    if metaData[pd.history][jgData[pd.type]] then jgData.history = metaData[pd.history][jgData[pd.type]] end
-    local jobInfo = Config[jgType][res[pd.type]]
+    if metaData[pd.history][jgd[pd.type]] then jgd.history = metaData[pd.history][jgd[pd.type]] end
+    local jgInfo = Config[jobGangType][res[pd.type]]
     local gender = Lang:t('email.mr')
     if charInfo.gender == 1 then
         gender = Lang:t('email.mrs')
@@ -520,8 +555,8 @@ local submitApplication = function(res, jgType)
     local hData = {
         ["src"] = res.src,
         ["citid"] = citid,
-        [pd.type] = jgData[pd.type],
-        [jgData[pd.type]] = {
+        [pd.type] = jgd[pd.type],
+        [jgd[pd.type]] = {
             ["details"] = {},
             ["grades"] = {},
             ["status"] = "available",
@@ -537,24 +572,26 @@ local submitApplication = function(res, jgType)
         [pd.history] = metaData[pd.history],
         ["isOnline"] = true
     }
-    if metaData[pd.types][jgData[pd.type]] then
-        data.error[0] = {
+    if metaData[pd.types][jgd[pd.type]] then
+        output.error = {
             ["subject"] = "Already Employed",
-            ["msg"] = string.format("%s %s is already employed in %s", charInfo.firstname, charInfo.firstname, jgData[pd.type]),
+            ["msg"] = string.format("%s %s is already employed in %s", charInfo.firstname, charInfo.firstname, jgd[pd.type]),
             ["jsMsg"] = "Already Employed!",
             ["src"] = src,
             ["color"] = "notice",
             ["logName"] = "qbjobs",
-            ["log"] = true,
-            ["notify"] = true
+            ["sys"] = {
+                ["log"] = true,
+                ["notify"] = true
+            }
         }
-        errorHandler(data.error)
-        return data
+        errorHandler(output.error)
+        return output
     end
-    if jgData.history and jgData.history.status == "pending" then
-        data.error[0] = {
+    if jgd.history and jgd.history.status == "pending" then
+        output.error[0] = {
             ["subject"] = "Application Pending",
-            ["msg"] = string.format("%s %s is application pending in %s", charInfo.firstname, charInfo.lastname, jgData[pd.type]),
+            ["msg"] = string.format("%s %s is application pending in %s", charInfo.firstname, charInfo.lastname, jgd[pd.type]),
             ["jsMsg"] = "Application Pending!",
             ["src"] = src,
             ["color"] = "notice",
@@ -562,13 +599,13 @@ local submitApplication = function(res, jgType)
             ["log"] = true,
             ["notify"] = true
         }
-        errorHandler(data.error)
-        return data
+        errorHandler(output.error)
+        return output
     end
-    if jgData.history and not jgData.history.rehireable then
-        data.error[0] = {
+    if jgd.history and jgd.history.status == "blacklisted" then
+        output.error[0] = {
             ["subject"] = "Application Refused",
-            ["msg"] = string.format("%s %s is blackListed in %s", charInfo.firstname, charInfo.firstname, jgData[pd.type]),
+            ["msg"] = string.format("%s %s is blacklisted in %s", charInfo.firstname, charInfo.lastname, jgd[pd.type]),
             ["jsMsg"] = "Application Refused!",
             ["src"] = src,
             ["color"] = "notice",
@@ -576,24 +613,24 @@ local submitApplication = function(res, jgType)
             ["log"] = true,
             ["notify"] = true
         }
-        errorHandler(data.error)
-        return data
+        errorHandler(output.error)
+        return output
     end
-    if jobInfo then
-        if res.grade then jgData.newGradeLevel = res.grade end
-        if tonumber(jgData.newGradeLevel) ~= 0 then jgData.newGradeLevelName = jobInfo.grades[jgData.newGradeLevel].name end
-        if jobInfo.jobBosses and not jobInfo.jobBosses[citid] then
+    if jgInfo then
+        if res.grade then jgd.newGradeLevel = res.grade end
+        if tonumber(jgd.newGradeLevel) ~= 0 then jgd.newGradeLevelName = jgInfo.grades[jgd.newGradeLevel].name end
+        if jgInfo.bosses and not jgInfo.bosses[citid] then
             hData[hData[pd.type]].applycount += 1
             hData[hData[pd.type]].status = "pending"
-            hData[hData[pd.type]].details[hData.index.details] = string.format("applied for %s", jgData[pd.type])
+            hData[hData[pd.type]].details[hData.index.details] = string.format("applied for %s", jgd[pd.type])
             hData.index.details += 1
-            data.citid = citid
-            data.sender = Lang:t('email.jobAppSender',{firstname = charInfo.firstname, lastname = charInfo.lastname})
-            data.subject = Lang:t('email.jobAppSub',{lastname = charInfo.lastname, job = res.job})
-            data.message = Lang:t('email.jobAppMsg',{gender = gender, lastname = charInfo.lastname, job = res.job, firstname = charInfo.firstname, phone = charInfo.phone})
-            data.success[ercnt] = {
+            output.citid = citid
+            output.sender = Lang:t('email.jobAppSender',{firstname = charInfo.firstname, lastname = charInfo.lastname})
+            output.subject = Lang:t('email.jobAppSub',{lastname = charInfo.lastname, job = res.job})
+            output.message = Lang:t('email.jobAppMsg',{gender = gender, lastname = charInfo.lastname, job = res.job, firstname = charInfo.firstname, phone = charInfo.phone})
+            output.success[0] = {
                 ["subject"] = "Application Submitted",
-                ["msg"] = Lang:t('info.new_job_app',{job = jobInfo.label}),
+                ["msg"] = Lang:t('info.new_job_app',{job = jgInfo.label}),
                 ["jsMsg"] = "Application Submitted!",
                 ["src"] = src,
                 ["color"] = "notice",
@@ -601,50 +638,50 @@ local submitApplication = function(res, jgType)
                 ["log"] = true,
                 ["notify"] = true
             }
-            errorHandler(data.success)
-            for k in pairs(jobInfo.jobBosses) do
+            errorHandler(output.success)
+            for k in pairs(jgInfo.bosses) do
                 CreateThread(function()
                     SetTimeout(math.random(1000, 2000),function()
-                        data.recCitID = k
-                        sendEmail(data)
+                        output.recCitID = k
+                        sendEmail(output)
                     end)
                 end)
             end
-        elseif not jobInfo.jobBosses or jobInfo.jobBosses[citid] then
-            jgData.newGradeLevel = "1"
-            jgData.newGradeLevelName = Config[jgType][jgData[pd.type]].grades[jgData.newGradeLevel].name
-            if jobInfo.jobBosses then
+        elseif not jgInfo.bosses or jgInfo.bosses[citid] then
+            jgd.newGradeLevel = "1"
+            jgd.newGradeLevelName = Config[jobGangType][jgd[pd.type]].grades[jgd.newGradeLevel].name
+            if jgInfo.bosses then
                 local tmp = 1
-                while Config[jgType][jgData[pd.type]].grades[tmp] do
-                    jgData.newGradeLevel = tmp
+                while jgInfo.grades[tostring(tmp)] do
+                    jgd.newGradeLevel = tmp
                     tmp += 1
                 end
-                jgData.newGradeLevelName = Config[jgType][jgData[pd.type]].grades[jgData.newGradeLevel].name
+                jgd.newGradeLevel = tostring(jgd.newGradeLevel)
+                jgd.newGradeLevelName = jgInfo.grades[jgd.newGradeLevel].name
             end
-            jgData.newGradeLevel = tostring(jgData.newGradeLevel)
             hData[hData[pd.type]].status = "hired"
             hData[hData[pd.type]].hiredcount += 1
-            hData[hData[pd.type]].grades[hData.index.grades] = jgData.newGradeLevel
+            hData[hData[pd.type]].grades[hData.index.grades] = jgd.newGradeLevel
             hData.index.grades += 1
-            hData[hData[pd.type]].details[hData.index.details] = string.format("Hired on as %s", jgData.newGradeLevelName)
+            hData[hData[pd.type]].details[hData.index.details] = string.format("Hired on as %s", jgd.newGradeLevelName)
             hData.index.details += 1
-            player.Functions[pd.set](jgData[pd.type], jgData.newGradeLevel)
+            player.Functions[pd.set](jgd[pd.type], jgd.newGradeLevel)
             player = QBCore.Functions.GetPlayer(src)
             player.Functions[pd.add](player.PlayerData[pd.type].name, player.PlayerData[pd.type])
             player = QBCore.Functions.GetPlayer(src)
-            data.success[ercnt] = {
-                ["subject"] = string.format("%s New Hire!", jgData[pd.type]),
-                ["msg"] = string.format("Hired onto %s as %s", jgData[pd.type], jgData.newGradeLevelName),
-                ["jsMsg"] = string.format("Hired onto %s as %s", jgData[pd.type], jgData.newGradeLevelName),
+            output.success[0] = {
+                ["subject"] = string.format("%s New Hire!", jgd[pd.type]),
+                ["msg"] = string.format("Hired onto %s as %s", jgd[pd.type], jgd.newGradeLevelName),
+                ["jsMsg"] = string.format("Hired onto %s as %s", jgd[pd.type], jgd.newGradeLevelName),
                 ["src"] = src,
                 ["color"] = "success",
                 ["logName"] = "qbjobs",
                 ["log"] = true,
                 ["notify"] = true
             }
-            errorHandler(data.success)
+            errorHandler(output.success)
         else
-            data.error[ercnt] = {
+            output.error[0] = {
                 ["subject"] = "Exploit Attempt: Boss Menu!",
                 ["msg"] = string.format("%s attempted to exploit the Boss Menu through attempting of submitting insufficent data. submitApplication0001", player.PlayerData.license),
                 ["jsMsg"] = "Exploit Failed!",
@@ -654,27 +691,25 @@ local submitApplication = function(res, jgType)
                 ["log"] = true,
                 ["console"] = true
             }
-            errorHandler(data.error)
-            return data
+            errorHandler(output.error)
+            return output
         end
     end
-    history = processHistory(hData, jgType)
+    history = processHistory(hData, jobGangType)
     if history and history.error then
         return history
     end
-    if pd.type == "job" then player.Functions.AddToJobHistory(hData[pd.type], history) end
-    if pd.type == "gang" then player.Functions.AddToGangHistory(hData[pd.type], history) end
+    player.Functions[pd.addHistory](hData[pd.type], history)
     player = QBCore.Functions.GetPlayer(src)
-    data.player = player
-    return data
+    output.player = player
+    return output
 end
-exports("submitApplication", submitApplication)
 --- Send jobs to city hall
 local sendToCityHall = function()
     local isManaged, toCH
     for k, v in pairs(Config.Jobs) do
         isManaged = false
-        if v.jobBosses then isManaged = true end
+        if v.bosses then isManaged = true end
         if v.listInCityHall then
             toCH = {
                 ["label"] = v.label,
@@ -686,22 +721,22 @@ local sendToCityHall = function()
 end
 --- sends MotorworksConfig table to qb-customs
 local sendToCustoms = function()
-    local data = {}
+    local output = {}
     for k, v in pairs(Config.Jobs) do
-        data[k] = v.MotorworksConfig
+        output[k] = v.MotorworksConfig
     end
-    exports["qb-customs"]:buildLocations(data)
+    exports["qb-customs"]:buildLocations(output)
 end
 --- Generates list to pupulate the boss menu
-local buildManagementData = function(src, jgType)
+local buildManagementData = function(src, jobGangType)
     local personal, hList, sql, queryResult
     local player = QBCore.Functions.GetPlayer(src)
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     local conf = cdata.conf
     local pd = cdata.pd
-    local jg = cdata.jg
+    local jgd = cdata.jgd
     local players = QBCore.Functions.GetQBPlayers()
     local jobCheck = {}
     local plist = {}
@@ -713,51 +748,46 @@ local buildManagementData = function(src, jgType)
         ["gangs"] = {},
         ["error"] = {},
         ["success"] = {},
-        ["jg"] = jg,
+        ["jg"] = jgd,
         ["pd"] = pd
     }
     local pending = function(v, k1)
-        mgrBtnList[pd.types][k1].applicants = {}
         mgrBtnList[pd.types][k1].applicants[v.citid] = {}
         mgrBtnList[pd.types][k1].applicants[v.citid].personal = personal
-        if pd.type == "job" then
-            mgrBtnList[pd.types][k1].applicants[v.citid].history = hList
-            if v.metadata.rapsheet then mgrBtnList.jobs[k1].applicants[v.citid].rapSheet = v.metadata.rapsheet end
-        end
+        mgrBtnList[pd.types][k1].applicants[v.citid].history = hList
+        if v.metadata.rapsheet then mgrBtnList[pd.types][k1].applicants[v.citid].rapSheet = v.metadata.rapsheet end
     end
     local hired = function(v, k1)
         personal.position = v.metadata[pd.types][k1].grade
         if k1 == pd.name and v.metadata[pd.types] and v.metadata[pd.types][k1] then
-            if pd.type == "job" then personal.payRate = v.metadata.jobs[k1].payment end
+            if pd.type == "job" then personal.payRate = v.metadata[pd.types][k1].payment end
         end
-        mgrBtnList[pd.types][k1][pd.label] = {}
         mgrBtnList[pd.types][k1][pd.label][v.citid] = {}
         mgrBtnList[pd.types][k1][pd.label][v.citid].personal = personal
-        if pd.type == "job" then
-            mgrBtnList[pd.types][k1][pd.label][v.citid].history = hList
-            if v.metadata.rapsheet then mgrBtnList.jobs[k1][pd.label][v.citid].rapSheet = v.metadata.rapsheet end
-        end
+        mgrBtnList[pd.types][k1][pd.label][v.citid].history = hList
+        if v.metadata.rapsheet then mgrBtnList[pd.types][k1][pd.label][v.citid].rapSheet = v.metadata.rapsheet end
     end
     local quit = function(v, k1)
-        mgrBtnList[pd.types][k1][pd.pastLabel] = {}
         mgrBtnList[pd.types][k1][pd.pastLabel][v.citid] = {}
         mgrBtnList[pd.types][k1][pd.pastLabel][v.citid].personal = personal
-        if pd.type == "job" then
-            mgrBtnList[pd.types][k1][pd.pastLabel][v.citid].history = hList
-            if v.metadata.rapsheet then mgrBtnList.jobs[k1][pd.pastLabel][v.citid].rapSheet = v.metadata.rapsheet end
-        end
+        mgrBtnList[pd.types][k1][pd.pastLabel][v.citid].history = hList
+        if v.metadata.rapsheet then mgrBtnList[pd.types][k1][pd.pastLabel][v.citid].rapSheet = v.metadata.rapsheet end
     end
     local denied = function(v, k1)
         mgrBtnList[pd.types][k1].deniedApplicants[v.citid] = {}
         mgrBtnList[pd.types][k1].deniedApplicants[v.citid].personal = personal
-        if pd.type == "job" then
-            mgrBtnList[pd.types][k1].deniedApplicants[v.citid].history = hList
-            if v.metadata.rapsheet then mgrBtnList.jobs[k1].deniedApplicants[v.citid].rapSheet = v.metadata.rapsheet end
-        end
+        mgrBtnList[pd.types][k1].deniedApplicants[v.citid].history = hList
+        if v.metadata.rapsheet then mgrBtnList[pd.types][k1].deniedApplicants[v.citid].rapSheet = v.metadata.rapsheet end
+    end
+    local blacklist = function(v, k1)
+        mgrBtnList[pd.types][k1].blacklist[v.citid] = {}
+        mgrBtnList[pd.types][k1].blacklist[v.citid].personal = personal
+        mgrBtnList[pd.types][k1].blacklist[v.citid].history = hList
+        if v.metadata.rapsheet then mgrBtnList[pd.types][k1].blacklist[v.citid].rapSheet = v.metadata.rapsheet end
     end
     local buildSQL = function()
         sql = {
-            ["query"] = string.format("SELECT `citizenid` AS 'citid',`charinfo`,`metadata`,`license` FROM `players` WHERE JSON_VALUE(`metadata`,'$.%shistory.%s.status') != 'available'", pd.type, jg.name),
+            ["query"] = string.format("SELECT `citizenid` AS 'citid',`charinfo`,`metadata`,`license` FROM `players` WHERE JSON_VALUE(`metadata`,'$.%shistory.%s.status') != 'available'", pd.type, jgd.name),
             ["from"] = "qb-jobs/server/main.lua > function > buildManagementData"
         }
         return sql
@@ -767,7 +797,7 @@ local buildManagementData = function(src, jgType)
         ["hired"] = {["func"] = hired},
         ["quit"] = {["func"] = quit},
         ["fired"] = {["func"] = quit},
-        ["blacklisted"] = {["func"] = quit},
+        ["blacklisted"] = {["func"] = blacklist},
         ["denied"] = {["func"] = denied}
     }
     sql = buildSQL()
@@ -790,16 +820,20 @@ local buildManagementData = function(src, jgType)
                 ["PlayerData"] = {}
             }
             if plist[v.citid] then
+                v.metadata = nil
                 v.metadata = plist[v.citid].PlayerData.metadata
+                v.charinfo = nil
                 v.charinfo = plist[v.citid].PlayerData.charinfo
+                v.source = nil
                 v.source = plist[v.citid].PlayerData.source
+                v.license = nil
                 v.license = plist[v.citid].PlayerData.license
             else
                 v.metadata = json.decode(v.metadata)
                 v.charinfo = json.decode(v.charinfo)
             end
             hList = v.metadata[pd.history]
-            if not hList or not next(hList) then hList = processHistory(hData, jgType) end
+            if not hList or not next(hList) then hList = processHistory(hData, jobGangType) end
             if Config.hideAvailableJobs then
                 hList = nil
                 hList = {}
@@ -828,6 +862,7 @@ local buildManagementData = function(src, jgType)
                             [pd.label] = {},
                             [pd.pastLabel] = {},
                             ["deniedApplicants"] = {},
+                            ["blacklist"] = {},
                             ["society"] = {
                                 ["balance"] = comma_value(societyAccounts.accounts[k1])
                             },
@@ -837,7 +872,6 @@ local buildManagementData = function(src, jgType)
                         }
                     end
                     if v1.status ~= "available" then
-                        mgrBtnList[pd.types][k1] = {}
                         status[v1.status].func(v, k1)
                     end
                 end
@@ -859,23 +893,42 @@ local buildManagementData = function(src, jgType)
     return mgrBtnList
 end
 --- Staff / Member Manager for Gang and Job Boss
-local manageStaff = function(res, jgType)
+local manageStaff = function(res, jobGangType)
+    local src = res.manager.src
+    local manager = QBCore.Functions.GetPlayer(src)
+    local managerJob = manager.PlayerData.job
+    local managerGang = manager.PlayerData.gang
+    local mcdata =  selectJobGang(jobGangType, managerJob, managerGang)
+    local mconf = mcdata.conf
+    local mjgd = mcdata.jgd
+    local md = mcdata.pd -- employer job (also employee job)
+    if not Config[jobGangType][mjgd.name].bosses[manager.PlayerData.citizenid] then
+        local output = {["error"] = {
+            [0] = {
+                ["subject"] = "Not a Manager",
+                ["msg"] = string.format("Player is not a manager! %s", manager.PlayerData.license),
+                ["jsMsg"] = "Not a Manager!",
+                ["color"] = "exploit",
+                ["logName"] = "qbjobs",
+                ["src"] = src,
+                ["log"] = true,
+                ["console"] = true
+            }
+        }}
+        errorHandler(output.error)
+        return output
+    end
     local awrep = tonumber(1)
     if res.awrep then
         awrep = tonumber(res.awrep)
         if not QBCore.Functions.PrepForSQL(src, awrep, "^%d+$") then
-            output.error[ercnt] = true
+            output.error[0] = true
             return output
         end
         awrep += 1
     end
-    local src = res.manager.src
     local citid = res.appcid
-    local output = {
-        ["error"] = {},
-        ["success"] = {}
-    }
-    local mgrBtnList = buildManagementData(src, jgType)
+    local mgrBtnList = buildManagementData(src, jobGangType)
     if not mgrBtnList then
         output.error[0] = {
             ["subject"] = "Jobs Boss Menu Error",
@@ -904,214 +957,41 @@ local manageStaff = function(res, jgType)
         return output
     end
     local sql, queryResult
-    local manager = QBCore.Functions.GetPlayer(src)
-    local managerJob = manager.PlayerData.job
-    local managerGang = manager.PlayerData.gang
-    local mcdata =  selectJobGang(jgType, managerJob, managerGang)
-    local mconf = mcdata.conf
-    local mjg = mcdata.jg
-    local md = mcdata.pd -- employer job (also employee job)
     local staff = setUnderlingStatus(res)
     local metaData = staff.player.PlayerData.metadata
-    local staffData = metaData.jobs[managerJob.name]
-    if md.type == "gang" then
-        staffData = nil
-        staffData = metaData.gangs[managerGang.name]
-    end
-    if not staffData then
+    local staffData = metaData[md.types][mjgd.name]
+    if not staffData or not next(staffData) then
         staffData = {
-            ["grade"] = {["level"] = 1}
+            ["name"] = mjgd.name,
+            ["label"] = mjgd.label,
+            ["grade"] = {
+                ["level"] = 1,
+                ["name"] = Config[jobGangType][mjgd.name].grades["1"].name
+            }
         }
     end
-    local data = {
+    local output = {
         ["citid"] = citid,
-        ["job"] = md.name,
+        ["jg"] = mjgd.name,
         ["staff"] = {
             ["data"] = staff,
             ["citid"] = citid,
-            ["job"] = staffData.name
+            ["jg"] = mjgd.name
         },
         ["manager"] = {
             ["data"] = manager,
             ["src"] = src,
             ["citid"] = manager.PlayerData.citizenid,
-            ["job"] = mjg.name,
+            ["jg"] = mjgd.name,
         }
     }
     local approveManagerAction = function(info)
-        local grade = info.approve.grade
-        local gradeName = mjg.grades[grade].name
-        local deets = "hired onto"
-        data.prevJob = md.name
-        data.newJob = md.name
-        if md.type == "gang" then
-            deets = "jumped into"
-            data.prevGang = md.name
-            data.newGang = md.name
-        end
-        data.grade = grade
-        data.gradeName = gradeName
-        data[md.name] = {
-            ["hiredcount"] = 1,
-            ["details"] = {string.format("was %s %s", deets, md.name)},
-            ["status"] = "hired"
-        }
-        output = setJobGang(data, jgType)
-        if output.error and next(output.error) then return output end
-        output.success[0] = {
-            ["subject"] = string.format("Approval Alert"),
-            ["msg"] = string.format("%s was approved with %s.", citid, md.name),
-            ["jsMsg"] = string.format("%s was approved.", citid),
-            ["src"] = src,
-            ["color"] = "notice",
-            ["logName"] = "qbjobs",
-            ["log"] = true,
-            ["notify"] = true
-        }
-        errorHandler(output.success)
-        return output
-    end
-    local denyManagerAction = function(_)
-        data[md.name] = {
-            ["denycount"] = 1,
-            ["details"] = {string.format("was denied in %s", md.name)},
-            ["status"] = "denied"
-        }
-        local history = processHistory(data, jgType)
-        if staff.isOnline then
-            output = staff.player.Functions.AddToJobHistory(md.name, jobHistory)
-            return output
-        end
-        metaData[md.history][md.name] = history
-        sql = {
-            ["query"] = string.format("UPDATE `players` SET `metadata` = '%s' WHERE `citizenid` = '%s'", json.encode(metaData),citid),
-            ["from"] = "qb-jobs/server/main.lua > function > manageStaff > denyManagerAction > "
-        }
-        queryResult = sqlHandler(sql)
-        if queryResult.error and next(queryResult.error) then return queryResult end
-        if output.error and next(output.error) then return output end
-        output.success[0] = {
-            ["subject"] = string.format("Denial Alert"),
-            ["msg"] = string.format("%s was denied with %s.", citid, md.name),
-            ["jsMsg"] = string.format("%s was denied with %s.", citid, md.name),
-            ["src"] = src,
-            ["color"] = "notice",
-            ["logName"] = "qbjobs",
-            ["log"] = true,
-            ["notify"] = true
-        }
-        errorHandler(output.success)
-        return output
-    end
-    local terminateManagerAction = function(_)
-        local grade = "0"
-        local new = {
-            [md.type] = "unemployed"
-        }
-        local prev = {
-            [md.type] = md.name
-        }
-        data.prevJob = prev[md.type]
-        data.newJob = new[md.type]
-        if md.type == "gang" then
-            md.name = "none"
-            data.prevGang = prev[md.type]
-            data.newGang = new[md.type]
-        end
-        prev[md.type] = pd.name
-        local gradeName = Config[jgType][md.name].grades[grade].name
-        data.grade = grade
-        data.gradeName = gradeName
-        data[md.type] = prev[md.type]
-        data[prev[md.type]] = {
-            ["firedcount"] = 1,
-            ["details"] = {string.format("was terminated from %s", prevName)},
-            ["status"] = "fired"
-        }
-        output = setJobGang(data, jgType)
-        if output.error and next(output.error) then return output end
-        output.success[0] = {
-            ["subject"] = string.format("Termination Alert"),
-            ["msg"] = string.format("%s was Terminated from %s", citid, prevName),
-            ["jsMsg"] = string.format("Terminated from %s", prevName),
-            ["src"] = src,
-            ["color"] = "notice",
-            ["logName"] = "qbjobs",
-            ["log"] = true,
-            ["notify"] = true
-        }
-        errorHandler(output.success)
-        return output
-    end
-    local gradeManagerAction = function(info)
-        local prevGrade = info[res.action].prevGrade
-        local newGrade = info[res.action].newGrade
-        local grade = tostring(newGrade)
-        if not mjg.grades[grade] then
-            output.error[0] = {
-                ["subject"] = string.format("Can't %s Any Further", res.action),
-                ["msg"] = string.format("%s can not be %s any further in %s.", citid, res.action, jobName),
-                ["jsMsg"] = "Highest grade reached!",
-                ["src"] = src,
-                ["color"] = "notice",
-                ["logName"] = "qbjobs",
-                ["log"] = true,
-                ["notify"] = true
-            }
-            errorHandler(output.error)
-            return output
-        end
-        local gradeName = mjg.grades[grade].name
-        local prevGradeName = mjg.grades[prevGrade].name
-        data.grade = grade
-        data.gradeName = gradeName
-        data.prevJob = md.name
-        data.newJob = md.name
-        if md.type == "gang" then
-            data.prevGang = md.name
-            data.newGang = md.name
-        end
-        data[md.name] = {
-            ["gradechangecount"] = 1,
-            ["details"] = {string.format("was %s from %s to %s", info[res.action].details, prevGradeName, gradeName)}
-        }
-        output = setJobGang(data, jgType)
-        if output.error and next(output.error) then return output end
-        output.success[0] = {
-            ["subject"] = string.format("%s Alert", info[res.action].subject),
-            ["msg"] = string.format("%s in %s.", info[res.action].details, jobName),
-            ["jsMsg"] = info[res.action].subject,
-            ["src"] = src,
-            ["color"] = "notice",
-            ["logName"] = "qbjobs",
-            ["log"] = true,
-            ["notify"] = true
-        }
-        errorHandler(output.success)
-        return output
-    end
-    local reconsiderManagerAction = function(info)
-        data[md.name] = {
-            ["details"] = {string.format("was reconsidered in %s", md.name)},
-            ["status"] = info.reconsider.status
-        }
-        local history = processHistory(data, jgType)
-        staff = setUnderlingStatus(res)
-        if staff.isOnline then
-            output = staff.player.Functions[md.addHistory](md.name, history)
-        else
-            metaData[md.history][md.name] = history
-            sql = {
-                ["query"] = string.format("UPDATE `players` SET `metadata` = '%s' WHERE `citizenid` = '%s'", json.encode(metaData),citid),
-                ["from"] = "qb-jobs/server/main.lua > function > > manageStaff > reconsiderManagerAction"
-            }
-            queryResult = sqlHandler(sql)
-            if queryResult.error and next(queryResult.error) then return queryResult end
+        local msgLoop = function(srce)
             output.success[0] = {
-                ["subject"] = string.format("Reconsideration Alert"),
-                ["msg"] = string.format("%s was reconsidered with %s.", citid, md.name),
-                ["jsMsg"] = string.format("%s was reconsidered with %s.", citid, md.name),
-                ["src"] = src,
+                ["subject"] = string.format("Approval Alert"),
+                ["msg"] = string.format("%s was approved with %s.", citid, mjgd.name),
+                ["jsMsg"] = string.format("%s was approved.", citid),
+                ["src"] = srce,
                 ["color"] = "notice",
                 ["logName"] = "qbjobs",
                 ["log"] = true,
@@ -1119,66 +999,57 @@ local manageStaff = function(res, jgType)
             }
             errorHandler(output.success)
         end
+        local grade = info.approve.grade
+        local gradeName = mconf.grades[grade].name
+        local deets = "hired onto"
+        output.jgPrev = mjgd.name
+        output.jgNew = mjgd.name
+        if md.type == "gang" then
+            deets = "jumped into"
+            output.jgPrev = mjgd.name
+            output.jgNew = mjgd.name
+        end
+        output.grade = grade
+        output.gradeName = gradeName
+        output[mjgd.name] = {
+            ["hiredcount"] = 1,
+            ["details"] = {string.format("was %s %s", deets, mjgd.name)},
+            ["status"] = "hired"
+        }
+        output = setJobGang(output, jobGangType)
         if output.error and next(output.error) then return output end
+        msgLoop(src)
+        if staff.isOnline then
+            msgLoop(staff.player.PlayerData.source)
+        end
         return output
     end
-    local payManagerAction = function(_)
-        local payRate = res.payRate
-        if not QBCore.Functions.PrepForSQL(src, payRate, "^%d+$") then
-            output.error[0] = true
-            return output
-        end
-        local history = processHistory(data, jgType)
-        local jgData = metaData[md.types][md.name]
-        jgData.payment = payRate
-        if staff.isOnline then
-            output = staff.player.Functions.AddToJobHistory(md.name, history)
-            if output.error and next(output.error) then return output end
-            output = staff.player.Functions.AddToJobs(md.name, jgData)
-            if output.error and next(output.error) then return output end
-            if staffData.name == md.name then staff.player.Functions.UpdateJob(jgData) end
-            if output.error and next(output.error) then return output end
-            output = setUnderlingStatus(res)
-            return output
-        else
-            metaData[md.history][md.name] = history
-            metaData[md.types][md.name] = jgData
-            if staffData.name == md.name then
-                staffData = nil
-                staffData = jgData
-            end
-            sql = {
-                ["query"] = string.format("UPDATE `players` SET `job` = '%s',`metadata` = '%s' WHERE `citizenid` = '%s'", json.encode(staffData),json.encode(metaData),citid),
-                ["from"] = "qb-jobs/server/main.lua > function > manageStaff > payMangerAction"
-            }
-            queryResult = sqlHandler(sql)
-            if queryResult.error and next(queryResult.error) then return queryResult end
-            data.player = QBCore.Player.GetOfflinePlayer(citid)
-        end
-        if data.error and next(data.error) then return data end
-        data.success[0] = {
-            ["subject"] = string.format("Pay Adjustment Alert"),
-            ["msg"] = string.format("%s pay was adjusted to %s in %s.", data.citid, payRate, md.name),
-            ["jsMsg"] = string.format("%s pay was adjusted to %s in %s.", data.citid, payRate, md.name),
-            ["src"] = src,
-            ["color"] = "notice",
-            ["logName"] = "qbjobs",
-            ["log"] = true,
-            ["notify"] = true
-        }
-        errorHandler(data.success)
-        return data
-    end
     local awrepManagerAction = function(info)
-        data[md.name] = {
-            ["details"] = {string.format('%s was %s: %s in %s', citid, info[res.action].details, info[res.action].awrep, md.name)},
+        local msgLoop = function(srce)
+            output.success[0] = {
+                ["subject"] = string.format("%s Alert", info[res.action].subject),
+                ["msg"] = string.format('%s was %s: "%s" in %s', citid, info[res.action].details, info[res.action].awrep, mjgd.label),
+                ["jsMsg"] = string.format('was %s: "%s"', info[res.action].details, info[res.action].awrep),
+                ["src"] = srce,
+                ["color"] = "notice",
+                ["logName"] = "qbjobs",
+                ["log"] = true,
+                ["notify"] = true
+            }
+            errorHandler(output.success)
+        end
+        output[md.type] = mjgd.name
+        output[mjgd.name] = {
+            ["details"] = {string.format('%s was %s: %s in %s', citid, info[res.action].details, info[res.action].awrep, mjgd.label)},
             [info[res.action].confs] = {info[res.action].awrep},
             ["status"] = "hired"
         }
-        local history = processHistory(data, jgType)
+        local history = processHistory(output, jobGangType)
         if staff.isOnline then
-            output = staff.player.Functions[md.addHistory](md.name, history)
+            output = staff.player.Functions[md.addHistory](mjgd.name, history)
             if output.error and next(output.error) then return output end
+            msgLoop(src)
+            msgLoop(staff.player.PlayerData.source)
             output = setUnderlingStatus(res)
             return output
         else
@@ -1189,41 +1060,297 @@ local manageStaff = function(res, jgType)
             }
             queryResult = sqlHandler(sql)
             if queryResult.error and next(queryResult.error) then return queryResult end
-            data.player = QBCore.Player.GetOfflinePlayer(citid)
+            output.player = QBCore.Player.GetOfflinePlayer(citid)
         end
-        if data.error and next(data.error) then return data end
-        data.success[0] = {
-            ["subject"] = string.format("%s Alert", info[res.action].subject),
-            ["msg"] = string.format('%s was %s: "%s" in %s', citid, info[res.action].details, info[res.action].awrep, md.name),
-            ["jsMsg"] = string.format('was %s: "%s"', info[res.action].details, info[res.action].awrep),
-            ["src"] = src,
-            ["color"] = "notice",
-            ["logName"] = "qbjobs",
-            ["log"] = true,
-            ["notify"] = true
-        }
-        errorHandler(data.success)
-        return data
+        if output.error and next(output.error) then return output end
+        msgLoop(src)
+        return output
     end
-    data.action = {
+    local blacklistManagerAction = function(_)
+        local msgLoop = function(srce)
+            output.success[0] = {
+                ["subject"] = string.format("Blacklist Alert"),
+                ["msg"] = string.format("%s was blacklisted with %s.", citid, mjgd.label),
+                ["jsMsg"] = string.format("%s was blacklisted with %s.", citid, mjgd.label),
+                ["src"] = srce,
+                ["color"] = "notice",
+                ["logName"] = "qbjobs",
+                ["log"] = true,
+                ["notify"] = true
+            }
+            errorHandler(output.success)
+        end
+        output[md.type] = mjgd.name
+        output[mjgd.name] = {
+            ["denycount"] = 1,
+            ["details"] = {string.format("was blacklisted in %s", mjgd.name)},
+            ["status"] = "blacklisted"
+        }
+        local history = processHistory(output, jobGangType)
+        if staff.isOnline then
+            output = staff.player.Functions[md.addHistory](mjgd.name, history)
+            msgLoop(src)
+            msgLoop(staff.player.PlayerData.source)
+            return output
+        end
+        metaData[md.history][mjgd.name] = history
+        sql = {
+            ["query"] = string.format("UPDATE `players` SET `metadata` = '%s' WHERE `citizenid` = '%s'", json.encode(metaData),citid),
+            ["from"] = "qb-jobs/server/main.lua > function > manageStaff > denyManagerAction > "
+        }
+        queryResult = sqlHandler(sql)
+        if queryResult.error and next(queryResult.error) then return queryResult end
+        if output.error and next(output.error) then return output end
+        msgLoop(src)
+        return output
+    end
+    local denyManagerAction = function(_)
+        local msgLoop = function(srce)
+            output.success[0] = {
+                ["subject"] = string.format("Denial Alert"),
+                ["msg"] = string.format("%s was denied with %s.", citid, mjgd.label),
+                ["jsMsg"] = string.format("%s was denied with %s.", citid, mjgd.label),
+                ["src"] = srce,
+                ["color"] = "notice",
+                ["logName"] = "qbjobs",
+                ["log"] = true,
+                ["notify"] = true
+            }
+            errorHandler(output.success)
+        end
+        output[md.type] = mjgd.name
+        output[mjgd.name] = {
+            ["denycount"] = 1,
+            ["details"] = {string.format("was denied in %s", mjgd.label)},
+            ["status"] = "denied"
+        }
+        local history = processHistory(output, jobGangType)
+        if staff.isOnline then
+            output = staff.player.Functions[md.addHistory](mjgd.name, history)
+            msgLoop(src)
+            msgLoop(staff.player.PlayerData.source)
+            return output
+        end
+        metaData[md.history][mjgd.name] = history
+        sql = {
+            ["query"] = string.format("UPDATE `players` SET `metadata` = '%s' WHERE `citizenid` = '%s'", json.encode(metaData),citid),
+            ["from"] = "qb-jobs/server/main.lua > function > manageStaff > denyManagerAction > "
+        }
+        queryResult = sqlHandler(sql)
+        if queryResult.error and next(queryResult.error) then return queryResult end
+        if output.error and next(output.error) then return output end
+        msgLoop(src)
+        return output
+    end
+    local gradeManagerAction = function(info)
+        local msgLoop = function(srce)
+            output.success[0] = {
+                ["subject"] = string.format("%s Alert", info[res.action].subject),
+                ["msg"] = string.format("%s in %s.", info[res.action].details, mjgd.label),
+                ["jsMsg"] = info[res.action].subject,
+                ["src"] = srce,
+                ["color"] = "notice",
+                ["logName"] = "qbjobs",
+                ["log"] = true,
+                ["notify"] = true
+            }
+            errorHandler(output.success)
+        end
+        local prevGrade = info[res.action].prevGrade
+        local newGrade = info[res.action].newGrade
+        local grade = tostring(newGrade)
+        if not mconf.grades[grade] then
+            output.notice[0] = {
+                ["subject"] = string.format("Can't %s Any Further", res.action),
+                ["msg"] = string.format("%s can not be %s any further in %s.", citid, res.action, mjgd.name),
+                ["jsMsg"] = "Highest grade reached!",
+                ["src"] = src,
+                ["color"] = "notice",
+                ["logName"] = "qbjobs",
+                ["log"] = true,
+                ["notify"] = true
+            }
+            errorHandler(output.notice)
+        end
+        local gradeName = mconf.grades[grade].name
+        local prevGradeName = mconf.grades[prevGrade].name
+        output[md.type] = mjgd.name
+        output.grade = grade
+        output.gradeName = gradeName
+        output.jgPrev = mjgd.name
+        output.jgNew = mjgd.name
+        output[mjgd.name] = {
+            ["gradechangecount"] = 1,
+            ["details"] = {string.format("was %s from %s to %s", info[res.action].details, prevGradeName, gradeName)}
+        }
+        if not next(output.notice) then
+            output = setJobGang(output, jobGangType)
+            if next(output.error) then return output end
+            msgLoop(src)
+            msgLoop(staff.player.PlayerData.source)
+        end
+        return output
+    end
+    local payManagerAction = function(_)
+        local msgLoop = function(srce)
+            output.success[0] = {
+                ["subject"] = string.format("Pay Adjustment Alert"),
+                ["msg"] = string.format("%s pay was adjusted to %s in %s.", output.citid, payRate, mjgd.label),
+                ["jsMsg"] = string.format("%s pay was adjusted to %s in %s.", output.citid, payRate, mjgd.label),
+                ["src"] = srce,
+                ["color"] = "notice",
+                ["logName"] = "qbjobs",
+                ["log"] = true,
+                ["notify"] = true
+            }
+            errorHandler(output.success)
+        end
+        local payRate = res.payRate
+        if not QBCore.Functions.PrepForSQL(src, payRate, "^%d+$") then
+            output.error[0] = true
+            return output
+        end
+        local history = processHistory(output, jobGangType)
+        local jgd = metaData[md.types][mjgd.name]
+        jgd.payment = payRate
+        if staff.isOnline then
+            output = staff.player.Functions[pd.addHistory](mjgd.name, history)
+            if output.error and next(output.error) then return output end
+            output = staff.player.Functions.AddToJobs(mjgd.name, jgd)
+            if output.error and next(output.error) then return output end
+            if staffData.name == mjgd.name then staff.player.Functions.UpdateJob(jgd) end
+            if output.error and next(output.error) then return output end
+            msgLoop(src)
+            msgLoop(staff.player.PlayerData.source)
+            output = setUnderlingStatus(res)
+            return output
+        else
+            metaData[md.history][mjgd.name] = history
+            metaData[md.types][mjgd.name] = jgd
+            if staffData.name == mjgd.name then
+                staffData = nil
+                staffData = jgd
+            end
+            sql = {
+                ["query"] = string.format("UPDATE `players` SET `job` = '%s',`metadata` = '%s' WHERE `citizenid` = '%s'", json.encode(staffData),json.encode(metaData),citid),
+                ["from"] = "qb-jobs/server/main.lua > function > manageStaff > payMangerAction"
+            }
+            queryResult = sqlHandler(sql)
+            if queryResult.error and next(queryResult.error) then return queryResult end
+            output.player = QBCore.Player.GetOfflinePlayer(citid)
+        end
+        if output.error and next(output.error) then return output end
+        msgLoop(src)
+        return output
+    end
+    local reconsiderManagerAction = function(info)
+        local msgLoop = function(srce)
+            output.success[0] = {
+                ["subject"] = string.format("Reconsideration Alert"),
+                ["msg"] = string.format("%s was reconsidered with %s.", citid, mjgd.label),
+                ["jsMsg"] = string.format("%s was reconsidered with %s.", citid, mjgd.label),
+                ["src"] = srce,
+                ["color"] = "notice",
+                ["logName"] = "qbjobs",
+                ["log"] = true,
+                ["notify"] = true
+            }
+            errorHandler(output.success)
+        end
+        output[md.type] = mjgd.name
+        output[mjgd.name] = {
+            ["details"] = {string.format("was reconsidered in %s", mjgd.name)},
+            ["status"] = info.reconsider.status
+        }
+        local history = processHistory(output, jobGangType)
+        if staff.isOnline then
+            output = staff.player.Functions[md.addHistory](mjgd.name, history)
+            msgLoop(src)
+            msgLoop(staff.player.PlayerData.source)
+        else
+            metaData[md.history][mjgd.name] = history
+            sql = {
+                ["query"] = string.format("UPDATE `players` SET `metadata` = '%s' WHERE `citizenid` = '%s'", json.encode(metaData),citid),
+                ["from"] = "qb-jobs/server/main.lua > function > > manageStaff > reconsiderManagerAction"
+            }
+            queryResult = sqlHandler(sql)
+            if queryResult.error and next(queryResult.error) then return queryResult end
+            msgLoop(src)
+        end
+        if output.error and next(output.error) then return output end
+        return output
+    end
+    local terminateManagerAction = function(_)
+        local msgLoop = function(srce)
+            output.success[0] = {
+                ["subject"] = string.format("Termination Alert"),
+                ["msg"] = string.format("%s was Terminated from %s", citid, mjgd.label),
+                ["jsMsg"] = string.format("Terminated from %s", mjgd.label),
+                ["src"] = srce,
+                ["color"] = "notice",
+                ["logName"] = "qbjobs",
+                ["log"] = true,
+                ["notify"] = true
+            }
+            errorHandler(output.success)
+        end
+        local grade = "0"
+        local new = {
+            [md.type] = md.civilian
+        }
+        local prev = {
+            [md.type] = mjgd.name
+        }
+        local gradeName = Config[jobGangType][md.civilian].grades[grade].name
+        output.jgPrev = prev[md.type]
+        output.jgNew = new[md.type]
+        prev[md.type] = mjgd.name
+        output.grade = grade
+        output.gradeName = gradeName
+        output[md.type] = prev[md.type]
+        output[prev[md.type]] = {
+            ["firedcount"] = 1,
+            ["details"] = {string.format("was terminated from %s", prev[md.type])},
+            ["status"] = "fired"
+        }
+        output = setJobGang(output, jobGangType)
+        if output.error and next(output.error) then return output end
+        staff.player.Functions[md.remove](mjgd.name)
+        msgLoop(src)
+        if staff.isOnline then msgLoop(staff.player.PlayerData.source) end
+        return output
+    end
+    local action = {
         ["approve"] = {
             ["grade"] = "1",
             ["func"] = approveManagerAction
         },
-        ["terminate"] = {
-            ["status"] = "fired",
-            ["grade"] = 0,
-            ["job"] = "unemployed",
-            ["func"] = terminateManagerAction
+        ["award"] = {
+            ["awrep"] = mconf.management.awards[awrep].title,
+            ["details"] = "awarded",
+            ["subject"] = "Award",
+            ["confs"] = "awards",
+            ["func"] = awrepManagerAction
+        },
+        ["blacklist"] = {
+            ["status"] = "blacklisted",
+            ["func"] = blacklistManagerAction
+        },
+        ["demote"] = {
+            ["status"] = "demote",
+            ["prevGrade"] = staffData.grade.level,
+            ["newGrade"] = tonumber(staffData.grade.level) - 1,
+            ["details"] = "demoted",
+            ["subject"] = "Demotion",
+            ["func"] = gradeManagerAction
         },
         ["deny"] = {
             ["status"] = "denied",
             ["func"] = denyManagerAction
         },
-        ["resign"] = {
-            ["status"] = "quit",
-            ["grade"] = 0,
-            ["job"] = "unemployed"
+        ["pay"] = {
+            ["status"] = "pay",
+            ["func"] = payManagerAction
         },
         ["promote"] = {
             ["status"] = "promote",
@@ -1234,65 +1361,55 @@ local manageStaff = function(res, jgType)
             ["subject"] = "Promotion",
             ["func"] = gradeManagerAction
         },
-        ["demote"] = {
-            ["status"] = "demote",
-            ["prevGrade"] = staffData.grade.level,
-            ["newGrade"] = tonumber(staffData.grade.level) - 1,
-            ["details"] = "demoted",
-            ["subject"] = "Demotion",
-            ["func"] = gradeManagerAction
-        },
         ["reconsider"] = {
             ["status"] = "pending",
             ["func"] = reconsiderManagerAction
         },
-        ["pay"] = {
-            ["status"] = "pay",
-            ["func"] = payManagerAction
-        },
-        ["award"] = {
-            ["awrep"] = cdata.management.awards[awrep].title,
-            ["details"] = "awarded",
-            ["subject"] = "Award",
-            ["confs"] = "awards",
-            ["func"] = awrepManagerAction
-        },
         ["reprimand"] = {
-            ["awrep"] = cdata.management.reprimands[awrep].title,
+            ["awrep"] = mconf.management.reprimands[awrep].title,
             ["details"] = "reprimanded",
             ["subject"] = "Reprimand",
             ["confs"] = "reprimands",
             ["func"] = awrepManagerAction
         },
+        ["resign"] = {
+            ["status"] = "quit",
+            ["grade"] = 0,
+            ["job"] = "unemployed"
+        },
+        ["terminate"] = {
+            ["status"] = "fired",
+            ["grade"] = 0,
+            ["job"] = "unemployed",
+            ["func"] = terminateManagerAction
+        }
     }
-    output = data.action[res.action].func(data.action)
+    output = action[res.action].func(action)
     return output
 end
 --- Function to add player to job or gang using command /setjob or /setgang
-local commandJobGang = function(src, res, jgType)
-    local label = res.label
-    local grade = res.grade
+local commandJobGang = function(src, res, jobGangType)
+    local jg = res.jg
+    local grade = tostring(res.grade)
     local player = QBCore.Functions.GetPlayer(tonumber(res.pid))
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local conf = selectJobGang(jgType, playerJob, playerGang)
+    local conf = selectJobGang(jobGangType, playerJob, playerGang)
     local citid = player.PlayerData.citizenid
     local output = {
         ["manager"] = {["src"] = src},
-        ["label"] = label,
+        ["jg"] = jg,
         ["grade"] = grade,
         ["citid"] = citid,
         ["appcid"] = citid,
         ["action"] = "approve",
-        ["success"] = {},
-        ["error"] = {}
     }
     if player then
         local deets = {
             ["Jobs"] = {
                 ["deet"] = "hired onto",
-                ["prevKey"] = "prevJob",
-                ["newKey"] = "newJob"
+                ["prevKey"] = "jgPrev",
+                ["newKey"] = "jgNew"
             },
             ["Gangs"] = {
                 ["deet"] = "jumped onto",
@@ -1301,21 +1418,25 @@ local commandJobGang = function(src, res, jgType)
             },
         }
         local data = {
-            [deets[jgType].prevKey] = label,
-            [deets[jgType].newKey] = label,
+            ["jgPrev"] = jg,
+            ["jgNew"] = jg,
+            ["jg"] = jg,
             ["grade"] = grade,
-            ["gradeName"] = Config[jgType].grades[grade].name,
-            [label] = {
+            ["gradeName"] = Config[jobGangType][jg].grades[grade].name,
+            ["citid"] = citid,
+            ["appcid"] = citid,
+            ["action"] = "approve",
+            [jg] = {
                 ["hiredcount"] = 1,
-                ["details"] = {string.format("was %s %s", deets[jgType].deet, label)},
+                ["details"] = {string.format("was %s %s", deets[jobGangType].deet, jg)},
                 ["status"] = "hired"
             }
         }
-        output = setJobGang(data, jgType)
+        output = setJobGang(data, jobGangType)
         if output.error and next(output.error) then return output end
         output.success[0] = {
             ["subject"] = string.format("Approval Alert"),
-            ["msg"] = string.format("%s was approved with %s.", citid, md.name),
+            ["msg"] = string.format("%s was approved with %s.", citid, jg),
             ["jsMsg"] = string.format("%s was approved.", citid),
             ["src"] = src,
             ["color"] = "notice",
@@ -1330,29 +1451,31 @@ local commandJobGang = function(src, res, jgType)
     end
 end
 --- function to verify data coming in for /setjob and /setgang
-local verifyCommandSetJobGangVars = function(src, args, jgType)
+local verifyCommandSetJobGangVars = function(src, args, jobGangType)
     local admin = QBCore.Functions.GetPlayer(tonumber(src))
     local license = admin.PlayerData.license
     local output = {
         ["Jobs"] = {
-            ["grademsg"] = "/setjob",
-            ["labelinvalid"] = "Job Name is Invalid",
-            ["labelmsg"] = "Job Name is Invalid /setjob",
-            ["labelmiss"] = "Job does not exist!",
-            ["labelmissmsg"] = "Job does not exist /setjob"
+            ["gradeMsg"] = "/setjob",
+            ["jgInvalid"] = "Job Name is Invalid",
+            ["jgMsg"] = "Job Name is Invalid /setjob",
+            ["jgMiss"] = "Job does not exist!",
+            ["jgMissMsg"] = "Job does not exist /setjob",
+            ["perm"] = "setJob"
         },
         ["Gangs"] = {
-            ["grademsg"] = "/setjob",
-            ["labelinvalid"] = "Job Name is Invalid",
-            ["labelmsg"] = "Job Name is Invalid /setjob",
-            ["labelmiss"] = "Job does not exist!",
-            ["labelmissmsg"] = "Job does not exist /setjob"
+            ["gradeMsg"] = "/setjob",
+            ["jgInvalid"] = "Job Name is Invalid",
+            ["jgMsg"] = "Job Name is Invalid /setjob",
+            ["jgMiss"] = "Job does not exist!",
+            ["jgMissMsg"] = "Job does not exist /setjob",
+            ["perm"] = "setGang"
         },
         ["success"] = {},
         ["error"] = {},
     }
-    if not QBCore.Functions.PrepForSQL(src, pid, "^%d+$") then
-        output.error[ercnt] = {
+    if not QBCore.Functions.PrepForSQL(src, args[1], "^%d+$") then
+        output.error[0] = {
             ["subject"] = "Player ID is Invalid",
             ["msg"] = string.format("Player ID is invalid /setjob used by: %s", license),
             ["color"] = "error",
@@ -1364,10 +1487,10 @@ local verifyCommandSetJobGangVars = function(src, args, jgType)
         errorHandler(output.error)
         return output
     end
-    if not QBCore.Functions.PrepForSQL(src, label, "^%a+$") then
-        output.error[ercnt] = {
-            ["subject"] = output[jgType].labelinvalid,
-            ["msg"] = string.format("%s used by: %s", output[jgType].labelmsg, license),
+    if not QBCore.Functions.PrepForSQL(src, args[2], "^%a+$") then
+        output.error[0] = {
+            ["subject"] = output[jobGangType].jgInvalid,
+            ["msg"] = string.format("%s used by: %s", output[jobGangType].jgMsg, license),
             ["color"] = "error",
             ["logName"] = "qbjobs",
             ["src"] = src,
@@ -1377,10 +1500,10 @@ local verifyCommandSetJobGangVars = function(src, args, jgType)
         errorHandler(output.error)
         return output
     end
-    if not QBCore.Functions.PrepForSQL(src, grade, "^%d+$") then
-        output.error[ercnt] = {
+    if not QBCore.Functions.PrepForSQL(src, args[3], "^%d+$") then
+        output.error[  0] = {
             ["subject"] = "Grade is Invalid",
-            ["msg"] = string.format("Grade is invalid %s used by: %s", output[jgType].grademsg, license),
+            ["msg"] = string.format("Grade is invalid %s used by: %s", output[jobGangType].gradeMsg, license),
             ["color"] = "error",
             ["logName"] = "qbjobs",
             ["src"] = src,
@@ -1390,10 +1513,10 @@ local verifyCommandSetJobGangVars = function(src, args, jgType)
         errorHandler(output.error)
         return output
     end
-    if not Config[jgType][label] or not next(Config[jgType][label]) then
-        output.error[ercnt] = {
-            ["subject"] = output[jgType].labelmiss,
-            ["msg"] = string.format("%s used by: %s", output[jgType].labelmissmsg, license),
+    if not Config[jobGangType][args[2]] or not next(Config[jobGangType][args[2]]) then
+        output.error[  0] = {
+            ["subject"] = output[jobGangType].jgMiss,
+            ["msg"] = string.format("%s used by: %s", output[jobGangType].jgMissMsg, license),
             ["color"] = "error",
             ["logName"] = "qbjobs",
             ["src"] = src,
@@ -1403,10 +1526,10 @@ local verifyCommandSetJobGangVars = function(src, args, jgType)
         errorHandler(output.error)
         return output
     end
-    if not Config[jgType][label].grades[grade] or not next(Config[jgType][label].grades[grade]) then
-        output.error[ercnt] = {
+    if not Config[jobGangType][args[2]].grades[args[3]] or not next(Config[jobGangType][args[2]].grades[args[3]]) then
+        output.error[  0] = {
             ["subject"] = "Grade does not Exist",
-            ["msg"] = string.format("Grade does not exist %s used by: %s", output[jgType].grademsg, license),
+            ["msg"] = string.format("Grade does not exist %s used by: %s", output[jobGangType].gradeMsg, license),
             ["color"] = "error",
             ["logName"] = "qbjobs",
             ["src"] = src,
@@ -1416,10 +1539,10 @@ local verifyCommandSetJobGangVars = function(src, args, jgType)
         errorHandler(output.error)
         return output
     end
-    if not IsPlayerAceAllowed(src, "admin") then
+    if QBCore.Functions.HasPermission(Config.perms[output[jobGangType].perm]) then
         output.error[0] = {
             ["subject"] = "Player is Not Admin",
-            ["msg"] = string.format("%s is not an admin and attempted to add player to job: %s", player.PlayerData.license, args[2]),
+            ["msg"] = string.format("%s is not an admin and attempted to add player to job: %s", license, args[2]),
             ["color"] = "error",
             ["logName"] = "qbjobs",
             ["log"] = true,
@@ -1440,8 +1563,10 @@ local verifyCommandSetJobGangVars = function(src, args, jgType)
         return output
     end
     output.pid = args[1]
-    output.label = args[2]
+    output.jg = args[2]
     output.grade = args[3]
+    output.citid = player.PlayerData.citizenid
+    output.appcid = output.citid
     return output
 end
 --- functions to run at resource start
@@ -1488,20 +1613,20 @@ RegisterServerEvent('qb-jobs:server:Alert', function(text)
     end
 end)
 --- Event to Build History Data
-RegisterServerEvent("qb-jobs:server:BuildHistory", function(jgType)
+RegisterServerEvent("qb-jobs:server:BuildHistory", function(jobGangType)
     local output = {["src"] = source}
     local player = QBCore.Functions.GetPlayer(output.src)
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local conf = selectJobGang(jgType, playerJob, playerGang)
+    local conf = selectJobGang(jobGangType, playerJob, playerGang)
     local pd = conf.pd
     local ph = {
         ["Jobs"] = player.PlayerData.metadata.jobhistory,
         ["Gangs"] = player.PlayerData.metadata.ganghistory,
     }
     local history
-    for k in pairs(Config[jgType]) do
-        if not ph[jgType] or not ph[jgType][k] or not next(ph[jgType][k]) then
+    for k in pairs(Config[jobGangType]) do
+        if not ph[jobGangType] or not ph[jobGangType][k] or not next(ph[jobGangType][k]) then
             output[pd.type] = k
             history = {
                 ["firedcount"] = 0,
@@ -1514,11 +1639,9 @@ RegisterServerEvent("qb-jobs:server:BuildHistory", function(jgType)
                 ["awards"] = {},
                 ["grades"] = {},
                 ["details"] = {},
-                ["rehireable"] = true,
                 ["status"] = "available"
             }
-            if type == "Jobs" then player.Functions.AddToJobHistory(k, history) end
-            if type == "Gangs" then player.Functions.AddToGangHistory(k, history) end
+            player.Functions[pd.addHistory](k, history)
         end
     end
 end)
@@ -1528,12 +1651,12 @@ RegisterServerEvent('qb-jobs:server:populateJobsNGangs', function()
     populateJobsNGangs(src)
 end)
 --- Event to add items to vehicle
-RegisterServerEvent('qb-jobs:server:addVehItems', function(data, jgType)
+RegisterServerEvent('qb-jobs:server:addVehItems', function(data, jobGangType)
     local player = QBCore.Functions.GetPlayer(source)
     if not player then return false end
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     local SetCarItemsInfo = function(data)
         local items = {}
         local index = 1
@@ -1590,7 +1713,7 @@ RegisterServerEvent('qb-jobs:server:openShop', function()
     if not player then return false end
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     populateJobsNGangs(src) -- ensures client has latest QBCore.Shared.Jobs table.
     local index = 1
     local inv = {
@@ -1645,23 +1768,23 @@ RegisterServerEvent('qb-jobs:server:initilizeVehicleTracker', function()
     vehTrack = {[player.PlayerData.citizenid] = {}}
 end)
 --- adds vehicles to job total
-RegisterServerEvent('qb-jobs:server:addVehicle', function(jgType)
+RegisterServerEvent('qb-jobs:server:addVehicle', function(jobGangType)
     local src = source
     local player = QBCore.Functions.GetPlayer(src)
     if not player then return false end
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
-    local jg = cdata.jg
-    vehCount[jg.name] += 1
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
+    local jgd = cdata.jgd
+    vehCount[jgd.name] += 1
 end)
 -- Deletes Vehicle from the server
-RegisterServerEvent("qb-jobs:server:deleteVehicleProcess", function(result, jgType)
+RegisterServerEvent("qb-jobs:server:deleteVehicleProcess", function(result, jobGangType)
     local src = source
     local player = QBCore.Functions.GetPlayer(src)
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     local citid = player.PlayerData.citizenid
     local vehList = cdata.Vehicles
     if not vehTrack[citid][result.plate].selGar == "motorpool" and vehTrack[citid][result.plate].veh and not DoesEntityExist(NetworkGetEntityFromNetworkId(vehTrack[citid][result.plate].veh)) then
@@ -1684,31 +1807,31 @@ RegisterServerEvent("qb-jobs:server:errorHandler", function(error)
 end)
 -- Callbacks
 --- Verifies the vehicle count
-QBCore.Functions.CreateCallback("qb-jobs:server:verifyMaxVehicles", function(source, cb, jgType)
+QBCore.Functions.CreateCallback("qb-jobs:server:verifyMaxVehicles", function(source, cb, jobGangType)
     local test = true
     local src = source
     local player = QBCore.Functions.GetPlayer(src)
     if not player then cb(false) end
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     local conf = cdata.conf
     local pd = cdata.pd
-    local jg = cdata.jg
-    if conf.Vehicles.config.maxVehicles > 0 and conf.Vehicles.config.maxVehicles <= vehCount[jg.name] then
+    local jgd = cdata.jgd
+    if conf.Vehicles.config.maxVehicles > 0 and conf.Vehicles.config.maxVehicles <= vehCount[jgd.name] then
         QBCore.Functions.Notify(Lang:t("info.vehicleLimitReached"))
         test = false
     end
     cb(test)
 end)
 --- Processes Vehicles to be issued
-QBCore.Functions.CreateCallback("qb-jobs:server:spawnVehicleProcessor", function(source, cb, result, jgType)
+QBCore.Functions.CreateCallback("qb-jobs:server:spawnVehicleProcessor", function(source, cb, result, jobGangType)
     local src = source
     local player = QBCore.Functions.GetPlayer(src)
     if not player then return false end
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     local conf = cdata.conf
     local vehList = conf.Vehicles
     local total = 0
@@ -1773,12 +1896,12 @@ QBCore.Functions.CreateCallback("qb-jobs:server:spawnVehicleProcessor", function
     cb(true)
 end)
 --- Creates plates and ensures they are not in-use
-QBCore.Functions.CreateCallback("qb-jobs:server:vehiclePlateCheck", function(source, cb, res, jgType)
+QBCore.Functions.CreateCallback("qb-jobs:server:vehiclePlateCheck", function(source, cb, res, jobGangType)
     local player = QBCore.Functions.GetPlayer(source)
     if not player then return false end
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     local conf = cdata.conf
     local plate, vehProps, ppl, sql, queryResult
     local pplMax = 4
@@ -1805,16 +1928,16 @@ QBCore.Functions.CreateCallback("qb-jobs:server:vehiclePlateCheck", function(sou
     cb(plate, vehProps)
 end)
 --- Generates list to populate the vehicle selector menu
-QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(source, cb, data, jgType)
+QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(source, cb, data, jobGangType)
     local player = QBCore.Functions.GetPlayer(source)
     if not player then return false end
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     local conf = cdata.conf
     local pd = cdata.pd
-    local jg = cdata.jg
-    local grade = tonumber(jg.grade.level)
+    local jgd = cdata.jgd
+    local grade = tonumber(jgd.grade.level)
     local vehShort, queryResult, sql
     local vehList = {
         ["vehicles"] = {},
@@ -1902,38 +2025,40 @@ QBCore.Functions.CreateCallback('qb-jobs:server:sendGaragedVehicles', function(s
     cb(vehList)
 end)
 --- Sends Management Data to populate the boss menu
-QBCore.Functions.CreateCallback('qb-jobs:server:sendManagementData', function(source, cb, data, jgType)
+QBCore.Functions.CreateCallback('qb-jobs:server:sendManagementData', function(source, cb, data, jobGangType)
     local src = source
     local player = QBCore.Functions.GetPlayer(src)
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     local pd = cdata.pd
-    local jg = cdata.jg
-    local mgrBtnList = buildManagementData(src, jgType)
-    cb(mgrBtnList[pd.types][jg.name])
+    local jgd = cdata.jgd
+    local mgrBtnList = buildManagementData(src, jobGangType)
+    cb(mgrBtnList[pd.types][jgd.name])
     return mgrBtnList
 end)
 --- Processes management actions from the boss menu
-QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSubMenuActions", function(source, cb, res, jgType)
+QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSubMenuActions", function(source, cb, res)
+    QBCore.Debug(res)
     local src = source
     local manager = QBCore.Functions.GetPlayer(src)
     local managerJob = manager.PlayerData.job
     local managerGang = manager.PlayerData.gang
-    local cdata =  selectJobGang(jgType, managerJob, managerGang)
+    local jobGangType = res.jobGangType
+    local cdata =  selectJobGang(jobGangType, managerJob, managerGang)
     local conf = cdata.conf
     local pd = cdata.pd
+    local mjg = cdata.jgd
     local managerLicense = manager.PlayerData.license
-    local ercnt = 0
     local output = {
         ["error"] = {}
     }
-    local mgrBtnList = buildManagementData(src, jgType)
+    local mgrBtnList = buildManagementData(src, jobGangType)
     res.manager = {
         ["src"] = src
     }
     if not mgrBtnList.players[res.appcid] then
-        output.error[ercnt] = {
+        output.error[0] = {
             ["subject"] = "Player Data Missing",
             ["msg"] = string.format("Player data missing; Boss Menu used by: ?", res.appcid),
             ["jsMsg"] = "Player Data Missing",
@@ -1949,7 +2074,7 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSubMenuActions"
     end
     res.citid = res.appcid
     if not QBCore.Functions.PrepForSQL(src, res.action, "^%a+$") then
-        output.error[ercnt] = {
+        output.error[0] = {
             ["subject"] = "Action Data Invalid",
             ["msg"] = string.format("Action data Invalid Boss Menu used by: ?", managerLicense),
             ["jsMsg"] = "Action Data Invalid",
@@ -1963,35 +2088,35 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSubMenuActions"
         cb(output)
         return output
     end
-    output = manageStaff(res)
-    if not output or output.error and next(output.error) then
+    output = manageStaff(res, jobGangType)
+    if not output or next(output.error) then
         cb(output)
         return output
     end
+    mgrBtnList = buildManagementData(src, jobGangType)
     if not mgrBtnList or mgrBtnList.error and next(mgrBtnList.error) then
         cb(mgrBtnList)
         return mgrBtnList
     end
-    cb(mgrBtnList[pd.types][pd.name])
+    cb(mgrBtnList[pd.types][mjg.name])
     return mgrBtnList
 end)
 --- Processes society actions from the boss menu
-QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSocietyActions", function(source, cb, res, jgType)
+QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSocietyActions", function(source, cb, res, jobGangType)
     local src = source
     local manager = QBCore.Functions.GetPlayer(src)
     local managerJob = manager.PlayerData.job
-    local managerGang = player.PlayerData.gang
-    local cdata =  selectJobGang(jgType, managerJob, managerGang)
+    local managerGang = manager.PlayerData.gang
+    local cdata =  selectJobGang(jobGangType, managerJob, managerGang)
     local conf = cdata.conf
     local pd = cdata.pd
-    local mgrBtnList = buildManagementData(src, jgType)
+    local mgrBtnList = buildManagementData(src, jobGangType)
     local managerLicense = manager.PlayerData.license
-    local ercnt = 0
     local output = {
         ["error"] = {}
     }
     if not QBCore.Functions.PrepForSQL(src, res.depwit, "^%d+$") then
-        output.error[ercnt] = {
+        output.error[0] = {
             ["subject"] = "Amount is Invalid",
             ["msg"] = string.format("Amount is invalid boss menu used by: %s", managerLicense),
             ["jsMsg"] = "Amount is Invalid",
@@ -2005,7 +2130,7 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processManagementSocietyActions"
         cb(output)
         return output
     end
-    output = exports["qb-banking"]:societyDepwit(src, res.depwit, res.selector)
+    output = exports["qb-banking"]:societyDepwit(src, jobGangType, Config.currencySymbol, res.depwit, res.selector)
     if not mgrBtnList or mgrBtnList.error and next(mgrBtnList.error) then
         cb(mgrBtnList)
         return mgrBtnList
@@ -2019,16 +2144,21 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(sourc
     local player = QBCore.Functions.GetPlayer(src)
     local playerJob = player.PlayerData.job
     local playerGang = player.PlayerData.gang
-    local jgType = res.type
-    local cdata =  selectJobGang(jgType, playerJob, playerGang)
+    local jobGangType = res.jobGangType
+    local cdata =  selectJobGang(jobGangType, playerJob, playerGang)
     local conf = cdata.conf
     local pd = cdata.pd
-    local jg = cdata.jg
+    local jgd = cdata.jgd
     local playerJobs = player.PlayerData.metadata.jobs
     local playerGangs = player.PlayerData.metadata.gangs
     local jobCheck = function(data)
-        if not playerJobs[data.job] then
-            output.error[ercnt] = {
+        local output = {
+            ["job"] = playerJobs[data.job],
+            ["success"] = {},
+            ["error"] = {}
+        }
+        if not output.job or not next(output.job) then
+            output.error[0] = {
                 ["subject"] = "Does Not Work Here!",
                 ["msg"] = string.format("player does not exist in processMultiJob Callback! #msg001"),
                 ["jsMsg"] = "Player Does Not Exist!",
@@ -2042,11 +2172,16 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(sourc
             cb(output)
             return false
         end
-        return true
+        return output
     end
     local gangCheck = function(data)
-        if not playerGangs[data.gang] then
-            output.error[ercnt] = {
+        local output = {
+            ["gang"] = playerGangs[data.gang],
+            ["success"] = {},
+            ["error"] = {}
+        }
+        if not output.gang or not next(output.gang) then
+            output.error[0] = {
                 ["subject"] = "Is not a Member!!",
                 ["msg"] = string.format("player does not exist in processMultiJob Callback! #msg002"),
                 ["jsMsg"] = "Player Does Not Exist!",
@@ -2060,17 +2195,14 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(sourc
             cb(output)
             return false
         end
-        return true
+        return output
     end
     pd.job = {["check"] = jobCheck}
     pd.gang = {["check"] = gangCheck}
     local activate = function(data)
-        local output = {
-            ["error"] = {},
-            ["success"] = {}
-        }
-        if not pd[pd.type].check(data) then return false end
-        player.Functions[pd.active](jg)
+        local output = pd[pd.type].check(data)
+        if next(output.error) then return output end
+        player.Functions[pd.active](output.job)
         return output
     end
     local quit = function(data)
@@ -2086,10 +2218,14 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(sourc
             ["error"] = {},
             ["success"] = {}
         }
-        local history = processHistory(output, jgType)
+        local history = processHistory(output, jobGangType)
         if not pd[pd.type].check(data) then return false end
         player.Functions[pd.addHistory](data[pd.type], history)
-        if data[pd.type] == pd.type then player.Functions[pd.set](pd.civilian, "0") end
+        if data[pd.type] == jgd.name then
+            player.Functions[pd.set](pd.civilian, "0")
+            player = QBCore.Functions.GetPlayer(src)
+            player.Functions[pd.active](player.PlayerData[pd.type])
+        end
         player.Functions[pd.remove](res[pd.type])
         output.success[0] = {
             ["subject"] = "User Resigned",
@@ -2102,15 +2238,6 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(sourc
             ["notify"] = true
         }
         player = QBCore.Functions.GetPlayer(src)
-        playerJob = player.PlayerData.job
-        playerGang = player.PlayerData.gang
-        cdata =  selectJobGang(jgType, playerJob, playerGang)
-        conf = cdata.conf
-        pd = cdata.pd
-        jg = cdata.jg
-        QBCore.Debug(cdata)
-        QBCore.Debug(jg)
-        player.Functions[pd.active](jg)
         return output
     end
     local apply = function(data)
@@ -2122,8 +2249,12 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(sourc
             ["error"] = {},
             ["success"] = {}
         }
-        output = submitApplication(output, jgType)
+        output = submitApplication(output, jobGangType)
         return output
+    end
+    local rescind = function(data)
+        player.PlayerData.metadata[pd.history][data[pd.type]].status = "available"
+        player.Functions[pd.addHistory](data[pd.type],player.PlayerData.metadata[pd.history][data[pd.type]])
     end
     local output = {
         ["error"] = {},
@@ -2131,8 +2262,9 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(sourc
     }
     local action = {
         ["activate"] = {["func"] = activate},
-        ["quit"] = {["func"] = quit},
         ["apply"] = {["func"] = apply},
+        ["quit"] = {["func"] = quit},
+        ["rescind"] = {["func"] = rescind},
     }
     if not QBCore.Functions.PrepForSQL(src, res.action, "^%a+$") then
         output.error[0] = {
@@ -2167,7 +2299,7 @@ QBCore.Functions.CreateCallback("qb-jobs:server:processMultiJob", function(sourc
     output[pd.type] = res[pd.type]
     output.src = src
     output.citid = player.PlayerData.citizenid
-    output = action[res.action].func(output)
+    action[res.action].func(output)
     cb(output)
     QBCore = exports['qb-core']:GetCoreObject()
     kickOff()
@@ -2178,42 +2310,48 @@ end)
 QBCore.Commands.Add("duty", Lang:t("command.duty"),{},false, function(source)
     local src = source
     TriggerClientEvent('qb-jobs:client:toggleDuty', src)
-end, QBCore.duty)
+end, Config.perms.duty)
 --- Creates the /jobs command to open the multi-jobs menu.
 QBCore.Commands.Add("jobs", Lang:t("command.jobs"),{},false, function(source)
     local src = source
     TriggerClientEvent('qb-jobs:client:multiJobMenu', src)
-end)
+end, Config.perms.jobs)
 --- Checks Job Status of Player
 QBCore.Commands.Add('job', Lang:t("command.job.help"),{},false, function(source)
     local PlayerJob = QBCore.Functions.GetPlayer(source).PlayerData.job
     TriggerClientEvent('QBCore:Notify', source, Lang:t('info.job_info',{value = PlayerJob.label, value2 = PlayerJob.grade.name, value3 = PlayerJob.onduty}))
-end, 'user')
+end, Config.perms.job)
 --- Assigns a Player to a job and grade
 QBCore.Commands.Add('setjob', Lang:t("command.setjob.help"),{ { name = Lang:t("command.setjob.params.id.name"),help = Lang:t("command.setjob.params.id.help") },{ name = Lang:t("command.setjob.params.job.name"),help = Lang:t("command.setjob.params.job.help") },{ name = Lang:t("command.setjob.params.grade.name"),help = Lang:t("command.setjob.params.grade.help") } },true, function(source, args)
     local src = source
-    local jgType = "Jobs"
-    local output = verifyCommandSetJobGangVars(src, args, jgType)
+    local jobGangType = "Jobs"
+    local output = verifyCommandSetJobGangVars(src, args, jobGangType)
     if not output.error or not next(output.error) then
-        commandJobGang(src, output, jgType)
+        commandJobGang(src, output, jobGangType)
     end
     return true
-end, 'admin')
+end, Config.perms.setJob)
 --- Creates the /gangs command to open the multi-gangs menu.
 QBCore.Commands.Add("gangs", Lang:t("command.gangs"),{},false, function(source)
     local src = source
     TriggerClientEvent('qb-jobs:client:multiJobMenu', src)
-end)
+end, Config.perms.gangs)
 --- Checks Gang Status of Player
 QBCore.Commands.Add('gang', Lang:t("command.gang.help"),{},false, function(source)
     local PlayerGang = QBCore.Functions.GetPlayer(source).PlayerData.gang
     TriggerClientEvent('QBCore:Notify', source, Lang:t('info.gang_info',{value = PlayerGang.label, value2 = PlayerGang.grade.name}))
-end, 'user')
+end, Config.perms.gang)
 --- Assigns a Player to a gang and grade
 QBCore.Commands.Add('setgang', Lang:t("command.setgang.help"),{ { name = Lang:t("command.setgang.params.id.name"),help = Lang:t("command.setgang.params.id.help") },{ name = Lang:t("command.setgang.params.gang.name"),help = Lang:t("command.setgang.params.gang.help") },{ name = Lang:t("command.setgang.params.grade.name"),help = Lang:t("command.setgang.params.grade.help") } },true, function(source, args)
     local src = source
-    local jgType = "Gangs"
-    local output = verifyCommandSetJobGangVars(src, args, jgType)
-    if not output.error or not next(output.error) then commandJobGang(src, output, jgType) end
+    local jobGangType = "Gangs"
+    local output = verifyCommandSetJobGangVars(src, args, jobGangType)
+    if not output.error or not next(output.error) then commandJobGang(src, output, jobGangType) end
     return true
-end, 'admin')
+end, Config.perms.setGang)
+-- Exports
+exports("populateJobsNGangs",populateJobsNGangs)
+exports("processHistory",processHistory)
+exports("selectJobGang",selectJobGang)
+exports("submitApplication",submitApplication)
+exports("selectJobGang",selectJobGang)

@@ -1,20 +1,18 @@
 Config.Jobs = Config.Jobs or {}
-Config.Jobs.bcso = { -- name the job no spaces ex. Config.Jobs.newJobName
+Config.Jobs.police = { -- name the job
     ["jobGang"] = "job",
-    ["jobBosses"] = { -- Citizen IDs of the Bosses of this Job
-
-    },
-    ["label"] = "Blaine County Sheriff's Office", -- label that display when typing in /job
-    ["type"] = "leo", -- job type
+    ["label"] = "Law Enforcement", -- label that display when typing in /job
     ["webHooks"] = {
-        ["bcso"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["police"] = ""
     },
+    ["type"] = "leo", -- job type
     ["defaultDuty"] = true, -- duty status when logged on
     ["offDutyPay"] = false, -- true get paid even off duty
     ["inCityHall"] = {
         ["listInCityHall"] = true, -- true he job is sent to city hall | false the job is not in city hall
         ["isManaged"] = true -- true the job is sent to the boss of the job | false the job is automatically assigned
     },
+
     ["plate"] = "POPO", -- 4 Chars Max -- License Plate Prefix
     ["DutyBlips"] = {
         ["enable"] = true, -- Enables the Duty Blip
@@ -70,7 +68,7 @@ Config.Jobs.bcso = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["payment"] = 50
         },
         ['2'] = {
-            ["name"] = "Deputy",
+            ["name"] = "Officer",
             ["payment"] = 75
         },
         ['3'] = {
@@ -78,11 +76,11 @@ Config.Jobs.bcso = { -- name the job no spaces ex. Config.Jobs.newJobName
             ["payment"] = 100
         },
         ['4'] = {
-            ["name"] = "Under Sheriff",
+            ["name"] = "Lieutenant",
             ["payment"] = 125
         },
         ['5'] = {
-            ["name"] = "Sheriff",
+            ["name"] = "Chief",
             ["payment"] = 150,
             ["isboss"] = true
         }

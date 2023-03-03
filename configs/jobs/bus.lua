@@ -1,9 +1,9 @@
 Config.Jobs = Config.Jobs or {}
-Config.Jobs.reporter = {
+Config.Jobs.bus = {
     ["jobGang"] = "job",
-    ["label"] = "News Reporter",
+    ["label"] = "Bus Driver",
     ["webHooks"] = {
-        ["reporter"] = "https://discord.com/api/webhooks/1068882053430517823/1_GeFJUZPbdI15MPoX0Iq8PgUE8BINl3OO74vV3J6c2tJXUJsHMTeDrVu1mbY_dZWD3P"
+        ["bus"] = ""
     },
     ["defaultDuty"] = true,
     ["offDutyPay"] = false,
@@ -50,34 +50,30 @@ Config.Jobs.reporter = {
             ["vehicle"] = "fa-solid fa-truck-medical",
         },
     },
-
-    ["plate"] = "NEWS", -- 4 Chars Max -- License Plate Prefix
+    ["plate"] = "OMNI", -- 4 Chars Max -- License Plate Prefix
     ["grades"] = {
-        ['1'] = {
-            ["name"] = "Journalist",
+        ["1"] = {
+            ["name"] = "Driver",
             ["payment"] = 50
         }
     },
     ["Locations"] = {
-        ["duty"] = {
+        ["garages"] = {
             [1] = {
-                ["Label"] = "Reporter Timeclock",
-                ["coords"] = vector3(-323.39, -129.6, 39.01),
-                ["blipName"] = "Reporter Timeclock",
-                ["blipNumber"] = 793, -- https://docs.fivem.net/docs/game-references/blips/#blips
-                ["blipColor"] = 39, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
-                ["blipDisplay"] = 9, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
-                ["blipScale"] = 0.4, -- set the size of the blip on the full size map
+                ["label"] = "Bus Terminal",
+                ["type"] = "vehicle", -- vehicle, boat, plane, helicopter
+                ["takeVehicle"] = vector4(462.22, -641.15, 28.45, 175.0),
+                ["spawnPoint"] = vector4(462.22, -641.15, 28.45, 175.0),
+                ["putVehicle"] = vector4(462.22, -641.15, 28.45, 175.0),
+                ["blipName"] = "Bus Terminal",
+                ["blipNumber"] = 513, -- https://docs.fivem.net/docs/game-references/blips/#blips
+                ["blipColor"] = 81, -- https://docs.fivem.net/docs/game-references/blips/#blip-colors
+                ["blipDisplay"] = 4, -- https://docs.fivem.net/natives/?_0x9029B2F3DA924928
+                ["blipScale"] = 0.6, -- set the size of the blip on the full size map
                 ["blipShortRange"] = true, -- true or false true only displays on minimap when player is close false always displays on the minimap no matter the distance
-                ["polyZone"] = {
-                    ["drawDistance"] = 10.0,
-                    ["drawColor"] = vector4(127,0,255,255), -- Red, Green, Blue, Transparency use RGB value here https://www.colorspire.com/rgb-color-wheel/
-                    ["targetIcon"] = "fa fa-power-off", -- Font Awesome Icon https://fontawesome.com/v4/icons/
-                    ["job"] = "job" -- type or job
-                },
                 ["marker"] = {
                     ["display"] = true, -- true = marker is displayed | false = marker is not displayed
-                    ["type"] = 0, -- Choose from this list: https://docs.fivem.net/docs/game-references/markers/
+                    ["type"] = 39, -- Choose from this list: https://docs.fivem.net/docs/game-references/markers/
                     ["scale"] = 0.5, -- Sets the size of the marker
                     ["red"] = 255, -- digits 0 to 255 | use R value here https://www.colorspire.com/rgb-color-wheel/
                     ["green"] = 127, -- digits 0 to 255 | use G value here https://www.colorspire.com/rgb-color-wheel/
@@ -87,8 +83,35 @@ Config.Jobs.reporter = {
                     ["rotate"] = true, -- true marker spins | false marker does not spin
                     ["ents"] = true -- true marker appears over entities | false marker is hidden when entities are around
                 }
-
             }
         }
-    }
+    },
+    ["Vehicles"] = {
+        [0] = { -- Job Rank ID
+            ["bus"] = { -- Spawn Code
+                ["label"] = "Public Bus", -- Label for Spawner
+                ["type"] = "vehicle" -- vehicle, boat, plane, helicopter
+            }
+        }
+    },
+    ["VehicleSettings"] = {
+        ["bus"] = { -- Spawn name
+            ["extras"] = {
+                [1] = 0, -- 0 = On | 1 = Off
+                [2] = 0,
+                [3] = 0,
+                [4] = 0,
+                [5] = 0,
+                [6] = 0,
+                [7] = 0,
+                [8] = 0,
+                [9] = 0,
+                [10] = 0,
+                [11] = 0,
+                [12] = 0,
+                [13] = 0
+            },
+            ["livery"] = 0 -- First Livery Starts At 0
+        }
+    },
 }
